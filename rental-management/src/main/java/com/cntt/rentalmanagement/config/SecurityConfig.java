@@ -8,6 +8,7 @@ import com.cntt.rentalmanagement.secruity.oauth2.CustomOAuth2UserService;
 import com.cntt.rentalmanagement.secruity.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.cntt.rentalmanagement.secruity.oauth2.OAuth2AuthenticationFailureHandler;
 import com.cntt.rentalmanagement.secruity.oauth2.OAuth2AuthenticationSuccessHandler;
+import com.cntt.rentalmanagement.secruity.FaceCheckFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -86,6 +87,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return super.authenticationManagerBean();
     }
 
+    @Bean
+    public FaceCheckFilter faceCheckFilter() {
+        return new FaceCheckFilter();
+    }
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
@@ -124,7 +130,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         "/request/customer",
                         "/view-file/**",
                         "/document/**",
-                        "/image/**")
+                        "/image/**",
+                        "/api/auth/face-register")
                 .permitAll()
                 .anyRequest()
                 .authenticated()
@@ -145,5 +152,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         // Add our custom Token based authentication filter
         http.addFilterBefore(tokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterAfter(faceCheckFilter(), TokenAuthenticationFilter.class);
     }
 }

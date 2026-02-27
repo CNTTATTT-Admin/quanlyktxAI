@@ -35,6 +35,9 @@ public class CustomUserDetailsService implements UserDetailsService {
         if (Boolean.FALSE.equals(user.getIsConfirmed())) {
             throw new BadRequestException("Tài khoản của bạn chưa đuợc xác thực!!!");
         }
+        if (user.getFaceVector() == null) {
+            throw new BadRequestException("Tài khoản của bạn chưa xác thực khuôn mặt");
+        }
 
         return UserPrincipal.create(user);
     }

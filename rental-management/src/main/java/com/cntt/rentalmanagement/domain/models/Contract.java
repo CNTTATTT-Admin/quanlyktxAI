@@ -37,6 +37,12 @@ public class Contract extends DateAudit {
 
     private String phone;
 
+    private LocalDateTime startDate;
+
+    @ManyToOne
+    @JoinColumn(name = "student_id")
+    private User student;
+
     @ManyToOne
     @JoinColumn(name = "room_id")
     private Room room;

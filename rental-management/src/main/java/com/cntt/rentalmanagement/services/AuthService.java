@@ -11,6 +11,8 @@ import javax.mail.MessagingException;
 import java.io.IOException;
 import java.net.URI;
 
+import com.cntt.rentalmanagement.domain.models.User;
+
 public interface AuthService {
     URI registerAccount(SignUpRequest signUpRequest) throws MessagingException, IOException;
 
@@ -28,5 +30,9 @@ public interface AuthService {
 
     MessageResponse lockAccount(Long id);
 
+    MessageResponse unlockAccount(Long id);
+
     MessageResponse uploadProfile(MultipartFile file, String zalo, String facebook, String address);
+
+    String faceLogin(User user);
 }

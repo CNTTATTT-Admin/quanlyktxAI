@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -92,6 +91,17 @@ public class Room extends DateAudit {
     @OneToMany(mappedBy = "room")
     @JsonIgnore
     private List<BlogStore> stores;
+
+    @Column(name = "room_code", unique = true)
+    private String roomCode;
+
+    @Column(name = "max_occupancy")
+    private Integer maxOccupancy;
+
+    private Integer floor;
+
+    @OneToMany(mappedBy = "allocatedRoom")
+    private List<User> residents;
 
     private BigDecimal waterCost = BigDecimal.ZERO;
     private BigDecimal publicElectricCost = BigDecimal.ZERO;

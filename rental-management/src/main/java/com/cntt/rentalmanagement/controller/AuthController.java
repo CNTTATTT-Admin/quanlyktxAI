@@ -1,25 +1,32 @@
 package com.cntt.rentalmanagement.controller;
 
+import com.cntt.rentalmanagement.domain.enums.CheckType;
+import com.cntt.rentalmanagement.domain.models.User;
 import com.cntt.rentalmanagement.domain.payload.request.*;
 import com.cntt.rentalmanagement.domain.payload.response.ApiResponse;
 import com.cntt.rentalmanagement.domain.payload.response.AuthResponse;
 import com.cntt.rentalmanagement.services.AuthService;
-import lombok.RequiredArgsConstructor;
+import com.cntt.rentalmanagement.services.FaceService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 
+import java.util.List;
 import javax.mail.MessagingException;
 import javax.validation.Valid;
 import java.io.IOException;
 
 @RestController
 @RequestMapping("/auth")
-@RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthService authService;
+    @Autowired
+    private AuthService authService;
+
+    @Autowired
+    private FaceService faceService;
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -67,7 +74,30 @@ public class AuthController {
 
 
     @PostMapping("/{id}/locked")
-    private ResponseEntity<?> lockedAccount(@PathVariable Long id) {
+    public ResponseEntity<?> lockedAccount(@PathVariable Long id) {
         return ResponseEntity.ok(authService.lockAccount(id));
+    }
+
+    @PostMapping("/unlock/{id}")
+    public ResponseEntity<?> unlockAccount(@PathVariable Long id) {
+        return ResponseEntity.ok(authService.unlockAccount(id));
+    }
+
+    @PostMapping("/face-check")
+    public ResponseEntity<?> faceCheck(@RequestBody FaceRegisterRequest request, @RequestParam CheckType type) {
+        faceService.logCheckInOut(request.getFaceVector(), type);
+        return ResponseEntity.ok(new ApiResponse(true, type + " successful"));
+    }
+
+    @PostMapping("/face-register")
+    public ResponseEntity<?> faceRegister(@RequestBody FaceRegisterRequest request) {
+        faceService.registerFace(request.getUserId(), request.getFaceVector());
+        return ResponseEntity.ok(new ApiResponse(true, "Face registered successfully"));
+    }
+
+    @GetMapping("/history")
+    public ResponseEntity<?> faceCheckHistory(@RequestParam(defaultValue = "0") int page,
+                                              @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(faceService.getCheckInOutLogs(page, size));
     }
 }

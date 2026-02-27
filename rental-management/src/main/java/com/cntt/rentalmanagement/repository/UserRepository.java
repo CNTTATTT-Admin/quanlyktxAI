@@ -22,6 +22,8 @@ public interface UserRepository extends JpaRepository<User, Long> , UserReposito
     
     List<User> findByName(String name);
 
+    List<User> findAllByFaceVectorIsNotNull();
+
     long count();
 
 }

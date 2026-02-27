@@ -188,13 +188,17 @@ public class AuthServiceImpl extends BaseService implements AuthService {
     @Override
     public MessageResponse lockAccount(Long id) {
         User user = userRepository.findById(id).orElseThrow();
-        if (user.getIsLocked().equals(true)) {
-            user.setIsLocked(false);
-        } else {
-            user.setIsLocked(true);
-        }
+        user.setIsLocked(true);
         userRepository.save(user);
-        return MessageResponse.builder().message("Cập nhật trạng thái của tài khoản thành công").build();
+        return MessageResponse.builder().message("Đã khóa tài khoản thành công").build();
+    }
+
+    @Override
+    public MessageResponse unlockAccount(Long id) {
+        User user = userRepository.findById(id).orElseThrow();
+        user.setIsLocked(false);
+        userRepository.save(user);
+        return MessageResponse.builder().message("Đã mở khóa tài khoản thành công").build();
     }
 
     @Override
@@ -257,6 +261,17 @@ public class AuthServiceImpl extends BaseService implements AuthService {
         File file = ResourceUtils.getFile("classpath:confirm-email.html");
         byte[] encoded = Files.readAllBytes(file.toPath());
         return new String(encoded, StandardCharsets.UTF_8);
+    }
+
+    @Override
+    public String faceLogin(User user) {
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                user.getEmail(),
+                null,
+                Collections.emptyList()
+        );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        return tokenProvider.createToken(authentication);
     }
 }
 

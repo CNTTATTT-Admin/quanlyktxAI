@@ -34,6 +34,14 @@ public class Maintenance extends DateAudit {
     @JoinColumn(name = "room_id")
     private Room room;
 
+    private String status; // PENDING, IN_PROGRESS, RESOLVED
+
+    private String description;
+
+    @ManyToOne
+    @JoinColumn(name = "reported_by")
+    private User reportedBy;
+
     public Maintenance(LocalDateTime maintenanceDate, BigDecimal price, String files, String createdBy, String updatedBy, Room room) {
         this.maintenanceDate = maintenanceDate;
         this.price = price;
@@ -41,5 +49,18 @@ public class Maintenance extends DateAudit {
         this.createdBy = createdBy;
         this.updatedBy = updatedBy;
         this.room = room;
+        this.status = "PENDING";
+    }
+
+    public Maintenance(LocalDateTime maintenanceDate, BigDecimal price, String files, String createdBy, String updatedBy, Room room, String status, String description, User reportedBy) {
+        this.maintenanceDate = maintenanceDate;
+        this.price = price;
+        this.files = files;
+        this.createdBy = createdBy;
+        this.updatedBy = updatedBy;
+        this.room = room;
+        this.status = status;
+        this.description = description;
+        this.reportedBy = reportedBy;
     }
 }
