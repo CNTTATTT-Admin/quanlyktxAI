@@ -1,10 +1,7 @@
 package com.cntt.rentalmanagement.domain.payload.request;
 
 import com.cntt.rentalmanagement.domain.enums.RoomStatus;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
@@ -14,6 +11,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class RoomRequest {
     private String title;
 
@@ -37,8 +35,10 @@ public class RoomRequest {
 
     private List<MultipartFile> files;
 
-    private BigDecimal waterCost = BigDecimal.ZERO;
-    private BigDecimal publicElectricCost = BigDecimal.ZERO;
-    private BigDecimal internetCost = BigDecimal.ZERO;
+    private BigDecimal internetCost;
+    private Integer maxOccupancy;
+    private Integer floor;
 
+    private BigDecimal waterCost;
+    private BigDecimal publicElectricCost;
 }

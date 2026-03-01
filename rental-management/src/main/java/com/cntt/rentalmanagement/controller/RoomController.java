@@ -119,14 +119,16 @@ public class RoomController {
         String title = request.getParameter("title");
         String description = request.getParameter("description");
         BigDecimal price = BigDecimal.valueOf(Double.valueOf(request.getParameter("price")));
-        Double latitude = Double.valueOf(request.getParameter("latitude"));
-        Double longitude = Double.valueOf(request.getParameter("longitude"));
+//        Double latitude = Double.valueOf(request.getParameter("latitude"));
+//        Double longitude = Double.valueOf(request.getParameter("longitude"));
         String address = request.getParameter("address");
         Long locationId = Long.valueOf(request.getParameter("locationId"));
         Long categoryId = Long.valueOf(request.getParameter("categoryId"));
         BigDecimal waterCost = BigDecimal.valueOf(Double.valueOf(request.getParameter("waterCost")));
         BigDecimal publicElectricCost = BigDecimal.valueOf(Double.valueOf(request.getParameter("publicElectricCost")));
         BigDecimal internetCost = BigDecimal.valueOf(Double.valueOf(request.getParameter("internetCost")));
+        Integer maxOccupancy = Integer.valueOf(request.getParameter("maxOccupancy"));
+        Integer floor = Integer.valueOf(request.getParameter("floor"));
         List<AssetRequest> assets = new ArrayList<>();
         for (int i = 0; i < Integer.valueOf(request.getParameter("asset")); i++) {
             String assetName = request.getParameterValues("assets[" + i + "][name]")[0];
@@ -135,7 +137,24 @@ public class RoomController {
         }
 
         List<MultipartFile> files = request.getFiles("files");
-        return new RoomRequest(title, description, price, latitude, longitude, address, locationId, categoryId, RoomStatus.ROOM_RENT, assets, files, waterCost, publicElectricCost, internetCost);
+        return RoomRequest.builder()
+                .title(title)
+                .description(description)
+                .price(price)
+//                .latitude(latitude)
+//                .longitude(longitude)
+                .address(address)
+                .locationId(locationId)
+                .categoryId(categoryId)
+                .status(RoomStatus.ROOM_RENT)
+                .assets(assets)
+                .files(files)
+                .internetCost(internetCost)
+                .maxOccupancy(maxOccupancy)
+                .floor(floor)
+                .waterCost(waterCost)
+                .publicElectricCost(publicElectricCost)
+                .build();
     }
 
 }

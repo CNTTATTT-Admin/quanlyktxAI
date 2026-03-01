@@ -2,12 +2,14 @@ package com.cntt.rentalmanagement.services.impl;
 
 import com.cntt.rentalmanagement.domain.models.Request;
 import com.cntt.rentalmanagement.domain.models.Room;
+import com.cntt.rentalmanagement.domain.models.User;
 import com.cntt.rentalmanagement.domain.payload.request.RequestRequest;
 import com.cntt.rentalmanagement.domain.payload.response.MessageResponse;
 import com.cntt.rentalmanagement.domain.payload.response.RequireResponse;
 import com.cntt.rentalmanagement.exception.BadRequestException;
 import com.cntt.rentalmanagement.repository.RequestRepository;
 import com.cntt.rentalmanagement.repository.RoomRepository;
+import com.cntt.rentalmanagement.repository.UserRepository;
 import com.cntt.rentalmanagement.services.BaseService;
 import com.cntt.rentalmanagement.services.RequestService;
 import com.cntt.rentalmanagement.utils.MapperUtils;
@@ -23,6 +25,7 @@ public class RequestServiceImpl extends BaseService implements RequestService {
 
     private final RequestRepository requestRepository;
     private final RoomRepository roomRepository;
+    private final UserRepository userRepository;
     private final MapperUtils mapperUtils;
     @Override
     public Page<RequireResponse> getRequestOfRentHome(String keyword, Integer pageNo, Integer pageSize) {
@@ -54,9 +57,31 @@ public class RequestServiceImpl extends BaseService implements RequestService {
     @Override
     public MessageResponse addRequest(RequestRequest request) {
         Room room = roomRepository.findById(request.getRoomId()).orElseThrow(() -> new BadRequestException("Thông tin phòng không tồn tại."));
-        Request result = new Request(request.getNameOfRent(),request.getPhone(),request.getDescription(), room);
+        User user = userRepository.findById(getUserId()).orElseThrow(() -> new BadRequestException("Tài khoản không tồn tại."));
+        Request result = new Request(request.getNameOfRent(),request.getPhone(),request.getDescription(), room, user);
         result.setIsAnswer(false);
         requestRepository.save(result);
         return MessageResponse.builder().message("Gửi yêu cầu thành công.").build();
+    }
+
+    @Override
+    public MessageResponse approveRequest(Long requestId) {
+        Request request = requestRepository.findById(requestId).orElseThrow(() -> new BadRequestException("Yêu cầu này không tồn tại."));
+        User user = request.getUser();
+        if (user == null) {
+            throw new BadRequestException("Yêu cầu không gắn với người dùng nào.");
+        }
+        if (user.getAllocatedRoom() != null) {
+            throw new BadRequestException("Người dùng này đã được xếp vào phòng khác rồi.");
+        }
+        Room room = request.getRoom();
+        if (room.getMaxOccupancy() != null && room.getResidents() != null && room.getResidents().size() >= room.getMaxOccupancy()) {
+            throw new BadRequestException("Phòng này đã đủ số lượng người tối đa.");
+        }
+        user.setAllocatedRoom(room);
+        userRepository.save(user);
+        request.setIsAnswer(true);
+        requestRepository.save(request);
+        return MessageResponse.builder().message("Duyệt người vào phòng thành công.").build();
     }
 }

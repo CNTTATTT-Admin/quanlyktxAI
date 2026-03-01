@@ -42,4 +42,9 @@ public class RequestController {
     public ResponseEntity<?> changeStatus(@PathVariable Long id) {
         return ResponseEntity.ok(requestService.changeStatusOfRequest(id));
     }
+
+    @PostMapping("/{id}/approve")
+    public ResponseEntity<?> approveRequest(@PathVariable Long id) {
+        return ResponseEntity.ok(requestService.approveRequest(id));
+    }
 }

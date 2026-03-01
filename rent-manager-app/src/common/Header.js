@@ -47,7 +47,7 @@ class Header extends Component {
                     to="/rental-home"
                     activeClassName="active"
                   >
-                    Nhà cho thuê
+                    Phòng cho thuê
                   </NavLink>
                 </li>
                 <li className="nav-item">

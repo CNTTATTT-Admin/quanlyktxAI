@@ -12,4 +12,5 @@ public class RequireResponse {
     private String description;
     private Boolean isAnswer;
     private RoomResponse room;
+    private UserResponse user;
 }

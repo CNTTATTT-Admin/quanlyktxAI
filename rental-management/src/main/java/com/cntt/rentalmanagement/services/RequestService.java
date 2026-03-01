@@ -15,4 +15,6 @@ public interface RequestService {
     Page<RequireResponse> getRequestOfCustomer(String keyword, String phone, Integer pageNo, Integer pageSize);
 
     MessageResponse addRequest(RequestRequest request);
+
+    MessageResponse approveRequest(Long requestId);
 }

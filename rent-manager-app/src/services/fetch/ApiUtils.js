@@ -657,6 +657,17 @@ export function changeStatusOfRequest(id) {
   });
 }
 
+export function approveRequest(id) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url: API_BASE_URL + "/request/" + id + "/approve",
+    method: "POST",
+  });
+}
+
 export function getMaintenance(id) {
   if (!localStorage.getItem(ACCESS_TOKEN)) {
     return Promise.reject("No access token set.");

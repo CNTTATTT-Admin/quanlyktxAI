@@ -1,5 +1,7 @@
 package com.cntt.rentalmanagement.utils;
 
+import com.cntt.rentalmanagement.domain.models.Room;
+import com.cntt.rentalmanagement.domain.payload.response.RoomResponse;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +42,16 @@ public class MapperUtils {
     }
 
     public <T, S> Page<S> convertToResponsePage(Page<T> page, Class<S> type, Pageable pageable) {
-        return new PageImpl<>(convertToResponseList(page.getContent(), type), pageable, page.getTotalElements());
+        List<S> content = convertToResponseList(page.getContent(), type);
+        if (type.equals(RoomResponse.class)) {
+            for (int i = 0; i < page.getContent().size(); i++) {
+                Object entity = page.getContent().get(i);
+                if (entity instanceof Room) {
+                    ((RoomResponse) content.get(i)).setCurrentOccupancy(((Room) entity).getResidents() != null ? ((Room) entity).getResidents().size() : 0);
+                }
+            }
+        }
+        return new PageImpl<>(content, pageable, page.getTotalElements());
     }
 
     public <T, S> S convertToEntityStrict(T data, Class<S> type) {

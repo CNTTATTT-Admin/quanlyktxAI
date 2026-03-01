@@ -26,10 +26,15 @@ public class Request {
     @JoinColumn(name = "room_id")
     private Room room;
 
-    public Request(String name, String phoneNumber, String description, Room room) {
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    public Request(String name, String phoneNumber, String description, Room room, User user) {
         this.name = name;
         this.phoneNumber = phoneNumber;
         this.description = description;
         this.room = room;
+        this.user = user;
     }
 }

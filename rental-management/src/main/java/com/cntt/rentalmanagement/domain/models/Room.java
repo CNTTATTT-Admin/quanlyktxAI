@@ -103,6 +103,10 @@ public class Room extends DateAudit {
     @OneToMany(mappedBy = "allocatedRoom")
     private List<User> residents;
 
+    public Integer getCurrentOccupancy() {
+        return residents != null ? residents.size() : 0;
+    }
+
     private BigDecimal waterCost = BigDecimal.ZERO;
     private BigDecimal publicElectricCost = BigDecimal.ZERO;
     private BigDecimal internetCost = BigDecimal.ZERO;

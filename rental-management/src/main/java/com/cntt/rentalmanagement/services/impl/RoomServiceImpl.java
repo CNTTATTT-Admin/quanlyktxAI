@@ -77,6 +77,8 @@ public class RoomServiceImpl extends BaseService implements RoomService {
                 roomRequest.getWaterCost(),
                 roomRequest.getPublicElectricCost(),
                 roomRequest.getInternetCost());
+        room.setMaxOccupancy(roomRequest.getMaxOccupancy());
+        room.setFloor(roomRequest.getFloor());
         roomRepository.save(room);
         for (MultipartFile file : roomRequest.getFiles()) {
             String fileName = fileStorageService.storeFile(file);
@@ -106,8 +108,14 @@ public class RoomServiceImpl extends BaseService implements RoomService {
 
     @Override
     public RoomResponse getRoomById(Long id) {
-        return mapperUtils.convertToResponse(roomRepository.findById(id).orElseThrow(() ->
-                new BadRequestException("Phòng trọ này không tồn tại.")), RoomResponse.class);
+        Room room = roomRepository.findById(id).orElseThrow(() ->
+                new BadRequestException("Phòng trọ này không tồn tại."));
+        RoomResponse response = mapperUtils.convertToResponse(room, RoomResponse.class);
+        response.setCurrentOccupancy(room.getResidents() != null ? room.getResidents().size() : 0);
+        if (response.getMaxOccupancy() == null) {
+            response.setMaxOccupancy(1);
+        }
+        return response;
     }
 
     @Override
@@ -146,6 +154,8 @@ public class RoomServiceImpl extends BaseService implements RoomService {
         room.setWaterCost(roomRequest.getWaterCost());
         room.setPublicElectricCost(roomRequest.getPublicElectricCost());
         room.setInternetCost(roomRequest.getInternetCost());
+        room.setMaxOccupancy(roomRequest.getMaxOccupancy());
+        room.setFloor(roomRequest.getFloor());
         roomRepository.save(room);
 
         if (Objects.nonNull(roomRequest.getFiles())) {
@@ -205,19 +215,21 @@ public class RoomServiceImpl extends BaseService implements RoomService {
     public Room updateRoom(Room room, Long id) {
         return roomRepository.findById(id)
                 .map(room1 -> {
-                    room1.setTitle(room.getTitle());
-                    room1.setDescription(room.getDescription());
-                    room1.setPrice(room.getPrice());
-                    room1.setLatitude(room.getLatitude());
-                    room1.setLongitude(room.getLongitude());
-                    room1.setAddress(room.getAddress());
+                    if (room.getTitle() != null) room1.setTitle(room.getTitle());
+                    if (room.getDescription() != null) room1.setDescription(room.getDescription());
+                    if (room.getPrice() != null) room1.setPrice(room.getPrice());
+                    if (room.getLatitude() != null) room1.setLatitude(room.getLatitude());
+                    if (room.getLongitude() != null) room1.setLongitude(room.getLongitude());
+                    if (room.getAddress() != null) room1.setAddress(room.getAddress());
+                    if (room.getLocation() != null) room1.setLocation(room.getLocation());
+                    if (room.getCategory() != null) room1.setCategory(room.getCategory());
+                    if (room.getStatus() != null) room1.setStatus(room.getStatus());
+                    if (room.getWaterCost() != null) room1.setWaterCost(room.getWaterCost());
+                    if (room.getPublicElectricCost() != null) room1.setPublicElectricCost(room.getPublicElectricCost());
+                    if (room.getInternetCost() != null) room1.setInternetCost(room.getInternetCost());
+                    if (room.getMaxOccupancy() != null) room1.setMaxOccupancy(room.getMaxOccupancy());
+                    if (room.getFloor() != null) room1.setFloor(room.getFloor());
                     room1.setUpdatedBy(getUsername());
-                    room1.setLocation(room.getLocation());
-                    room1.setCategory(room.getCategory());
-                    room1.setStatus(room.getStatus());
-                    room1.setWaterCost(room.getWaterCost());
-                    room1.setPublicElectricCost(room.getPublicElectricCost());
-                    room1.setInternetCost(room.getInternetCost());
                     return roomRepository.save(room1);
                 })
                 .orElseThrow(() -> new BadRequestException("Phòng không tồn tại"));
