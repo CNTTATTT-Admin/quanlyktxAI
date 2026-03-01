@@ -31,6 +31,8 @@ class RentailHomeDetail extends Component {
       description: "",
       title: "",
       nameOfRentaler: "",
+      requestSent: false, // Đã gửi request đăng ký ở
+      requesting: false, // Đang trong quá trình gửi request
     };
   }
 
@@ -119,13 +121,24 @@ class RentailHomeDetail extends Component {
   };
 
   handleRequestRoom = () => {
-    const { rooms } = this.state;
+    const { rooms, requestSent, requesting } = this.state;
     const { currentUser } = this.props;
 
     if (!this.props.authenticated) {
       toast.error("Vui lòng đăng nhập để đăng ký ở.");
       return;
     }
+
+    // Không cho phép gửi nhiều lần
+    if (requestSent || requesting) return;
+
+    // User đã có phòng thì không được đăng ký
+    if (currentUser && currentUser.allocatedRoomId != null) {
+      toast.warning("Bạn đã có phòng, không thể đăng ký thêm.");
+      return;
+    }
+
+    this.setState({ requesting: true });
 
     const data = {
       roomId: rooms.id,
@@ -137,12 +150,14 @@ class RentailHomeDetail extends Component {
     sendRequestForRentaler(data)
       .then((response) => {
         toast.success(response.message);
+        this.setState({ requestSent: true, requesting: false });
       })
       .catch((error) => {
         toast.error(
           (error && error.message) ||
             "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
         );
+        this.setState({ requesting: false });
       });
   };
 
@@ -229,14 +244,26 @@ class RentailHomeDetail extends Component {
                     {rooms &&
                     (rooms.currentOccupancy ?? 0) <
                       (rooms.maxOccupancy ?? 1) ? (
-                      <button
-                        type="button"
-                        onClick={() => this.handleRequestRoom()}
-                        class="btn btn-outline-primary rounded-pill"
-                      >
-                        Đăng ký ở ({rooms.currentOccupancy ?? 0}/
-                        {rooms.maxOccupancy ?? 0})
-                      </button>
+                      this.props.currentUser?.allocatedRoomId !=
+                      null ? null : this.state.requestSent ||
+                        this.state.requesting ? (
+                        <button
+                          type="button"
+                          class="btn btn-outline-warning rounded-pill"
+                          disabled
+                        >
+                          ⏳ Đang xử lý...
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => this.handleRequestRoom()}
+                          class="btn btn-outline-primary rounded-pill"
+                        >
+                          Đăng ký ở ({rooms.currentOccupancy ?? 0}/
+                          {rooms.maxOccupancy ?? 0})
+                        </button>
+                      )
                     ) : (
                       <button
                         type="button"
@@ -525,6 +552,88 @@ class RentailHomeDetail extends Component {
                     </div>
                   </div>
                 </div>
+                <div class="col-md-12">
+                  <div class="row section-t3">
+                    <div class="col-sm-12">
+                      <div class="title-box-d">
+                        <h3 class="title-d">
+                          Người đang ở ({rooms?.currentOccupancy ?? 0}/
+                          {rooms?.maxOccupancy ?? 0})
+                        </h3>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row mb-4">
+                    {rooms?.residents && rooms.residents.length > 0 ? (
+                      rooms.residents.map((resident, index) => (
+                        <div
+                          key={resident.id || index}
+                          class="col-md-4 col-lg-3 mb-3"
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "12px",
+                              padding: "12px 16px",
+                              border: "1px solid #e0e0e0",
+                              borderRadius: "10px",
+                              background: "#f9f9f9",
+                            }}
+                          >
+                            <img
+                              src={
+                                resident.imageUrl || "assets/img/agent-1.jpg"
+                              }
+                              alt={resident.name}
+                              style={{
+                                width: "48px",
+                                height: "48px",
+                                borderRadius: "50%",
+                                objectFit: "cover",
+                                flexShrink: 0,
+                              }}
+                            />
+                            <div style={{ overflow: "hidden" }}>
+                              <div
+                                style={{
+                                  fontWeight: "600",
+                                  fontSize: "14px",
+                                  color: "#333",
+                                  whiteSpace: "nowrap",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                }}
+                              >
+                                {resident.name}
+                              </div>
+                              {resident.phone && (
+                                <div
+                                  style={{
+                                    fontSize: "12px",
+                                    color: "#666",
+                                    marginTop: "2px",
+                                  }}
+                                >
+                                  <i class="bi bi-telephone"></i>{" "}
+                                  {resident.phone}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div class="col-12">
+                        <p class="color-text-a" style={{ fontStyle: "italic" }}>
+                          <i class="bi bi-info-circle"></i> Chưa có ai đang ở
+                          trong phòng này.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 <div class="col-md-12">
                   <div class="row section-t3">
                     <div class="col-sm-12">

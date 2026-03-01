@@ -94,6 +94,10 @@ public class User extends DateAudit {
     @JsonIgnore
     private Room allocatedRoom;
 
+    public Long getAllocatedRoomId() {
+        return allocatedRoom != null ? allocatedRoom.getId() : null;
+    }
+
     @Column(name = "face_vector", columnDefinition = "TEXT")
     private String faceVector;
 }

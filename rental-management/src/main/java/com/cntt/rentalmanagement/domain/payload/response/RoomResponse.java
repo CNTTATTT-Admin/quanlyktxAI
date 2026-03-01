@@ -54,4 +54,5 @@ public class RoomResponse {
     private Integer maxOccupancy;
     private Integer floor;
     private Integer currentOccupancy;
+    private List<UserResponse> residents;
 }

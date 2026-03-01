@@ -27,6 +27,7 @@ import com.cntt.rentalmanagement.domain.payload.request.AssetRequest;
 import com.cntt.rentalmanagement.domain.payload.request.RoomRequest;
 import com.cntt.rentalmanagement.domain.payload.response.MessageResponse;
 import com.cntt.rentalmanagement.domain.payload.response.RoomResponse;
+import com.cntt.rentalmanagement.domain.payload.response.UserResponse;
 import com.cntt.rentalmanagement.exception.BadRequestException;
 import com.cntt.rentalmanagement.repository.AssetRepository;
 import com.cntt.rentalmanagement.repository.CategoryRepository;
@@ -114,6 +115,9 @@ public class RoomServiceImpl extends BaseService implements RoomService {
         response.setCurrentOccupancy(room.getResidents() != null ? room.getResidents().size() : 0);
         if (response.getMaxOccupancy() == null) {
             response.setMaxOccupancy(1);
+        }
+        if (room.getResidents() != null && !room.getResidents().isEmpty()) {
+            response.setResidents(mapperUtils.convertToResponseList(room.getResidents(), UserResponse.class));
         }
         return response;
     }
