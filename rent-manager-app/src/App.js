@@ -63,6 +63,8 @@ import EditElectricAndWater from "./page/rentaler/EditElectricAndWater";
 import FaceRegistration from "./page/user/FaceRegistration";
 import CheckInOut from "./page/user/CheckInOut";
 import CheckInOutHistory from "./page/user/CheckInOutHistory";
+import LeaveRequestForm from "./page/user/LeaveRequestForm";
+import LeaveRequestManagement from "./page/rentaler/LeaveRequestManagement";
 
 function App() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -293,6 +295,18 @@ function App() {
             path="/room-hired"
             element={
               <RoomHired
+                authenticated={authenticated}
+                currentUser={currentUser}
+                role={role}
+                onLogout={handleLogout}
+              />
+            }
+          />
+          <Route
+            exact
+            path="/leave-request"
+            element={
+              <LeaveRequestForm
                 authenticated={authenticated}
                 currentUser={currentUser}
                 onLogout={handleLogout}
@@ -648,6 +662,18 @@ function App() {
             path="/rentaler/electric_water-management"
             element={
               <ElectricAndWaterManagement
+                authenticated={authenticated}
+                currentUser={currentUser}
+                role={role}
+                onLogout={handleLogout}
+              />
+            }
+          />
+          <Route
+            exact
+            path="/rentaler/leave-management"
+            element={
+              <LeaveRequestManagement
                 authenticated={authenticated}
                 currentUser={currentUser}
                 role={role}

@@ -729,3 +729,58 @@ export function deleteMaintenance(id) {
     method: "DELETE",
   });
 }
+
+export function createLeaveRequest(leaveRequest) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url: API_BASE_URL + "/leave-request",
+    method: "POST",
+    body: JSON.stringify(leaveRequest),
+  });
+}
+
+export function getLeaveRequestsByUser(pageNo, pageSize) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url:
+      API_BASE_URL +
+      "/leave-request/user?pageNo=" +
+      pageNo +
+      "&pageSize=" +
+      pageSize,
+    method: "GET",
+  });
+}
+
+export function getLeaveRequestsForRentaler(pageNo, pageSize) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url:
+      API_BASE_URL +
+      "/leave-request/rentaler?pageNo=" +
+      pageNo +
+      "&pageSize=" +
+      pageSize,
+    method: "GET",
+  });
+}
+
+export function updateLeaveRequestStatus(id, status) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url: API_BASE_URL + "/leave-request/" + id + "?status=" + status,
+    method: "PATCH",
+  });
+}

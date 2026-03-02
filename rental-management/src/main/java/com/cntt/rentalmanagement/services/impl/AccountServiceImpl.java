@@ -17,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 
@@ -53,9 +54,13 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public MessageResponse sendEmailForRentaler(Long id, SendEmailRequest sendEmailRequest) throws MessagingException, IOException {
-        sendEmailFromTemplate(sendEmailRequest);
-        return MessageResponse.builder().message("Gửi mail thành công").build();
+    @Async
+    public void sendEmailForRentaler(Long id, SendEmailRequest sendEmailRequest) {
+        try {
+            sendEmailFromTemplate(sendEmailRequest);
+        } catch (Exception e) {
+            System.err.println("Async email failed: " + e.getMessage());
+        }
     }
 
     @Override
@@ -82,15 +87,23 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public MessageResponse sendEmailForRentaler(SendEmailRequest sendEmailRequest) throws MessagingException, IOException {
-        sendEmailFromTemplateForContact(sendEmailRequest);
-        return MessageResponse.builder().message("Liện hệ đã được gửi thành công").build();
+    @Async
+    public void sendEmailForRentaler(SendEmailRequest sendEmailRequest) {
+        try {
+            sendEmailFromTemplateForContact(sendEmailRequest);
+        } catch (Exception e) {
+            System.err.println("Async email failed: " + e.getMessage());
+        }
     }
 
     @Override
-    public MessageResponse sendEmailOfCustomer(SendEmailRequest sendEmailRequest) throws MessagingException, IOException {
-        sendEmailFromTemplateForCustomer(sendEmailRequest);
-        return MessageResponse.builder().message("Liên hệ thành công.").build();
+    @Async
+    public void sendEmailOfCustomer(SendEmailRequest sendEmailRequest)  {
+        try {
+            sendEmailFromTemplateForCustomer(sendEmailRequest);
+        } catch (Exception e) {
+            System.err.println("Async email failed: " + e.getMessage());
+        }
     }
 
 

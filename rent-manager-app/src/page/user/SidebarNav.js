@@ -14,7 +14,7 @@ const SidebarNav = () => {
       <li className="sidebar-item">
         <NavLink to="/room-hired" className="sidebar-link">
           <i className="align-middle" data-feather="sliders"></i>{" "}
-          <span className="align-middle">Lịch sử thuê trọ</span>
+          <span className="align-middle">Lịch sử thuê ktx</span>
         </NavLink>
       </li>
       <li className="sidebar-item">
@@ -51,6 +51,12 @@ const SidebarNav = () => {
         <NavLink to="/change-password" className="sidebar-link">
           <i className="align-middle" data-feather="sliders"></i>{" "}
           <span className="align-middle">Đổi mật khẩu</span>
+        </NavLink>
+      </li>
+      <li className="sidebar-item">
+        <NavLink to="/leave-request" className="sidebar-link">
+          <i className="align-middle" data-feather="sliders"></i>{" "}
+          <span className="align-middle">Xin nghỉ</span>
         </NavLink>
       </li>
     </ul>

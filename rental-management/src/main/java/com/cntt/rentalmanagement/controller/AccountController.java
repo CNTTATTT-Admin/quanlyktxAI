@@ -2,6 +2,7 @@ package com.cntt.rentalmanagement.controller;
 
 import com.cntt.rentalmanagement.domain.payload.request.RoleRequest;
 import com.cntt.rentalmanagement.domain.payload.request.SendEmailRequest;
+import com.cntt.rentalmanagement.domain.payload.response.MessageResponse;
 import com.cntt.rentalmanagement.services.AccountService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -37,18 +38,21 @@ public class AccountController {
     }
 
     @PostMapping("/send-email/{id}")
-    private ResponseEntity<?> sendEmail(@PathVariable Long id, @RequestBody SendEmailRequest sendEmailRequest) throws MessagingException, IOException {
-        return ResponseEntity.ok(accountService.sendEmailForRentaler(id, sendEmailRequest));
+    private ResponseEntity<?> sendEmail(@PathVariable Long id, @RequestBody SendEmailRequest sendEmailRequest) {
+        accountService.sendEmailForRentaler(id, sendEmailRequest);
+        return ResponseEntity.ok(MessageResponse.builder().message("Gửi mail thành công").build());
     }
 
     @PostMapping("/send-mail/contact")
-    private ResponseEntity<?> sendEmailForContact(@RequestBody SendEmailRequest sendEmailRequest) throws MessagingException, IOException {
-        return ResponseEntity.ok(accountService.sendEmailForRentaler(sendEmailRequest));
+    private ResponseEntity<?> sendEmailForContact(@RequestBody SendEmailRequest sendEmailRequest) {
+        accountService.sendEmailForRentaler(sendEmailRequest);
+        return ResponseEntity.ok(MessageResponse.builder().message("Liện hệ đã được gửi thành công").build());
     }
 
     @PostMapping("/send-mail-rentaler")
-    private ResponseEntity<?> sendEmailForRentaler(@RequestBody SendEmailRequest sendEmailRequest) throws MessagingException, IOException {
-        return ResponseEntity.ok(accountService.sendEmailOfCustomer(sendEmailRequest));
+    private ResponseEntity<?> sendEmailForRentaler(@RequestBody SendEmailRequest sendEmailRequest) {
+        accountService.sendEmailOfCustomer(sendEmailRequest);
+        return ResponseEntity.ok(MessageResponse.builder().message("Liên hệ thành công.").build());
     }
 
 

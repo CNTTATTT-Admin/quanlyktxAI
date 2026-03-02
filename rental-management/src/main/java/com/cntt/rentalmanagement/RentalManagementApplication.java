@@ -2,6 +2,7 @@ package com.cntt.rentalmanagement;
 
 import com.cntt.rentalmanagement.config.AppProperties;
 import com.cntt.rentalmanagement.config.FileStorageProperties;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.modelmapper.ModelMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -9,6 +10,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
+@EnableAsync
 @EnableConfigurationProperties({FileStorageProperties.class, AppProperties.class})
 public class RentalManagementApplication {
 

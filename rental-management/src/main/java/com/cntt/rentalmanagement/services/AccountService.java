@@ -16,11 +16,11 @@ public interface AccountService {
 
     User getAccountById(Long id);
 
-    MessageResponse sendEmailForRentaler(Long id, SendEmailRequest sendEmailRequest) throws MessagingException, IOException;
+    void sendEmailForRentaler(Long id, SendEmailRequest sendEmailRequest);
 
     MessageResponse divideAuthorization(Long id, RoleRequest roleRequest);
 
-    MessageResponse sendEmailForRentaler(SendEmailRequest sendEmailRequest) throws MessagingException, IOException;
+    void sendEmailForRentaler(SendEmailRequest sendEmailRequest);
 
-    MessageResponse sendEmailOfCustomer(SendEmailRequest sendEmailRequest) throws MessagingException, IOException;
+    void sendEmailOfCustomer(SendEmailRequest sendEmailRequest);
 }

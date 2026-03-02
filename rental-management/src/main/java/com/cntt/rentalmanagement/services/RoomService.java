@@ -42,4 +42,6 @@ public interface RoomService {
     Page<RoomResponse> getRoomByUserId(Long userId, Integer pageNo, Integer pageSize);
     List<RoomResponse> getRoomByUser(User user);
     Room updateRoom(Room room, Long id);
+
+    MessageResponse removeResident(Long roomId, Long residentId);
 }

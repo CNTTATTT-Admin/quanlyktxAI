@@ -1,9 +1,23 @@
 package com.cntt.rentalmanagement.services.impl;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-
+import com.cntt.rentalmanagement.domain.enums.LockedStatus;
+import com.cntt.rentalmanagement.domain.enums.RoomStatus;
+import com.cntt.rentalmanagement.domain.models.*;
+import com.cntt.rentalmanagement.domain.models.DTO.CommentDTO;
+import com.cntt.rentalmanagement.domain.payload.request.AssetRequest;
+import com.cntt.rentalmanagement.domain.payload.request.RoomRequest;
+import com.cntt.rentalmanagement.domain.payload.request.SendEmailRequest;
+import com.cntt.rentalmanagement.domain.payload.response.MessageResponse;
+import com.cntt.rentalmanagement.domain.payload.response.RoomResponse;
+import com.cntt.rentalmanagement.domain.payload.response.UserResponse;
+import com.cntt.rentalmanagement.exception.BadRequestException;
+import com.cntt.rentalmanagement.repository.*;
+import com.cntt.rentalmanagement.services.AccountService;
+import com.cntt.rentalmanagement.services.BaseService;
+import com.cntt.rentalmanagement.services.FileStorageService;
+import com.cntt.rentalmanagement.services.RoomService;
+import com.cntt.rentalmanagement.utils.MapperUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -11,37 +25,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.cntt.rentalmanagement.domain.enums.LockedStatus;
-import com.cntt.rentalmanagement.domain.enums.RoomStatus;
-import com.cntt.rentalmanagement.domain.models.Asset;
-import com.cntt.rentalmanagement.domain.models.Category;
-import com.cntt.rentalmanagement.domain.models.Comment;
-import com.cntt.rentalmanagement.domain.models.Location;
-import com.cntt.rentalmanagement.domain.models.Rate;
-import com.cntt.rentalmanagement.domain.models.Room;
-import com.cntt.rentalmanagement.domain.models.RoomMedia;
-import com.cntt.rentalmanagement.domain.models.User;
-import com.cntt.rentalmanagement.domain.models.DTO.CommentDTO;
-import com.cntt.rentalmanagement.domain.models.DTO.MessageDTO;
-import com.cntt.rentalmanagement.domain.payload.request.AssetRequest;
-import com.cntt.rentalmanagement.domain.payload.request.RoomRequest;
-import com.cntt.rentalmanagement.domain.payload.response.MessageResponse;
-import com.cntt.rentalmanagement.domain.payload.response.RoomResponse;
-import com.cntt.rentalmanagement.domain.payload.response.UserResponse;
-import com.cntt.rentalmanagement.exception.BadRequestException;
-import com.cntt.rentalmanagement.repository.AssetRepository;
-import com.cntt.rentalmanagement.repository.CategoryRepository;
-import com.cntt.rentalmanagement.repository.CommentRepository;
-import com.cntt.rentalmanagement.repository.LocationRepository;
-import com.cntt.rentalmanagement.repository.RoomMediaRepository;
-import com.cntt.rentalmanagement.repository.RoomRepository;
-import com.cntt.rentalmanagement.repository.UserRepository;
-import com.cntt.rentalmanagement.services.BaseService;
-import com.cntt.rentalmanagement.services.FileStorageService;
-import com.cntt.rentalmanagement.services.RoomService;
-import com.cntt.rentalmanagement.utils.MapperUtils;
-
-import lombok.RequiredArgsConstructor;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -55,6 +41,7 @@ public class RoomServiceImpl extends BaseService implements RoomService {
     private final AssetRepository assetRepository;
     private final CommentRepository commentRepository;
     private final MapperUtils mapperUtils;
+    private final AccountService accountService;
 
     @Override
     public MessageResponse addNewRoom(RoomRequest roomRequest) {
@@ -154,7 +141,9 @@ public class RoomServiceImpl extends BaseService implements RoomService {
         room.setUpdatedBy(getUsername());
         room.setLocation(location);
         room.setCategory(category);
-        room.setStatus(roomRequest.getStatus());
+        if (Objects.nonNull(roomRequest.getStatus())) {
+            room.setStatus(roomRequest.getStatus());
+        }
         room.setWaterCost(roomRequest.getWaterCost());
         room.setPublicElectricCost(roomRequest.getPublicElectricCost());
         room.setInternetCost(roomRequest.getInternetCost());
@@ -162,14 +151,19 @@ public class RoomServiceImpl extends BaseService implements RoomService {
         room.setFloor(roomRequest.getFloor());
         roomRepository.save(room);
 
-        if (Objects.nonNull(roomRequest.getFiles())) {
-            roomMediaRepository.deleteAllByRoom(room);
-            for (MultipartFile file : roomRequest.getFiles()) {
-                String fileName = fileStorageService.storeFile(file);
-                RoomMedia roomMedia = new RoomMedia();
-                roomMedia.setFiles(fileName);
-                roomMedia.setRoom(room);
-                roomMediaRepository.save(roomMedia);
+        if (Objects.nonNull(roomRequest.getFiles()) && !roomRequest.getFiles().isEmpty()) {
+            boolean hasActualFiles = roomRequest.getFiles().stream().anyMatch(file -> !file.isEmpty());
+            if (hasActualFiles) {
+                roomMediaRepository.deleteAllByRoom(room);
+                for (MultipartFile file : roomRequest.getFiles()) {
+                    if (!file.isEmpty()) {
+                        String fileName = fileStorageService.storeFile(file);
+                        RoomMedia roomMedia = new RoomMedia();
+                        roomMedia.setFiles(fileName);
+                        roomMedia.setRoom(room);
+                        roomMediaRepository.save(roomMedia);
+                    }
+                }
             }
         }
 
@@ -305,5 +299,29 @@ public class RoomServiceImpl extends BaseService implements RoomService {
 	
 	private User getUser() {
         return userRepository.findById(getUserId()).orElseThrow(() -> new BadRequestException("Người dùng không tồn tại"));
+    }
+
+    @Override
+    @Transactional
+    public MessageResponse removeResident(Long roomId, Long residentId) {
+        Room room = roomRepository.findById(roomId).orElseThrow(() -> new BadRequestException("Phòng không tồn tại"));
+        User user = userRepository.findById(residentId).orElseThrow(() -> new BadRequestException("Người dùng không tồn tại"));
+
+        if (user.getAllocatedRoom() == null || !user.getAllocatedRoom().getId().equals(roomId)) {
+            throw new BadRequestException("Người dùng không ở trong phòng này");
+        }
+
+        user.setAllocatedRoom(null);
+        userRepository.save(user);
+
+        // Send email (async)
+        SendEmailRequest emailRequest = new SendEmailRequest();
+        emailRequest.setToEmail(user.getEmail());
+        emailRequest.setTitle("Thông báo trả phòng");
+        emailRequest.setNameOfRentaler(room.getUser().getName());
+        emailRequest.setDescription("Bạn đã được quản lý xác nhận rời khỏi phòng: " + room.getTitle() + ". Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi.");
+        accountService.sendEmailForRentaler(user.getId(), emailRequest);
+
+        return MessageResponse.builder().message("Xóa người dùng ra khỏi phòng thành công").build();
     }
 }

@@ -39,7 +39,7 @@ public class RequestCustomRepositoryImpl implements RequestCustomRepository {
             params.put("userId", userId);
         }
 
-        String strSelectQuery = "SELECT * " + strQuery;
+        String strSelectQuery = "SELECT * " + strQuery + " ORDER BY r.id DESC";
 
         String strCountQuery = "SELECT COUNT(DISTINCT r.id)" + strQuery;
 
@@ -63,7 +63,7 @@ public class RequestCustomRepositoryImpl implements RequestCustomRepository {
             params.put("phone", phone);
         }
 
-        String strSelectQuery = "SELECT * " + strQuery;
+        String strSelectQuery = "SELECT * " + strQuery + " ORDER BY r.id DESC";
 
         String strCountQuery = "SELECT COUNT(DISTINCT r.id)" + strQuery;
 

@@ -1,30 +1,34 @@
-import axios from "axios"
+import axios from "axios";
 import { ACCESS_TOKEN } from "../../constants/Connect";
 
-const BASE_URL = "http://localhost:8080/"
+const BASE_URL = "http://localhost:8080/";
 
 class RoomService {
-
   addNewRoom(formData) {
-    return axios.post(BASE_URL + 'room', formData,
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN)}`
-        }
-      }
-    );
-
+    return axios.post(BASE_URL + "room", formData, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN)}`,
+      },
+    });
   }
 
-  updateRoom(id,formData) {
-    return axios.put(BASE_URL + 'room/'+id, formData,
+  updateRoom(id, formData) {
+    return axios.put(BASE_URL + "room/" + id, formData, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN)}`,
+      },
+    });
+  }
+
+  removeResident(roomId, residentId) {
+    return axios.delete(
+      BASE_URL + "room/" + roomId + "/resident/" + residentId,
       {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN)}`
-        }
-      }
+          Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN)}`,
+        },
+      },
     );
-
   }
 }
 

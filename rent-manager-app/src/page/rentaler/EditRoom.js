@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import RoomService from "../../services/axios/RoomService";
 import { toast } from "react-toastify";
 import { getRoom } from "../../services/fetch/ApiUtils";
+import { API_BASE_URL } from "../../constants/Connect";
 import PlacesWithStandaloneSearchBox from "./map/StandaloneSearchBox";
 
 function EditRoom(props) {
@@ -27,7 +28,10 @@ function EditRoom(props) {
     internetCost: 0,
     maxOccupancy: 0,
     floor: 0,
+    roomMedia: [],
   });
+
+  const [selectedImages, setSelectedImages] = useState([]);
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -66,10 +70,14 @@ function EditRoom(props) {
   // };
 
   const handleFileChange = (event) => {
+    const files = Array.from(event.target.files);
     setRoomData((prevState) => ({
       ...prevState,
-      files: [...prevState.files, ...event.target.files],
+      files: [...prevState.files, ...files],
     }));
+
+    const filePreviews = files.map((file) => URL.createObjectURL(file));
+    setSelectedImages((prevImages) => [...prevImages, ...filePreviews]);
   };
 
   useEffect(() => {
@@ -80,6 +88,8 @@ function EditRoom(props) {
         setRoomData((prevState) => ({
           ...prevState,
           ...room,
+          locationId: room.location ? room.location.id : 0,
+          categoryId: room.category ? room.category.id : 0,
         }));
       })
       .catch((error) => {
@@ -98,6 +108,38 @@ function EditRoom(props) {
       longitude: long,
       address: address,
     }));
+  };
+
+  const handleRemoveResident = (residentId) => {
+    if (
+      window.confirm(
+        "Bạn có chắc chắn muốn xóa người này ra khỏi phòng không? Hệ thống sẽ gửi email thông báo cho họ.",
+      )
+    ) {
+      RoomService.removeResident(id, residentId)
+        .then((response) => {
+          toast.success("Xóa người dùng ra khỏi phòng thành công");
+          // Refresh room data
+          getRoom(id).then((response) => {
+            setRoomData((prevState) => ({
+              ...prevState,
+              ...response,
+              locationId: response.location
+                ? response.location.id
+                : prevState.locationId,
+              categoryId: response.category
+                ? response.category.id
+                : prevState.categoryId,
+            }));
+          });
+        })
+        .catch((error) => {
+          toast.error(
+            (error && error.data && error.data.message) ||
+              "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
+          );
+        });
+    }
   };
 
   const handleSubmit = (event) => {
@@ -319,14 +361,36 @@ function EditRoom(props) {
                       <br />
                       {roomData.roomMedia?.map((media, index) => (
                         <img
-                          src={"http://localhost:8080/document/" + media.files}
+                          key={index}
+                          src={API_BASE_URL + "/document/" + media.files}
                           style={{
                             width: "10%",
                             marginLeft: "10px",
-                            border: "1px",
+                            border: "1px solid #ddd",
+                            borderRadius: "4px",
                           }}
                         />
                       ))}
+                      {selectedImages.length > 0 && (
+                        <div className="mt-2">
+                          <label className="form-label">
+                            Hình ảnh mới chọn:
+                          </label>
+                          <br />
+                          {selectedImages.map((image, index) => (
+                            <img
+                              key={index}
+                              src={image}
+                              style={{
+                                width: "10%",
+                                marginLeft: "10px",
+                                border: "1px solid #007bff",
+                                borderRadius: "4px",
+                              }}
+                            />
+                          ))}
+                        </div>
+                      )}
                       <input
                         className="form-control"
                         type="file"
@@ -404,6 +468,49 @@ function EditRoom(props) {
                     Submit
                   </button>
                 </form>
+
+                <br />
+                <hr />
+                <div className="card-header">
+                  <h5 className="card-title">Danh sách người đang ở</h5>
+                </div>
+                <div className="table-responsive">
+                  <table className="table table-hover my-0">
+                    <thead>
+                      <tr>
+                        <th>Tên</th>
+                        <th>Email</th>
+                        <th>Số điện thoại</th>
+                        <th>Hành động</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {roomData.residents?.map((resident, index) => (
+                        <tr key={index}>
+                          <td>{resident.name}</td>
+                          <td>{resident.email}</td>
+                          <td>{resident.phone}</td>
+                          <td>
+                            <button
+                              className="btn btn-danger btn-sm"
+                              onClick={() => handleRemoveResident(resident.id)}
+                            >
+                              Xóa khỏi phòng
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      {(!roomData.residents ||
+                        roomData.residents.length === 0) && (
+                        <tr>
+                          <td colSpan="4" className="text-center">
+                            Chưa có người ở
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>

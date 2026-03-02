@@ -10,8 +10,10 @@ import com.cntt.rentalmanagement.exception.BadRequestException;
 import com.cntt.rentalmanagement.repository.RequestRepository;
 import com.cntt.rentalmanagement.repository.RoomRepository;
 import com.cntt.rentalmanagement.repository.UserRepository;
+import com.cntt.rentalmanagement.services.AccountService;
 import com.cntt.rentalmanagement.services.BaseService;
 import com.cntt.rentalmanagement.services.RequestService;
+import com.cntt.rentalmanagement.domain.payload.request.SendEmailRequest;
 import com.cntt.rentalmanagement.utils.MapperUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,6 +29,7 @@ public class RequestServiceImpl extends BaseService implements RequestService {
     private final RoomRepository roomRepository;
     private final UserRepository userRepository;
     private final MapperUtils mapperUtils;
+    private final AccountService accountService;
     @Override
     public Page<RequireResponse> getRequestOfRentHome(String keyword, Integer pageNo, Integer pageSize) {
         int page = pageNo == 0 ? pageNo : pageNo - 1;
@@ -82,6 +85,15 @@ public class RequestServiceImpl extends BaseService implements RequestService {
         userRepository.save(user);
         request.setIsAnswer(true);
         requestRepository.save(request);
+
+        // Send notification email
+        SendEmailRequest emailRequest = new SendEmailRequest();
+        emailRequest.setToEmail(user.getEmail());
+        emailRequest.setTitle("Thông báo duyệt vào phòng");
+        emailRequest.setNameOfRentaler(room.getUser().getName());
+        emailRequest.setDescription("Chúc mừng! Bạn đã được quản lý duyệt vào phòng: " + room.getTitle() + ". Vui lòng liên hệ quản lý để hoàn tất thủ tục.");
+        accountService.sendEmailForRentaler(user.getId(), emailRequest);
+
         return MessageResponse.builder().message("Duyệt người vào phòng thành công.").build();
     }
 }

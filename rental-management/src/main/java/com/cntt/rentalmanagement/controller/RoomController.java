@@ -99,6 +99,11 @@ public class RoomController {
     public ResponseEntity<?> checkoutRoom(@PathVariable Long id) {
         return ResponseEntity.ok(roomService.checkoutRoom(id));
     }
+
+    @DeleteMapping("/{roomId}/resident/{residentId}")
+    public ResponseEntity<?> removeResident(@PathVariable Long roomId, @PathVariable Long residentId) {
+        return ResponseEntity.ok(roomService.removeResident(roomId, residentId));
+    }
     
     @GetMapping("/{roomId}/comments")
 	public List<CommentDTO> getAllComment(@PathVariable Long roomId) {
@@ -136,7 +141,12 @@ public class RoomController {
             assets.add(new AssetRequest(assetName, assetNumber));
         }
 
-        List<MultipartFile> files = request.getFiles("files");
+        List<MultipartFile> files = new ArrayList<>();
+        for (MultipartFile file : request.getFiles("files")) {
+            if (!file.isEmpty()) {
+                files.add(file);
+            }
+        }
         return RoomRequest.builder()
                 .title(title)
                 .description(description)

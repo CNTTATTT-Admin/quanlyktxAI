@@ -259,7 +259,7 @@ function RequierManagement(props) {
                                     onClick={() => handleChangeStatus(item.id)}
                                     title="Đánh dấu đã xử lý (không duyệt)"
                                   >
-                                    Đánh dấu đã xử lý
+                                    Đánh dấu đã xử lý (không duyệt)
                                   </button>
                                 </>
                               )}
