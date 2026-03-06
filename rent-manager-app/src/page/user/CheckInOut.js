@@ -141,57 +141,65 @@ const CheckInOut = ({ currentUser }) => {
 
       // Định nghĩa hàm loop
       const detectLoop = async () => {
-        // Xóa điều kiện if (!isVerifying) return tạm thời để debug
+        if (!videoRef.current) return;
 
-        const detections = await faceapi
-          .detectSingleFace(videoRef.current)
-          .withFaceLandmarks();
+        try {
+          const detections = await faceapi
+            .detectSingleFace(videoRef.current)
+            .withFaceLandmarks();
 
-        if (detections) {
-          const avgEAR = calculateEAR(detections.landmarks);
-          console.log("EAR đo được:", avgEAR); // LOG NÀY PHẢI HIỆN RA
-          setCurrentEAR(avgEAR.toFixed(3));
+          if (!videoRef.current) return;
 
-          // Logic chuyển state (giữ nguyên của bạn)
-          if (blinkState.current === "WAITING") {
-            if (avgEAR < EAR_THRESHOLD_DOWN) {
-              blinkFramesCount.current++;
-              if (blinkFramesCount.current >= CONFIDENCE_FRAMES) {
-                blinkState.current = "DOWN";
-                setLivenessState("DOWN");
-                console.log("Chuyển sang trạng thái: ĐÃ NHẮM MẮT");
+          if (detections) {
+            const avgEAR = calculateEAR(detections.landmarks);
+            console.log("EAR đo được:", avgEAR); // LOG NÀY PHẢI HIỆN RA
+            setCurrentEAR(avgEAR.toFixed(3));
+
+            // Logic chuyển state (giữ nguyên của bạn)
+            if (blinkState.current === "WAITING") {
+              if (avgEAR < EAR_THRESHOLD_DOWN) {
+                blinkFramesCount.current++;
+                if (blinkFramesCount.current >= CONFIDENCE_FRAMES) {
+                  blinkState.current = "DOWN";
+                  setLivenessState("DOWN");
+                  console.log("Chuyển sang trạng thái: ĐÃ NHẮM MẮT");
+                }
+              }
+            } else if (blinkState.current === "DOWN") {
+              if (avgEAR > EAR_THRESHOLD_UP) {
+                blinkState.current = "SUCCESS";
+                setLivenessState("SUCCESS");
+                setLivenessMsg("Chớp mắt thành công!");
+                console.log("--- CHỚP MẮT THÀNH CÔNG ---");
+
+                // Đợi 300ms để người dùng mở mắt hẳn trước khi lấy descriptor
+                setTimeout(async () => {
+                  if (!videoRef.current) return;
+                  const finalDetection = await faceapi
+                    .detectSingleFace(videoRef.current)
+                    .withFaceLandmarks()
+                    .withFaceDescriptor();
+
+                  if (finalDetection) {
+                    performBackendCheck(type, finalDetection.descriptor);
+                  } else {
+                    toast.error(
+                      "Không thể lấy dữ liệu khuôn mặt sau khi chớp mắt.",
+                    );
+                    resetLiveness();
+                  }
+                }, 300);
+                return;
               }
             }
-          } else if (blinkState.current === "DOWN") {
-            if (avgEAR > EAR_THRESHOLD_UP) {
-              blinkState.current = "SUCCESS";
-              setLivenessState("SUCCESS");
-              setLivenessMsg("Chớp mắt thành công!");
-              console.log("--- CHỚP MẮT THÀNH CÔNG ---");
-
-              // Đợi 300ms để người dùng mở mắt hẳn trước khi lấy descriptor
-              setTimeout(async () => {
-                const finalDetection = await faceapi
-                  .detectSingleFace(videoRef.current)
-                  .withFaceLandmarks()
-                  .withFaceDescriptor();
-
-                if (finalDetection) {
-                  performBackendCheck(type, finalDetection.descriptor);
-                } else {
-                  toast.error(
-                    "Không thể lấy dữ liệu khuôn mặt sau khi chớp mắt.",
-                  );
-                  resetLiveness();
-                }
-              }, 300);
-              return;
-            }
+            requestAnimationFrame(detectLoop);
+          } else {
+            console.log("Đang tìm mặt...");
+            requestAnimationFrame(detectLoop);
           }
-          requestAnimationFrame(detectLoop);
-        } else {
-          console.log("Đang tìm mặt...");
-          requestAnimationFrame(detectLoop);
+        } catch (error) {
+          // Ngăn chặn crash khi unmount
+          console.log("Face detection stopped.");
         }
       };
 

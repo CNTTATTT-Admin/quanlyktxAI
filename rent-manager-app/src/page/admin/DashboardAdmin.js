@@ -166,7 +166,7 @@ const DashboardAdmin = (props) => {
             <div class="row mb-2 mb-xl-3">
               <div class="col-auto d-none d-sm-block">
                 <h3>
-                  <strong>✨</strong> Thông kê
+                  <strong>✨</strong> Thống kê
                 </h3>
               </div>
             </div>
@@ -200,12 +200,6 @@ const DashboardAdmin = (props) => {
                       </div>
                     </div>
                     <h1 class="mt-1 mb-3">{number.numberOfAccount}</h1>
-                    <div class="mb-0">
-                      <span class="badge badge-success-light">
-                        {" "}
-                        <i class="mdi mdi-arrow-bottom-right"></i> 3.65%{" "}
-                      </span>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -239,12 +233,6 @@ const DashboardAdmin = (props) => {
                       </div>
                     </div>
                     <h1 class="mt-1 mb-3">{number.numberOfApprove}</h1>
-                    <div class="mb-0">
-                      <span class="badge badge-danger-light">
-                        {" "}
-                        <i class="mdi mdi-arrow-bottom-right"></i> -5.25%{" "}
-                      </span>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -276,12 +264,6 @@ const DashboardAdmin = (props) => {
                       </div>
                     </div>
                     <h1 class="mt-1 mb-3">{number.numberOfApproving}</h1>
-                    <div class="mb-0">
-                      <span class="badge badge-success-light">
-                        {" "}
-                        <i class="mdi mdi-arrow-bottom-right"></i> 4.65%{" "}
-                      </span>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -315,12 +297,6 @@ const DashboardAdmin = (props) => {
                       </div>
                     </div>
                     <h1 class="mt-1 mb-3">{number.numberOfAccountLocked}</h1>
-                    <div class="mb-0">
-                      <span class="badge badge-success-light">
-                        {" "}
-                        <i class="mdi mdi-arrow-bottom-right"></i> 2.35%{" "}
-                      </span>
-                    </div>
                   </div>
                 </div>
               </div>

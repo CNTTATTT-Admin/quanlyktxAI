@@ -32,6 +32,11 @@ public class FollowServiceImpl extends BaseService implements FollowService {
     public MessageResponse addFollow(FollowRequest followRequest) {
         User customer = userRepository.findById(getUserId()).orElseThrow(() -> new BadRequestException("Tài khoảng không tồn tại"));
         User rentaler = userRepository.findById(followRequest.getRentalerId()).orElseThrow(() -> new BadRequestException("Tài khoảng không tồn tại"));
+        
+        if (customer.getId().equals(rentaler.getId())) {
+            throw new BadRequestException("Bạn không thể theo dõi chính mình.");
+        }
+
         Optional<Follow> followOptional = followRepository.findByCustomerAndRentaler(customer, rentaler);
         if (followOptional.isPresent()) {
             throw new BadRequestException("Người cho thuê đã được theo dõi.");
@@ -48,5 +53,17 @@ public class FollowServiceImpl extends BaseService implements FollowService {
         int page = pageNo == 0 ? pageNo : pageNo - 1;
         Pageable pageable = PageRequest.of(page, pageSize);
         return mapperUtils.convertToResponsePage(followRepository.getPageFollow(getUserId(),pageable),FollowResponse.class, pageable);
+    }
+
+    @Override
+    public Boolean isFollowing(Long rentalerId) {
+        try {
+            User customer = userRepository.findById(getUserId()).orElseThrow(() -> new BadRequestException("Tài khoảng không tồn tại"));
+            User rentaler = userRepository.findById(rentalerId).orElseThrow(() -> new BadRequestException("Tài khoảng không tồn tại"));
+            Optional<Follow> followOptional = followRepository.findByCustomerAndRentaler(customer, rentaler);
+            return followOptional.isPresent();
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

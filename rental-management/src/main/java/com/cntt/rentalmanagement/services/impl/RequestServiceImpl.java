@@ -61,10 +61,26 @@ public class RequestServiceImpl extends BaseService implements RequestService {
     public MessageResponse addRequest(RequestRequest request) {
         Room room = roomRepository.findById(request.getRoomId()).orElseThrow(() -> new BadRequestException("Thông tin phòng không tồn tại."));
         User user = userRepository.findById(getUserId()).orElseThrow(() -> new BadRequestException("Tài khoản không tồn tại."));
+
+        if (requestRepository.findByRoomAndUserAndIsAnswer(room, user, false).isPresent()) {
+            throw new BadRequestException("Bạn đã gửi yêu cầu cho phòng này rồi, vui lòng đợi phản hồi.");
+        }
+
         Request result = new Request(request.getNameOfRent(),request.getPhone(),request.getDescription(), room, user);
         result.setIsAnswer(false);
         requestRepository.save(result);
         return MessageResponse.builder().message("Gửi yêu cầu thành công.").build();
+    }
+
+    @Override
+    public Boolean isRequested(Long roomId) {
+        try {
+            Room room = roomRepository.findById(roomId).orElseThrow(() -> new BadRequestException("Thông tin phòng không tồn tại."));
+            User user = userRepository.findById(getUserId()).orElseThrow(() -> new BadRequestException("Tài khoản không tồn tại."));
+            return requestRepository.findByRoomAndUserAndIsAnswer(room, user, false).isPresent();
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     @Override

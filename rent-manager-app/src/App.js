@@ -1,4 +1,9 @@
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+} from "react-router-dom";
 import Main from "./page/user/Main";
 import DashboardAdmin from "./page/admin/DashboardAdmin";
 import RentalHome from "./page/user/RentalHome";
@@ -11,6 +16,7 @@ import {
   getCurrentAdmin,
   getCurrentRentaler,
   getCurrentUser,
+  getCurrentUserUnified,
 } from "./services/fetch/ApiUtils";
 import { ACCESS_TOKEN } from "./constants/Connect";
 import LoadingIndicator from "./common/LoadingIndicator";
@@ -66,6 +72,16 @@ import CheckInOutHistory from "./page/user/CheckInOutHistory";
 import LeaveRequestForm from "./page/user/LeaveRequestForm";
 import LeaveRequestManagement from "./page/rentaler/LeaveRequestManagement";
 
+const PrivateRoute = ({ children, authenticated, role, allowedRoles }) => {
+  if (!authenticated) {
+    return <Navigate to="/login" />;
+  }
+  if (allowedRoles && !allowedRoles.includes(role)) {
+    return <Navigate to="/" />;
+  }
+  return children;
+};
+
 function App() {
   const [authenticated, setAuthenticated] = useState(false);
   const [username, setUsername] = useState("");
@@ -73,46 +89,22 @@ function App() {
   const [role, setRole] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const loadCurrentlyLoggedInUser = () => {
-    getCurrentUser()
+  const loadCurrentUser = () => {
+    getCurrentUserUnified()
       .then((response) => {
         setCurrentUser(response);
         setUsername(response.name);
-        setRole(response.roles[0].name);
+        // Priority: ROLE_ADMIN > ROLE_RENTALER > ROLE_USER
+        const roles = response.roles.map((r) => r.name);
+        if (roles.includes("ROLE_ADMIN")) {
+          setRole("ROLE_ADMIN");
+        } else if (roles.includes("ROLE_RENTALER")) {
+          setRole("ROLE_RENTALER");
+        } else {
+          setRole(roles[0] || "");
+        }
         setAuthenticated(true);
         setLoading(false);
-        console.log(response);
-        console.log({ authenticated, username, currentUser, role, loading });
-      })
-      .catch((error) => {
-        setLoading(false);
-      });
-  };
-
-  const loadCurrentlyLoggedInRetanler = () => {
-    getCurrentRentaler()
-      .then((response) => {
-        setCurrentUser(response);
-        setUsername(response.name);
-        setRole(response.roles[0].name);
-        setAuthenticated(true);
-        setLoading(false);
-        console.log({ authenticated, username, currentUser, role, loading });
-      })
-      .catch((error) => {
-        setLoading(false);
-      });
-  };
-
-  const loadCurrentlyLoggedInAdmin = () => {
-    getCurrentAdmin()
-      .then((response) => {
-        setCurrentUser(response);
-        setUsername(response.name);
-        setRole(response.roles[0].name);
-        setAuthenticated(true);
-        setLoading(false);
-        console.log({ authenticated, username, currentUser, role, loading });
       })
       .catch((error) => {
         setLoading(false);
@@ -123,6 +115,7 @@ function App() {
     localStorage.removeItem(ACCESS_TOKEN);
     setAuthenticated(false);
     setCurrentUser(null);
+    setRole("");
     toast.success("Bạn đăng xuất thành công!!!");
   };
 
@@ -130,12 +123,15 @@ function App() {
     localStorage.removeItem(ACCESS_TOKEN);
     setAuthenticated(false);
     setCurrentUser(null);
+    setRole("");
   };
 
   useEffect(() => {
-    loadCurrentlyLoggedInUser();
-    loadCurrentlyLoggedInRetanler();
-    loadCurrentlyLoggedInAdmin();
+    if (localStorage.getItem(ACCESS_TOKEN)) {
+      loadCurrentUser();
+    } else {
+      setLoading(false);
+    }
   }, []);
 
   if (loading) {
@@ -329,7 +325,7 @@ function App() {
             element={
               <Profile
                 authenticated={authenticated}
-                loadCurrentUser={loadCurrentlyLoggedInUser}
+                loadCurrentUser={loadCurrentUser}
                 currentUser={currentUser}
                 onLogout={handleLogout}
               />
@@ -394,60 +390,90 @@ function App() {
             exact
             path="/admin"
             element={
-              <DashboardAdmin
+              <PrivateRoute
                 authenticated={authenticated}
-                currentUser={currentUser}
                 role={role}
-                onLogout={handleLogout}
-              />
+                allowedRoles={["ROLE_ADMIN"]}
+              >
+                <DashboardAdmin
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
             }
           />
           <Route
             exact
             path="/admin/room-management"
             element={
-              <RoomManagementAdmin
+              <PrivateRoute
                 authenticated={authenticated}
-                currentUser={currentUser}
                 role={role}
-                onLogout={handleLogout}
-              />
+                allowedRoles={["ROLE_ADMIN"]}
+              >
+                <RoomManagementAdmin
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
             }
           />
           <Route
             exact
             path="/admin/authorization/:userId"
             element={
-              <Authorization
+              <PrivateRoute
                 authenticated={authenticated}
-                currentUser={currentUser}
                 role={role}
-                onLogout={handleLogout}
-              />
+                allowedRoles={["ROLE_ADMIN"]}
+              >
+                <Authorization
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
             }
           />
           <Route
             exact
             path="/admin/account-management"
             element={
-              <AccountManagement
+              <PrivateRoute
                 authenticated={authenticated}
-                currentUser={currentUser}
                 role={role}
-                onLogout={handleLogout}
-              />
+                allowedRoles={["ROLE_ADMIN"]}
+              >
+                <AccountManagement
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
             }
           />
           <Route
             exact
             path="/admin/send-email/:id"
             element={
-              <SendEmail
+              <PrivateRoute
                 authenticated={authenticated}
-                currentUser={currentUser}
                 role={role}
-                onLogout={handleLogout}
-              />
+                allowedRoles={["ROLE_ADMIN"]}
+              >
+                <SendEmail
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
             }
           />
           {/* RENTALER */}
@@ -455,242 +481,362 @@ function App() {
             exact
             path="/rentaler/change-password"
             element={
-              <ChangePassword
+              <PrivateRoute
                 authenticated={authenticated}
-                exit={exitLogoutChangePassword}
-                currentUser={currentUser}
                 role={role}
-                onLogout={handleLogout}
-              />
+                allowedRoles={["ROLE_RENTALER", "ROLE_ADMIN"]}
+              >
+                <ChangePassword
+                  authenticated={authenticated}
+                  exit={exitLogoutChangePassword}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
             }
           />
           <Route
             exact
             path="/rentaler/profile"
             element={
-              <ProfileRentaler
+              <PrivateRoute
                 authenticated={authenticated}
-                currentUser={currentUser}
                 role={role}
-                loadCurrentUser={loadCurrentlyLoggedInRetanler}
-                onLogout={handleLogout}
-              />
+                allowedRoles={["ROLE_RENTALER", "ROLE_ADMIN"]}
+              >
+                <ProfileRentaler
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  loadCurrentUser={loadCurrentUser}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
             }
           />
           <Route
             exact
             path="/rentaler"
             element={
-              <DashboardRentaler
+              <PrivateRoute
                 authenticated={authenticated}
-                currentUser={currentUser}
                 role={role}
-                onLogout={handleLogout}
-              />
+                allowedRoles={["ROLE_RENTALER", "ROLE_ADMIN"]}
+              >
+                <DashboardRentaler
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
             }
           />
           <Route
             exact
             path="/rentaler/chat"
             element={
-              <Chat
+              <PrivateRoute
                 authenticated={authenticated}
-                currentUser={currentUser}
                 role={role}
-                onLogout={handleLogout}
-              />
+                allowedRoles={["ROLE_RENTALER", "ROLE_ADMIN"]}
+              >
+                <Chat
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
             }
           />
           <Route
             exact
             path="/rentaler/add-room"
             element={
-              <AddRoom
+              <PrivateRoute
                 authenticated={authenticated}
-                currentUser={currentUser}
                 role={role}
-                onLogout={handleLogout}
-              />
+                allowedRoles={["ROLE_RENTALER", "ROLE_ADMIN"]}
+              >
+                <AddRoom
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
             }
           />
           <Route
             exact
             path="/rentaler/edit-room/:id"
             element={
-              <EditRoom
+              <PrivateRoute
                 authenticated={authenticated}
-                currentUser={currentUser}
                 role={role}
-                onLogout={handleLogout}
-              />
+                allowedRoles={["ROLE_RENTALER", "ROLE_ADMIN"]}
+              >
+                <EditRoom
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
             }
           />
           <Route
             exact
             path="/rentaler/add-contract"
             element={
-              <AddContract
+              <PrivateRoute
                 authenticated={authenticated}
-                currentUser={currentUser}
                 role={role}
-                onLogout={handleLogout}
-              />
+                allowedRoles={["ROLE_RENTALER", "ROLE_ADMIN"]}
+              >
+                <AddContract
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
             }
           />
           <Route
             exact
             path="rentaler/electric_water/add"
             element={
-              <AddElectricAndWater
+              <PrivateRoute
                 authenticated={authenticated}
-                currentUser={currentUser}
                 role={role}
-                onLogout={handleLogout}
-              />
+                allowedRoles={["ROLE_RENTALER", "ROLE_ADMIN"]}
+              >
+                <AddElectricAndWater
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
             }
           />
           <Route
             exact
             path="/rentaler/edit-contract/:id"
             element={
-              <EditContract
+              <PrivateRoute
                 authenticated={authenticated}
-                currentUser={currentUser}
                 role={role}
-                onLogout={handleLogout}
-              />
+                allowedRoles={["ROLE_RENTALER", "ROLE_ADMIN"]}
+              >
+                <EditContract
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
             }
           />
           <Route
             exact
             path="/rentaler/add-maintenance"
             element={
-              <AddMaintence
+              <PrivateRoute
                 authenticated={authenticated}
-                currentUser={currentUser}
                 role={role}
-                onLogout={handleLogout}
-              />
+                allowedRoles={["ROLE_RENTALER", "ROLE_ADMIN"]}
+              >
+                <AddMaintence
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
             }
           />
           <Route
             exact
             path="/rentaler/edit-maintenance/:id"
             element={
-              <EditMaintenance
+              <PrivateRoute
                 authenticated={authenticated}
-                currentUser={currentUser}
                 role={role}
-                onLogout={handleLogout}
-              />
+                allowedRoles={["ROLE_RENTALER", "ROLE_ADMIN"]}
+              >
+                <EditMaintenance
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
             }
           />
           <Route
             exact
             path="/rentaler/contract-management"
             element={
-              <ContractManagement
+              <PrivateRoute
                 authenticated={authenticated}
-                currentUser={currentUser}
                 role={role}
-                onLogout={handleLogout}
-              />
+                allowedRoles={["ROLE_RENTALER", "ROLE_ADMIN"]}
+              >
+                <ContractManagement
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
             }
           />
           <Route
             exact
             path="/rentaler/room-management"
             element={
-              <RoomManagement
+              <PrivateRoute
                 authenticated={authenticated}
-                currentUser={currentUser}
                 role={role}
-                onLogout={handleLogout}
-              />
+                allowedRoles={["ROLE_RENTALER", "ROLE_ADMIN"]}
+              >
+                <RoomManagement
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
             }
           />
           <Route
             exact
             path="/rentaler/maintenance-management"
             element={
-              <MaintenceManagement
+              <PrivateRoute
                 authenticated={authenticated}
-                currentUser={currentUser}
                 role={role}
-                onLogout={handleLogout}
-              />
+                allowedRoles={["ROLE_RENTALER", "ROLE_ADMIN"]}
+              >
+                <MaintenceManagement
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
             }
           />
           <Route
             exact
             path="/rentaler/request-management"
             element={
-              <RequierManagement
+              <PrivateRoute
                 authenticated={authenticated}
-                currentUser={currentUser}
                 role={role}
-                onLogout={handleLogout}
-              />
+                allowedRoles={["ROLE_RENTALER", "ROLE_ADMIN"]}
+              >
+                <RequierManagement
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
             }
           />
           <Route
             exact
             path="/rentaler/export-bill/:id"
             element={
-              <ExportBillRequier
+              <PrivateRoute
                 authenticated={authenticated}
-                currentUser={currentUser}
                 role={role}
-                onLogout={handleLogout}
-              />
+                allowedRoles={["ROLE_RENTALER", "ROLE_ADMIN"]}
+              >
+                <ExportBillRequier
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
             }
           />
           <Route
             exact
             path="/rentaler/export-contract/:id"
             element={
-              <ExportCheckoutRoom
+              <PrivateRoute
                 authenticated={authenticated}
-                currentUser={currentUser}
                 role={role}
-                onLogout={handleLogout}
-              />
+                allowedRoles={["ROLE_RENTALER", "ROLE_ADMIN"]}
+              >
+                <ExportCheckoutRoom
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
             }
           />
           <Route
             exact
             path="/rentaler/electric_water-management"
             element={
-              <ElectricAndWaterManagement
+              <PrivateRoute
                 authenticated={authenticated}
-                currentUser={currentUser}
                 role={role}
-                onLogout={handleLogout}
-              />
+                allowedRoles={["ROLE_RENTALER", "ROLE_ADMIN"]}
+              >
+                <ElectricAndWaterManagement
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
             }
           />
           <Route
             exact
             path="/rentaler/leave-management"
             element={
-              <LeaveRequestManagement
+              <PrivateRoute
                 authenticated={authenticated}
-                currentUser={currentUser}
                 role={role}
-                onLogout={handleLogout}
-              />
+                allowedRoles={["ROLE_RENTALER", "ROLE_ADMIN"]}
+              >
+                <LeaveRequestManagement
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
             }
           />
           <Route
             exact
             path="/rentaler/electric_water/edit/:id"
             element={
-              <EditElectricAndWater
+              <PrivateRoute
                 authenticated={authenticated}
-                currentUser={currentUser}
                 role={role}
-                onLogout={handleLogout}
-              />
+                allowedRoles={["ROLE_RENTALER", "ROLE_ADMIN"]}
+              >
+                <EditElectricAndWater
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
             }
           />
           <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />

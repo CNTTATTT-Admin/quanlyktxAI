@@ -47,4 +47,9 @@ public class RequestController {
     public ResponseEntity<?> approveRequest(@PathVariable Long id) {
         return ResponseEntity.ok(requestService.approveRequest(id));
     }
+
+    @GetMapping("/check/{roomId}")
+    public ResponseEntity<?> checkRequest(@PathVariable Long roomId) {
+        return ResponseEntity.ok(requestService.isRequested(roomId));
+    }
 }

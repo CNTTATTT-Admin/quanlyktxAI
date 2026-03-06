@@ -18,6 +18,17 @@ export const request = (options) => {
   return fetch(options.url, options).then((response) =>
     response.json().then((json) => {
       if (!response.ok) {
+        if (json.error === "FACE_REQUIRED") {
+          // Toast is now handled globally in index.js via monkey-patch.
+          // We still return a specific error that components can recognize.
+          const message =
+            json.message ||
+            "Vui lòng hoàn tất xác thực khuôn mặt để sử dụng chức năng này.";
+          const error = new Error(message);
+          error.json = json;
+          error.isHandled = true; // Signal to components that this error is common/handled
+          return Promise.reject(error);
+        }
         return Promise.reject(json);
       }
       return json;
@@ -90,6 +101,17 @@ export function getCurrentAdmin() {
 
   return request({
     url: API_BASE_URL + "/admin/me",
+    method: "GET",
+  });
+}
+
+export function getCurrentUserUnified() {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url: API_BASE_URL + "/api/user/me",
     method: "GET",
   });
 }
@@ -201,14 +223,16 @@ export function getAllRoomOfCustomer(
   });
 }
 
-export function getAllAccountRentalerForCustomer(pageNo, pageSize) {
+export function getAllAccountRentalerForCustomer(pageNo, pageSize, keyword) {
   return request({
     url:
       API_BASE_URL +
       "/account/customer?pageNo=" +
       pageNo +
       "&pageSize=" +
-      pageSize,
+      pageSize +
+      "&keyword=" +
+      (keyword || ""),
     method: "GET",
   });
 }
@@ -355,6 +379,28 @@ export function lockedAccount(id) {
   return request({
     url: API_BASE_URL + "/auth/" + id + "/locked",
     method: "POST",
+  });
+}
+
+export function unlockAccount(id) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url: API_BASE_URL + "/auth/unlock/" + id,
+    method: "POST",
+  });
+}
+
+export function checkFollow(rentalerId) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url: API_BASE_URL + "/follow/check/" + rentalerId,
+    method: "GET",
   });
 }
 
@@ -642,6 +688,17 @@ export function getRequestById(id) {
 
   return request({
     url: API_BASE_URL + "/request/" + id,
+    method: "GET",
+  });
+}
+
+export function checkRequestStatus(roomId) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url: API_BASE_URL + "/request/check/" + roomId,
     method: "GET",
   });
 }

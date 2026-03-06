@@ -11,11 +11,13 @@ import { Button, Comment, Form } from "semantic-ui-react";
 import "semantic-ui-css/semantic.min.css";
 import Map from "../rentaler/map/MyMapComponent";
 import {
+  checkRequestStatus,
   saveBlog,
   sendEmailForContact,
   sendRequestForRentaler,
 } from "../../services/fetch/ApiUtils";
 import { toast } from "react-toastify";
+import { API_BASE_URL } from "../../constants/Connect";
 
 class RentailHomeDetail extends Component {
   constructor(props) {
@@ -39,7 +41,21 @@ class RentailHomeDetail extends Component {
   componentDidMount() {
     this.fetchRooms(); // Call the fetchRooms function when component mounts
     this.fetchComments();
+    this.fetchRequestStatus();
   }
+
+  fetchRequestStatus = () => {
+    const id = window.location.pathname.split("/").pop();
+    if (this.props.authenticated) {
+      checkRequestStatus(id)
+        .then((response) => {
+          this.setState({ requestSent: response });
+        })
+        .catch((error) => {
+          console.error("Error checking request status:", error);
+        });
+    }
+  };
 
   handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -75,7 +91,7 @@ class RentailHomeDetail extends Component {
   fetchRooms = async () => {
     try {
       const id = window.location.pathname.split("/").pop();
-      const response = await axios.get(`http://localhost:8080/room/${id}`);
+      const response = await axios.get(`${API_BASE_URL}/room/${id}`);
       const data = response.data; // Assuming API returns rooms data
 
       this.setState({
@@ -93,9 +109,7 @@ class RentailHomeDetail extends Component {
   fetchComments = async () => {
     try {
       const id = window.location.pathname.split("/").pop();
-      const response = await axios.get(
-        `http://localhost:8080/room/${id}/comments`,
-      );
+      const response = await axios.get(`${API_BASE_URL}/room/${id}/comments`);
       const comments = response.data; // Assuming API returns comments data
 
       this.setState({
@@ -180,7 +194,7 @@ class RentailHomeDetail extends Component {
       this.setState({ submittingComment: true });
       // Make the API request to submit the comment
       const response = await axios.post(
-        `http://localhost:8080/room/${roomId}/comments`,
+        `${API_BASE_URL}/room/${roomId}/comments`,
         commentData,
         {
           headers: {
@@ -313,10 +327,7 @@ class RentailHomeDetail extends Component {
                           rooms.roomMedia?.map((media) => (
                             <SwiperSlide className="carousel-item-b swiper-slide">
                               <img
-                                src={
-                                  "http://localhost:8080/document/" +
-                                  media.files
-                                }
+                                src={API_BASE_URL + "/document/" + media.files}
                                 alt=""
                                 style={{ width: "100%", height: "100%" }}
                               />
@@ -464,7 +475,7 @@ class RentailHomeDetail extends Component {
                     </div>
                   </div>
                 </div>
-                <div class="col-md-10 offset-md-1">
+                {/* <div class="col-md-10 offset-md-1">
                   <ul
                     class="nav nav-pills-a nav-pills mb-3 section-t3"
                     id="pills-tab"
@@ -551,7 +562,7 @@ class RentailHomeDetail extends Component {
                       />
                     </div>
                   </div>
-                </div>
+                </div> */}
                 <div class="col-md-12">
                   <div class="row section-t3">
                     <div class="col-sm-12">
@@ -583,7 +594,7 @@ class RentailHomeDetail extends Component {
                           >
                             <img
                               src={
-                                resident.imageUrl || "assets/img/agent-1.jpg"
+                                resident?.imageUrl || "/assets/img/agent-1.jpg"
                               }
                               alt={resident.name}
                               style={{

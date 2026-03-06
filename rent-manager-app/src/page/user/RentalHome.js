@@ -6,6 +6,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import Pagination from "./Pagnation";
 import { getAllRoomOfCustomer } from "../../services/fetch/ApiUtils";
+import { API_BASE_URL } from "../../constants/Connect";
 
 const RentalHome = (props) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -63,8 +64,8 @@ const RentalHome = (props) => {
             <div className="row">
               <div className="col-md-12 col-lg-8">
                 <div className="title-single-box">
-                  <h1 className="title-single">PHÒNG TRỌ</h1>
-                  <span className="color-text-a">Cho thuê phòng trọ</span>
+                  <h1 className="title-single">PHÒNG KÝ TÚC XÁ</h1>
+                  <span className="color-text-a">Cho thuê phòng ký túc xá</span>
                 </div>
               </div>
               <div className="col-md-12 col-lg-4">
@@ -134,7 +135,8 @@ const RentalHome = (props) => {
                       {room.roomMedia[0] ? (
                         <img
                           src={
-                            "http://localhost:8080/document/" +
+                            API_BASE_URL +
+                            "/document/" +
                             room.roomMedia[0].files
                           }
                           alt=""

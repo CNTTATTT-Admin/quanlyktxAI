@@ -16,6 +16,8 @@ import com.cntt.rentalmanagement.services.FileStorageService;
 import org.apache.activemq.kaha.impl.index.BadMagicException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.apache.activemq.kaha.impl.index.BadMagicException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -66,6 +68,7 @@ public class AuthServiceImpl extends BaseService implements AuthService {
 
     @Override
     public URI registerAccount(SignUpRequest signUpRequest) throws MessagingException, IOException {
+        System.out.println("DEBUG: Registering account for email: " + signUpRequest.getEmail());
         if(userRepository.existsByEmail(signUpRequest.getEmail())) {
             throw new BadRequestException("Email đã được sử dụng!!");
         }
@@ -78,8 +81,8 @@ public class AuthServiceImpl extends BaseService implements AuthService {
             throw new BadRequestException("Mật khẩu không khớp. Vui lòng thử lại.");
         }
         
-        if (!signUpRequest.getEmail().endsWith("@gmail.com")) {
-        	throw new BadRequestException("Định dạng email không hợp lệ. Vui lòng thử lại.");
+        if (!signUpRequest.getEmail().endsWith("@gmail.com") && !signUpRequest.getEmail().endsWith("@yopmail.com")) {
+            throw new BadRequestException("Định dạng email không hợp lệ. Vui lòng thử lại.");
         }
 
         // Creating user's account
@@ -92,6 +95,8 @@ public class AuthServiceImpl extends BaseService implements AuthService {
         user.setIsLocked(false);
         user.setIsConfirmed(false);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        
+        System.out.println("DEBUG: Encoded password for " + user.getEmail());
         sendEmailConfirmed(signUpRequest.getEmail(),signUpRequest.getName());
 
         if (RoleName.ROLE_USER.equals(signUpRequest.getRole())) {
@@ -111,6 +116,8 @@ public class AuthServiceImpl extends BaseService implements AuthService {
         } else {
             throw new IllegalArgumentException("Bạn không có quyền tạo tài khoản!!!!");
         }
+        
+        System.out.println("DEBUG: User saved successfully: " + result.getEmail());
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath().path("/user/me")
@@ -120,15 +127,21 @@ public class AuthServiceImpl extends BaseService implements AuthService {
 
     @Override
     public String login(LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.getEmail(),
-                        loginRequest.getPassword()
-                )
-        );
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        return tokenProvider.createToken(authentication);
+        System.out.println("DEBUG: Login attempt for email: " + loginRequest.getEmail());
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getEmail(),
+                            loginRequest.getPassword()
+                    )
+            );
+            System.out.println("DEBUG: Authentication successful for email: " + loginRequest.getEmail());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            return tokenProvider.createToken(authentication);
+        } catch (Exception e) {
+            System.out.println("DEBUG: Authentication failed for email: " + loginRequest.getEmail() + " | Error: " + e.getMessage());
+            throw e;
+        }
     }
 
     @Override

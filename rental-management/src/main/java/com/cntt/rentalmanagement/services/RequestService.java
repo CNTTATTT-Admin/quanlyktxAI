@@ -17,4 +17,6 @@ public interface RequestService {
     MessageResponse addRequest(RequestRequest request);
 
     MessageResponse approveRequest(Long requestId);
+
+    Boolean isRequested(Long roomId);
 }
