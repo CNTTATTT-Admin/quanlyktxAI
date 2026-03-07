@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import SidebarNav from "./SidebarNav";
-import { getAllRoomHired } from "../../services/fetch/ApiUtils";
+import {
+  getAllRoomHired,
+  createCheckoutRequest,
+} from "../../services/fetch/ApiUtils";
 import Pagination from "./Pagnation";
 import { toast } from "react-toastify";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -15,6 +18,11 @@ function RoomHired(props) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
+
+  // Modal states
+  const [showModal, setShowModal] = useState(false);
+  const [selectedRoomId, setSelectedRoomId] = useState(null);
+  const [reason, setReason] = useState("");
 
   // Fetch data from the API
   useEffect(() => {
@@ -40,6 +48,39 @@ function RoomHired(props) {
 
   const handleSendRequest = (id) => {
     navigate("/send-request/" + id);
+  };
+
+  const handleOpenModal = (roomId) => {
+    setSelectedRoomId(roomId);
+    setReason("");
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedRoomId(null);
+    setReason("");
+  };
+
+  const submitLeaveRequest = () => {
+    if (!reason.trim()) {
+      toast.warning("Vui lòng nhập lý do rời phòng.");
+      return;
+    }
+    createCheckoutRequest({
+      roomId: selectedRoomId,
+      reason: reason,
+    })
+      .then((res) => {
+        toast.success(
+          res?.message || "Đã gửi yêu cầu rời phòng, vui lòng chờ duyệt.",
+        );
+        handleCloseModal();
+        fetchData(); // reload
+      })
+      .catch((err) => {
+        toast.error((err && err.message) || "Gửi yêu cầu thất bại.");
+      });
   };
 
   const paginate = (pageNumber) => {
@@ -130,8 +171,9 @@ function RoomHired(props) {
                             <th style={{ width: "180px" }}>Số điện thoại</th>
                             <th style={{ width: "75px" }}>Giá</th>
                             <th style={{ width: "100px" }}>Thời hạn</th>
+                            <th style={{ width: "200px" }}>Bạn cùng phòng</th>
                             <th style={{ width: "142px" }}>Trạng Thái</th>
-                            <th style={{ width: "134px" }}>Chế độ</th>
+                            <th style={{ width: "100px" }}>Hành động</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -168,24 +210,46 @@ function RoomHired(props) {
                                   )}{" "}
                                   tháng
                                 </td>
-                                <td style={{ color: "green" }}>
-                                  {item.room?.status === "ROOM_RENT" ||
-                                  item.room?.status === "CHECKED_OUT"
+                                <td>
+                                  {item.room?.residents &&
+                                  item.room.residents.length > 1 ? (
+                                    <ul className="list-unstyled mb-0">
+                                      {item.room.residents
+                                        .filter((r) => r.id !== currentUser?.id)
+                                        .map((r) => (
+                                          <li
+                                            key={r.id}
+                                            style={{ fontSize: "0.85rem" }}
+                                          >
+                                            • {r.name} ({r.phone})
+                                          </li>
+                                        ))}
+                                    </ul>
+                                  ) : (
+                                    <span className="text-muted">Chưa có</span>
+                                  )}
+                                </td>
+                                <td
+                                  style={{
+                                    color:
+                                      item.room?.status === "CHECKED_OUT"
+                                        ? "red"
+                                        : "green",
+                                  }}
+                                >
+                                  {item.room?.status === "CHECKED_OUT"
                                     ? "Đã trả phòng"
-                                    : "Đã thuê"}
+                                    : "Đang ở"}
                                 </td>
                                 <td>
-                                  {item.room?.status === "CHECKED_OUT" ? (
-                                    <span style={{ color: "red" }}>
-                                      Vô hiệu hóa
-                                    </span>
-                                  ) : (
+                                  {item.room?.status !== "CHECKED_OUT" && (
                                     <button
-                                      type="button"
-                                      className="btn btn-outline-success"
-                                      onClick={() => handleSendRequest(item.id)}
+                                      className="btn btn-sm btn-danger"
+                                      onClick={() =>
+                                        handleOpenModal(item.room?.id)
+                                      }
                                     >
-                                      Gửi yêu cầu
+                                      Yêu cầu rời
                                     </button>
                                   )}
                                 </td>
@@ -208,6 +272,59 @@ function RoomHired(props) {
           </div>
         </div>
       </main>
+
+      {showModal && (
+        <div
+          className="modal show"
+          tabIndex="-1"
+          style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Yêu cầu trả phòng</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={handleCloseModal}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <form>
+                  <div className="mb-3">
+                    <label className="form-label">Lý do rời phòng</label>
+                    <textarea
+                      className="form-control"
+                      rows={3}
+                      value={reason}
+                      onChange={(e) => setReason(e.target.value)}
+                      placeholder="Nhập lý do chi tiết..."
+                      required
+                    ></textarea>
+                  </div>
+                </form>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={handleCloseModal}
+                >
+                  Đóng
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-danger"
+                  onClick={submitLeaveRequest}
+                >
+                  Gửi yêu cầu
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Footer />
     </>
   );

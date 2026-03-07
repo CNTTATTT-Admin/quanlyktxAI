@@ -19,4 +19,10 @@ public interface MaintenanceService {
         MessageResponse deleteMaintenance(Long id);
 
         MaintenanceResponse getMaintenance(Long id);
+
+        MessageResponse userRequestMaintenance(Long roomId, String description, List<MultipartFile> files);
+
+        MessageResponse updateMaintenanceStatus(Long id, String status, BigDecimal price, String maintenanceDate, List<MultipartFile> files);
+
+        Page<MaintenanceResponse> getMaintenanceHistoryForUser(Integer pageNo, Integer pageSize);
 }

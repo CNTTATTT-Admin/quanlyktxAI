@@ -48,7 +48,7 @@ const ElectricAndWaterManagement = (props) => {
       .catch((error) => {
         toast.error(
           (error && error.message) ||
-            "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!"
+            "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
         );
         setTableData([]);
         setTotalItems(0);
@@ -164,9 +164,7 @@ const ElectricAndWaterManagement = (props) => {
                         {tableData.map((item) => (
                           <tr key={item.id} className="odd">
                             <td>{item.name}</td>
-                            <td>
-                                {item.room?.title}
-                            </td>
+                            <td>{item.room?.title}</td>
                             <td className="dtr-control sorting_1">
                               Tháng {item.month}
                             </td>
@@ -175,22 +173,42 @@ const ElectricAndWaterManagement = (props) => {
                             <td>{item.lastMonthBlockOfWater}</td>
                             <td>{item.thisMonthBlockOfWater}</td>{" "}
                             {/* Sửa thành thisMonthBlock thay vì moneyEachBlock */}
-                            <td>{item.totalMoneyOfElectric}
-                              {item.totalMoney &&
-                                item.totalMoney.toLocaleString("vi-VN", {
+                            <td>
+                              {item.totalMoneyOfElectric?.toLocaleString(
+                                "vi-VN",
+                                {
+                                  style: "currency",
+                                  currency: "VND",
+                                },
+                              )}
+                              <br />
+                              <small className="text-muted">
+                                (Mỗi người:{" "}
+                                {item.perPersonElectric?.toLocaleString(
+                                  "vi-VN",
+                                  {
+                                    style: "currency",
+                                    currency: "VND",
+                                  },
+                                )}
+                                )
+                              </small>
+                            </td>
+                            <td>
+                              {item.totalMoneyOfWater?.toLocaleString("vi-VN", {
+                                style: "currency",
+                                currency: "VND",
+                              })}
+                              <br />
+                              <small className="text-muted">
+                                (Mỗi người:{" "}
+                                {item.perPersonWater?.toLocaleString("vi-VN", {
                                   style: "currency",
                                   currency: "VND",
                                 })}
+                                )
+                              </small>
                             </td>
-
-                            <td>{item.totalMoneyOfWater}
-                              {item.totalMoney &&
-                                item.totalMoney.toLocaleString("vi-VN", {
-                                  style: "currency",
-                                  currency: "VND",
-                                })}
-                            </td>
-
                             <td>
                               {item.paid ? "Đã thanh toán" : "Chưa thanh toán"}
                             </td>{" "}

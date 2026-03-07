@@ -7,6 +7,8 @@ import org.springframework.data.domain.Page;
 
 public interface BlogStoreService {
     MessageResponse saveBlog(BlogStoreRequest storeRequest);
+    MessageResponse unsaveBlog(Long roomId);
+    Boolean isBlogSaved(Long roomId);
 
     Page<BlogStoreResponse> getPageOfBlog(Integer pageNo, Integer pageSize);
 }

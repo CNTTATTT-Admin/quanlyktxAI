@@ -4,7 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum RoomStatus {
-    HIRED("HIRED"), // Deprecated: use OCCUPIED
+    HIRED("HIRED"), // Deprecated: use FULL
     ROOM_RENT("ROOM_RENT"), // Deprecated: use AVAILABLE
     CHECKED_OUT("CHECKED_OUT"), // Deprecated: use MAINTENANCE
     

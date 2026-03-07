@@ -42,9 +42,16 @@ public class StatisticalServiceImpl extends BaseService implements StatisticalSe
         User user = userRepository.findById(getUserId()).orElseThrow(() -> new BadRequestException("Tài khoản không tồn tại"));
         int total = 0;
         for (Contract contract : contractRepository.getAllContract(getUserId())) {
+            Room room = contract.getRoom();
             Duration duration = Duration.between(contract.getCreatedAt(), contract.getDeadlineContract());
             long months = duration.toMinutes() / (60 * 24 * 30);
-            total += months * (contract.getRoom().getPrice().intValue() + contract.getRoom().getWaterCost().intValue() + contract.getRoom().getPublicElectricCost().intValue() + contract.getRoom().getInternetCost().intValue());
+            
+            BigDecimal monthlyTotal = room.getPrice()
+                .add(room.getSplitWaterCost())
+                .add(room.getSplitElectricCost())
+                .add(room.getSplitInternetCost());
+                
+            total += months * monthlyTotal.intValue();
         }
 
 

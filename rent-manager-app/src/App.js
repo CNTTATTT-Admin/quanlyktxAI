@@ -59,7 +59,6 @@ import RoomHired from "./page/user/RoomHired";
 import AgentsGird from "./page/user/AgentsGird";
 import AgentSingle from "./page/user/AgentSingle";
 import SendRequest from "./page/user/SendRequest";
-import RequestManagement from "./page/user/RequestManagement";
 import Follow from "./page/user/Follow";
 import SaveBlog from "./page/user/SaveBlog";
 import ChatOfUser from "./page/user/ChatOfUser";
@@ -70,7 +69,12 @@ import FaceRegistration from "./page/user/FaceRegistration";
 import CheckInOut from "./page/user/CheckInOut";
 import CheckInOutHistory from "./page/user/CheckInOutHistory";
 import LeaveRequestForm from "./page/user/LeaveRequestForm";
+import MaintenanceUserPage from "./page/user/MaintenanceUserPage";
+import ElectricAndWaterUserPage from "./page/user/ElectricAndWaterUserPage";
 import LeaveRequestManagement from "./page/rentaler/LeaveRequestManagement";
+import CheckoutRequestManagement from "./page/rentaler/CheckoutRequestManagement";
+import BannerManagement from "./page/admin/BannerManagement";
+import BannerForm from "./page/admin/BannerForm";
 
 const PrivateRoute = ({ children, authenticated, role, allowedRoles }) => {
   if (!authenticated) {
@@ -138,7 +142,24 @@ function App() {
     return <LoadingIndicator />;
   }
 
-  console.log({ authenticated, username, currentUser, role, loading });
+  console.log("DEBUG App State:", {
+    authenticated,
+    username,
+    currentUser,
+    role,
+    loading,
+  });
+  if (currentUser) {
+    console.log("DEBUG Face ID Condition:", {
+      hasFaceVector: !!currentUser.faceVector,
+      isNotOnRegPage: window.location.pathname !== "/face-registration",
+      shouldShowOverlay:
+        authenticated &&
+        currentUser &&
+        !currentUser.faceVector &&
+        window.location.pathname !== "/face-registration",
+    });
+  }
   return (
     <>
       <Router>
@@ -203,17 +224,6 @@ function App() {
             path="/send-request/:id"
             element={
               <SendRequest
-                authenticated={authenticated}
-                currentUser={currentUser}
-                onLogout={handleLogout}
-              />
-            }
-          />
-          <Route
-            exact
-            path="/request-status"
-            element={
-              <RequestManagement
                 authenticated={authenticated}
                 currentUser={currentUser}
                 onLogout={handleLogout}
@@ -303,6 +313,17 @@ function App() {
             path="/leave-request"
             element={
               <LeaveRequestForm
+                authenticated={authenticated}
+                currentUser={currentUser}
+                onLogout={handleLogout}
+              />
+            }
+          />
+          <Route
+            exact
+            path="/maintenance"
+            element={
+              <MaintenanceUserPage
                 authenticated={authenticated}
                 currentUser={currentUser}
                 onLogout={handleLogout}
@@ -432,6 +453,61 @@ function App() {
                 allowedRoles={["ROLE_ADMIN"]}
               >
                 <Authorization
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            exact
+            path="/admin/banner-management"
+            element={
+              <PrivateRoute
+                authenticated={authenticated}
+                role={role}
+                allowedRoles={["ROLE_ADMIN"]}
+              >
+                <BannerManagement
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            exact
+            path="/admin/banner-management/add"
+            element={
+              <PrivateRoute
+                authenticated={authenticated}
+                role={role}
+                allowedRoles={["ROLE_ADMIN"]}
+              >
+                <BannerForm
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            exact
+            path="/admin/banner-management/edit/:id"
+            element={
+              <PrivateRoute
+                authenticated={authenticated}
+                role={role}
+                allowedRoles={["ROLE_ADMIN"]}
+              >
+                <BannerForm
                   authenticated={authenticated}
                   currentUser={currentUser}
                   role={role}
@@ -823,6 +899,24 @@ function App() {
           />
           <Route
             exact
+            path="/rentaler/checkout-request-management"
+            element={
+              <PrivateRoute
+                authenticated={authenticated}
+                role={role}
+                allowedRoles={["ROLE_RENTALER", "ROLE_ADMIN"]}
+              >
+                <CheckoutRequestManagement
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            exact
             path="/rentaler/electric_water/edit/:id"
             element={
               <PrivateRoute
@@ -852,6 +946,17 @@ function App() {
           />
           <Route
             exact
+            path="/electric-water-user"
+            element={
+              <ElectricAndWaterUserPage
+                authenticated={authenticated}
+                currentUser={currentUser}
+                onLogout={handleLogout}
+              />
+            }
+          />
+          <Route
+            exact
             path="/check-in-out-history"
             element={
               <CheckInOutHistory
@@ -861,9 +966,7 @@ function App() {
               />
             }
           />
-        </Routes>
-        <Routes>
-          <Route path="*" exact={true} component={NotFound} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
         {authenticated &&
           currentUser &&

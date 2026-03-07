@@ -19,7 +19,7 @@ public class MaintenanceController {
     private final MaintenanceService maintenanceService;
 
     @GetMapping
-    public ResponseEntity<?> getAllMaintenance(@RequestParam String keyword,
+    public ResponseEntity<?> getAllMaintenance(@RequestParam(required = false, defaultValue = "") String keyword,
                                                @RequestParam Integer pageNo,
                                                @RequestParam Integer pageSize){
         return ResponseEntity.ok(maintenanceService.getAllMaintenance(keyword, pageNo, pageSize));
@@ -34,7 +34,7 @@ public class MaintenanceController {
     public ResponseEntity<?> addNewMaintenance(@RequestParam String maintenanceDate,
                                                @RequestParam BigDecimal price,
                                                @RequestParam Long roomId,
-                                               @RequestParam List<MultipartFile> files){
+                                               @RequestParam(required = false) List<MultipartFile> files){
         return ResponseEntity.ok(maintenanceService.addNewMaintenance(maintenanceDate, price, roomId, files));
     }
 
@@ -42,12 +42,34 @@ public class MaintenanceController {
     public ResponseEntity<?> editMaintenance(@PathVariable Long id, @RequestParam String maintenanceDate,
                                                @RequestParam BigDecimal price,
                                                @RequestParam Long roomId,
-                                               @RequestParam List<MultipartFile> files){
+                                               @RequestParam(required = false) List<MultipartFile> files){
         return ResponseEntity.ok(maintenanceService.editMaintenance(id, maintenanceDate, price, roomId, files));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteMaintenance(@PathVariable Long id) {
         return ResponseEntity.ok(maintenanceService.deleteMaintenance(id));
+    }
+
+    @PostMapping("/user-request")
+    public ResponseEntity<?> userRequestMaintenance(@RequestParam Long roomId,
+                                                    @RequestParam String description,
+                                                    @RequestParam(required = false) List<MultipartFile> files) {
+        return ResponseEntity.ok(maintenanceService.userRequestMaintenance(roomId, description, files));
+    }
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<?> updateMaintenanceStatus(@PathVariable Long id,
+                                                     @RequestParam String status,
+                                                     @RequestParam(required = false) BigDecimal price,
+                                                     @RequestParam(required = false) String maintenanceDate,
+                                                     @RequestParam(required = false) List<MultipartFile> files) {
+        return ResponseEntity.ok(maintenanceService.updateMaintenanceStatus(id, status, price, maintenanceDate, files));
+    }
+
+    @GetMapping("/user")
+    public ResponseEntity<?> getMaintenanceHistoryForUser(@RequestParam Integer pageNo,
+                                                          @RequestParam Integer pageSize) {
+        return ResponseEntity.ok(maintenanceService.getMaintenanceHistoryForUser(pageNo, pageSize));
     }
 }

@@ -42,6 +42,7 @@ public class RoomServiceImpl extends BaseService implements RoomService {
     private final CommentRepository commentRepository;
     private final MapperUtils mapperUtils;
     private final AccountService accountService;
+    private final ContractRepository contractRepository;
 
     @Override
     public MessageResponse addNewRoom(RoomRequest roomRequest) {
@@ -251,9 +252,43 @@ public class RoomServiceImpl extends BaseService implements RoomService {
     @Override
     public MessageResponse checkoutRoom(Long id) {
         Room room = roomRepository.findById(id).orElseThrow(() -> new BadRequestException("Phòng không còn tồn tại"));
+        // In KTX, mark whole room checked out only if admin explicitly wants to close it
         room.setStatus(RoomStatus.CHECKED_OUT);
+        // Also remove all residents
+        if (room.getResidents() != null) {
+            for (User resident : room.getResidents()) {
+                resident.setAllocatedRoom(null);
+                userRepository.save(resident);
+            }
+        }
         roomRepository.save(room);
         return MessageResponse.builder().message("Trả phòng và xuất hóa đơn thành công.").build();
+    }
+
+    @Override
+    @Transactional
+    public MessageResponse checkoutContract(Long contractId) {
+        Contract contract = contractRepository.findById(contractId).orElseThrow(() -> new BadRequestException("Hợp đồng không tồn tại"));
+        Room room = contract.getRoom();
+        User student = contract.getStudent();
+
+        if (student != null) {
+            student.setAllocatedRoom(null);
+            userRepository.save(student);
+        }
+
+        // Check remaining occupancy
+        // Note: residents list might need refresh or we count manually
+        long remaining = room.getResidents().stream().filter(u -> !u.getId().equals(student != null ? student.getId() : -1)).count();
+
+        if (remaining == 0) {
+            room.setStatus(RoomStatus.CHECKED_OUT);
+        } else {
+            room.setStatus(RoomStatus.ROOM_RENT); // Keep available if there are others or room is not full
+        }
+        roomRepository.save(room);
+
+        return MessageResponse.builder().message("Trả phòng thành công").build();
     }
 
     @Override

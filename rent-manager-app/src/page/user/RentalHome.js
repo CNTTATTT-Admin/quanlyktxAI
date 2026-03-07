@@ -191,7 +191,10 @@ const RentalHome = (props) => {
                                 )}`}
                             </span>
                           </div>
-                          <Link to={`/rental-home/${room.id}`}>
+                          <Link
+                            to={`/rental-home/${room.id}`}
+                            style={{ color: "#fff" }}
+                          >
                             Xem chi tiết
                             <span className="bi bi-chevron-right"></span>
                           </Link>

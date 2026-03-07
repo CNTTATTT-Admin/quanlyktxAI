@@ -30,7 +30,7 @@ function ContractManagement(props) {
       .catch((error) => {
         toast.error(
           (error && error.message) ||
-            "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!"
+            "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
         );
       });
   };
@@ -268,15 +268,7 @@ function ContractManagement(props) {
                                 class="btn btn-outline-success"
                               >
                                 <a
-                                  href={
-                                    item.files === null
-                                      ? ""
-                                      : `http://localhost:8080/document/` +
-                                        item.files.replace(
-                                          "photographer/files/",
-                                          ""
-                                        )
-                                  }
+                                  href={item.files === null ? "" : item.files}
                                   target="_blank"
                                 >
                                   Xem
@@ -307,15 +299,15 @@ function ContractManagement(props) {
                             </td>
                             <td>
                               {calculateRemainingMonths(
-                                new Date(item.deadlineContract)
+                                new Date(item.deadlineContract),
                               )}{" "}
                               tháng
                             </td>
                             <td style={{ color: "green" }}>
                               {item.room.status === "ROOM_RENT" ||
                               item.room.status === "CHECKED_OUT"
-                                ? "Đã trả phòng"
-                                : "Đã thuê"}
+                                ? "Đang ở"
+                                : "Đang bảo trì"}
                             </td>
                             <td>
                               <a

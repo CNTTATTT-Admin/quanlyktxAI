@@ -35,6 +35,7 @@ class RentailHomeDetail extends Component {
       nameOfRentaler: "",
       requestSent: false, // Đã gửi request đăng ký ở
       requesting: false, // Đang trong quá trình gửi request
+      isSaved: false, // Trạng thái đã lưu bài đăng
     };
   }
 
@@ -42,7 +43,22 @@ class RentailHomeDetail extends Component {
     this.fetchRooms(); // Call the fetchRooms function when component mounts
     this.fetchComments();
     this.fetchRequestStatus();
+    this.fetchSaveStatus();
   }
+
+  fetchSaveStatus = () => {
+    const id = window.location.pathname.split("/").pop();
+    if (this.props.authenticated) {
+      const { checkBlogSavedStatus } = require("../../services/fetch/ApiUtils");
+      checkBlogSavedStatus(id)
+        .then((response) => {
+          this.setState({ isSaved: response });
+        })
+        .catch((error) => {
+          console.error("Error checking save status:", error);
+        });
+    }
+  };
 
   fetchRequestStatus = () => {
     const id = window.location.pathname.split("/").pop();
@@ -121,17 +137,43 @@ class RentailHomeDetail extends Component {
   };
 
   handleSaveBlog = (id) => {
-    const storeRequest = { roomId: id };
-    saveBlog(storeRequest)
-      .then((response) => {
-        toast.success(response.message);
-      })
-      .catch((error) => {
-        toast.error(
-          (error && error.message) ||
-            "Vui lòng đăng nhập để có thể lưu bài đăng.",
-        );
-      });
+    if (!this.props.authenticated) {
+      toast.error("Vui lòng đăng nhập để có thể lưu bài đăng.");
+      return;
+    }
+
+    const { isSaved } = this.state;
+    const { saveBlog, unsaveBlog } = require("../../services/fetch/ApiUtils");
+
+    if (isSaved) {
+      // Unsave
+      unsaveBlog(id)
+        .then((response) => {
+          console.log("Unsave response:", response);
+          toast.success(response.message);
+          this.setState({ isSaved: false });
+        })
+        .catch((error) => {
+          toast.error(
+            (error && error.message) ||
+              "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
+          );
+        });
+    } else {
+      // Save
+      const storeRequest = { roomId: id };
+      saveBlog(storeRequest)
+        .then((response) => {
+          toast.success(response.message);
+          this.setState({ isSaved: true });
+        })
+        .catch((error) => {
+          toast.error(
+            (error && error.message) ||
+              "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
+          );
+        });
+    }
   };
 
   handleRequestRoom = () => {
@@ -250,9 +292,15 @@ class RentailHomeDetail extends Component {
                     <button
                       type="button"
                       onClick={() => this.handleSaveBlog(rooms?.id)}
-                      class="btn btn-outline-success rounded-pill"
+                      className={`btn ${this.state.isSaved ? "btn-success" : "btn-outline-success"} rounded-pill`}
                     >
-                      Lưu +
+                      {this.state.isSaved ? (
+                        <>
+                          <i className="bi bi-bookmark-fill"></i> Đã lưu
+                        </>
+                      ) : (
+                        "+ Lưu"
+                      )}
                     </button>
                     &nbsp;&nbsp;
                     {rooms &&

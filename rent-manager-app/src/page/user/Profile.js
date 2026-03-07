@@ -17,7 +17,8 @@ const UserProfile = (props) => {
   } = props;
 
   const [imageFile, setImageFile] = useState(null);
-  const [address, setAddress] = useState(currentUser?.address);
+  const [address, setAddress] = useState(currentUser?.address || "");
+  const [phone, setPhone] = useState(currentUser?.phone || "");
 
   const handleAddressChange = (event) => {
     setAddress(event.target.value);
@@ -50,6 +51,7 @@ const UserProfile = (props) => {
     const formData = new FormData();
     formData.append("file", imageFile);
     formData.append("address", address);
+    formData.append("phone", phone);
 
     event.preventDefault();
     // Handle form submission
@@ -146,10 +148,10 @@ const UserProfile = (props) => {
                           type="text"
                           className="form-control"
                           name="phone"
-                          value={currentUser && currentUser.phone}
-                          id="inputPassword4"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          id="inputPhone"
                           placeholder="Số điện thoại"
-                          disabled
                         />
                       </div>
                     </div>

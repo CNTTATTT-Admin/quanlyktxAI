@@ -21,4 +21,6 @@ public class ElectricAndWaterResponse {
     private BigDecimal totalMoneyOfWater;
     private boolean paid;
     private RoomResponse room;
+    private BigDecimal perPersonElectric;
+    private BigDecimal perPersonWater;
 }

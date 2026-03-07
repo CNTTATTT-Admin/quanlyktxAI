@@ -107,9 +107,28 @@ public class Room extends DateAudit {
         return residents != null ? residents.size() : 0;
     }
 
+    public boolean isFull() {
+        return maxOccupancy != null && getCurrentOccupancy() >= maxOccupancy;
+    }
+
     private BigDecimal waterCost = BigDecimal.ZERO;
     private BigDecimal publicElectricCost = BigDecimal.ZERO;
     private BigDecimal internetCost = BigDecimal.ZERO;
+
+    public BigDecimal getSplitWaterCost() {
+        int occupancy = getCurrentOccupancy();
+        return occupancy > 0 ? waterCost.divide(BigDecimal.valueOf(occupancy), 2, BigDecimal.ROUND_HALF_UP) : waterCost;
+    }
+
+    public BigDecimal getSplitElectricCost() {
+        int occupancy = getCurrentOccupancy();
+        return occupancy > 0 ? publicElectricCost.divide(BigDecimal.valueOf(occupancy), 2, BigDecimal.ROUND_HALF_UP) : publicElectricCost;
+    }
+
+    public BigDecimal getSplitInternetCost() {
+        int occupancy = getCurrentOccupancy();
+        return occupancy > 0 ? internetCost.divide(BigDecimal.valueOf(occupancy), 2, BigDecimal.ROUND_HALF_UP) : internetCost;
+    }
 
 
     public Room(String title, String description, BigDecimal price, Double latitude, Double longitude, String address, String createdBy, String updatedBy, Location location, Category category, User user, RoomStatus roomStatus) {

@@ -40,7 +40,11 @@ public class FaceCheckFilter extends OncePerRequestFilter {
             "/**/*.js",
             "/view-file/**",
             "/image/**",
-            "/user/me"
+            "/user/me",
+            "/api/user/me",
+            "/rentaler/me",
+            "/admin/me",
+            "/banner/active"
     );
 
     @Override

@@ -44,4 +44,5 @@ public interface RoomService {
     Room updateRoom(Room room, Long id);
 
     MessageResponse removeResident(Long roomId, Long residentId);
+    MessageResponse checkoutContract(Long contractId);
 }

@@ -10,4 +10,6 @@ public interface MaintenanceRepositoryCustom {
     Page<Maintenance> searchingMaintenance(String keyword,Long userId, Pageable pageable);
 
     BigDecimal sumPriceOfMaintenance(Long userId);
+
+    Page<Maintenance> getMaintenanceHistoryForUser(Long userId, Pageable pageable);
 }

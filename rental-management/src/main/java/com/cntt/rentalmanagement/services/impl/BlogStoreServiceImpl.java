@@ -44,6 +44,26 @@ public class BlogStoreServiceImpl extends BaseService implements BlogStoreServic
     }
 
     @Override
+    public MessageResponse unsaveBlog(Long roomId) {
+        User customer = userRepository.findById(getUserId()).orElseThrow(() -> new BadRequestException("Tài khoảng không tồn tại"));
+        Room room = roomRepository.findById(roomId).orElseThrow(() -> new BadRequestException("Thông tin phòng không tồn tại."));
+        BlogStore blogStore = blogStoreRepository.findByRoomAndUser(room, customer)
+                .orElseThrow(() -> new BadRequestException("Bài đăng chưa được lưu."));
+        blogStoreRepository.delete(blogStore);
+        return MessageResponse.builder().message("Đã bỏ lưu bài đăng.").build();
+    }
+
+    @Override
+    public Boolean isBlogSaved(Long roomId) {
+        Long userId = getUserId();
+        if (userId == null) return false;
+        User customer = userRepository.findById(userId).orElse(null);
+        Room room = roomRepository.findById(roomId).orElse(null);
+        if (customer == null || room == null) return false;
+        return blogStoreRepository.findByRoomAndUser(room, customer).isPresent();
+    }
+
+    @Override
     public Page<BlogStoreResponse> getPageOfBlog(Integer pageNo, Integer pageSize) {
         int page = pageNo == 0 ? pageNo : pageNo - 1;
         Pageable pageable = PageRequest.of(page, pageSize);

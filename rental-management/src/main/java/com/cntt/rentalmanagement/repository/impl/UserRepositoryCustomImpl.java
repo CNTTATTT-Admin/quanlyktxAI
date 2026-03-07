@@ -39,9 +39,9 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
             params.put("keyword", "%"+keyword+"%");
         }
 
-        String strSelectQuery = "SELECT * " + strQuery;
+        String strSelectQuery = "SELECT * " + strQuery + " ORDER BY u.id DESC ";
 
-        String strCountQuery = "SELECT COUNT(DISTINCT u.id)" + strQuery;
+        String strCountQuery = "SELECT COUNT(DISTINCT u.id) " + strQuery;
 
         return BaseRepository.getPagedNativeQuery(em,strSelectQuery, strCountQuery, params, pageable, User.class);
     }
@@ -66,9 +66,9 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
             params.put("roles", roleStrings);
         }
 
-        String strSelectQuery = "SELECT DISTINCT u.* " + strQuery;
+        String strSelectQuery = "SELECT DISTINCT u.* " + strQuery + " ORDER BY u.id DESC ";
 
-        String strCountQuery = "SELECT COUNT(DISTINCT u.id)" + strQuery;
+        String strCountQuery = "SELECT COUNT(DISTINCT u.id) " + strQuery;
 
         return BaseRepository.getPagedNativeQuery(em, strSelectQuery, strCountQuery, params, pageable, User.class);
     }
