@@ -57,6 +57,13 @@ public class UserController {
         return userRepository.findById(userPrincipal.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", userPrincipal.getId()));
     }
+
+    @GetMapping("/api/user/me")
+    @PreAuthorize("isAuthenticated()")
+    public User getCurrentUserUnified(@CurrentUser UserPrincipal userPrincipal) {
+        return userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userPrincipal.getId()));
+    }
     
 
     @PostMapping("/{id}")

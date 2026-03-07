@@ -88,7 +88,7 @@ function Login(props) {
 function SocialLogin() {
   return (
     <div className="social-login">
-      <a href={FACEBOOK_AUTH_URL} className="facebook">
+      {/* <a href={FACEBOOK_AUTH_URL} className="facebook">
         <span className="icon-facebook mr-3">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -99,7 +99,7 @@ function SocialLogin() {
           </svg>{" "}
         </span>
       </a>
-      &nbsp;&nbsp;
+      &nbsp;&nbsp; */}
       <a href={GOOGLE_AUTH_URL} className="google">
         <span className="icon-google mr-3">
           <svg

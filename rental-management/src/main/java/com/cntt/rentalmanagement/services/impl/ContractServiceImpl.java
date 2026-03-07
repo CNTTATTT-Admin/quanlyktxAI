@@ -4,11 +4,13 @@ import com.cntt.rentalmanagement.domain.enums.LockedStatus;
 import com.cntt.rentalmanagement.domain.enums.RoomStatus;
 import com.cntt.rentalmanagement.domain.models.Contract;
 import com.cntt.rentalmanagement.domain.models.Room;
+import com.cntt.rentalmanagement.domain.models.User;
 import com.cntt.rentalmanagement.domain.payload.response.ContractResponse;
 import com.cntt.rentalmanagement.domain.payload.response.MessageResponse;
 import com.cntt.rentalmanagement.exception.BadRequestException;
 import com.cntt.rentalmanagement.repository.ContractRepository;
 import com.cntt.rentalmanagement.repository.RoomRepository;
+import com.cntt.rentalmanagement.repository.UserRepository;
 import com.cntt.rentalmanagement.services.BaseService;
 import com.cntt.rentalmanagement.services.ContractService;
 import com.cntt.rentalmanagement.services.FileStorageService;
@@ -32,25 +34,51 @@ public class ContractServiceImpl extends BaseService implements ContractService 
     private final RoomRepository roomRepository;
     private final FileStorageService fileStorageService;
     private final MapperUtils mapperUtils;
+    private final UserRepository userRepository;
 
     @Override
-    public MessageResponse addContract(String name, Long roomId, String nameRentHome,Long numOfPeople,String phone, String deadline, List<MultipartFile> files) {
+    public MessageResponse addContract(String name, Long roomId, String nameRentHome, Long numOfPeople, String phone, String deadline, List<MultipartFile> files) {
         Room room = roomRepository.findById(roomId).orElseThrow(() -> new BadRequestException("Phòng đã không tồn tại"));
         if (room.getIsLocked().equals(LockedStatus.DISABLE)) {
             throw new BadRequestException("Phòng đã bị khóa");
         }
 
+        if (room.isFull()) {
+            throw new BadRequestException("Phòng đã hết chỗ (Sức chứa tối đa: " + room.getMaxOccupancy() + ")");
+        }
 
+        String file = null;
+        if (files != null && !files.isEmpty() && !files.get(0).isEmpty()) {
+            file = "http://localhost:8080/document/" + fileStorageService.storeFile(files.get(0)).replace("photographer/files/", "");
+        }
 
+        // Link student by phone/ID if exists (Preferably by a provided identifier from frontend)
+        User student = userRepository.findByPhone(phone).orElseThrow(() -> new BadRequestException("Người dùng với số điện thoại này không tồn tại trong hệ thống"));
+        
+        // Validation: Check if student already has an active contract
+        if (contractRepository.existsByStudent(student)) {
+            throw new BadRequestException("Người dùng này đã có một hợp đồng đang hoạt động. Không thể tạo thêm.");
+        }
 
-        String file = fileStorageService.storeFile(files.get(0)).replace("photographer/files/", "");
-        Contract contract = new Contract(name,"http://localhost:8080/document/" +file, nameRentHome, deadline ,getUsername(), getUsername(), room);
+        Contract contract = new Contract(name, file, nameRentHome, deadline, getUsername(), getUsername(), room);
         contract.setPhone(phone);
-        contract.setNumOfPeople(numOfPeople);
+        contract.setNumOfPeople(1L); // Default to 1 for per-tenant model
+        contract.setStudent(student);
+        
+        // Track residency in User entity
+        student.setAllocatedRoom(room);
+        userRepository.save(student);
+
         contractRepository.save(contract);
 
-        room.setStatus(RoomStatus.HIRED);
+        // Update room status: If full, set to HIRED. Otherwise, keep as ROOM_RENT (Available)
+        if (room.isFull()) {
+            room.setStatus(RoomStatus.HIRED);
+        } else {
+            room.setStatus(RoomStatus.ROOM_RENT);
+        }
         roomRepository.save(room);
+
         return MessageResponse.builder().message("Thêm hợp đồng mới thành công").build();
     }
 
@@ -67,24 +95,58 @@ public class ContractServiceImpl extends BaseService implements ContractService 
     }
 
     @Override
-    public MessageResponse editContractInfo(Long id, String name, Long roomId, String nameOfRent,Long numOfPeople,String phone, String deadlineContract, List<MultipartFile> files) {
-        Room room = roomRepository.findById(roomId).orElseThrow(() -> new BadRequestException("Phòng đã không tồn tại"));
-        if (room.getIsLocked().equals(LockedStatus.DISABLE)) {
-            throw new BadRequestException("Phòng đã bị khóa");
+    public MessageResponse editContractInfo(Long id, String name, Long roomId, String nameOfRent, Long numOfPeople, String phone, String deadlineContract, List<MultipartFile> files) {
+        Contract contract = contractRepository.findById(id).orElseThrow(() -> new BadRequestException("Hợp đồng không tồn tại!"));
+        Room oldRoom = contract.getRoom();
+        Room newRoom = roomRepository.findById(roomId).orElseThrow(() -> new BadRequestException("Phòng mới không tồn tại"));
+
+        if (!oldRoom.getId().equals(newRoom.getId())) {
+            if (newRoom.getIsLocked().equals(LockedStatus.DISABLE)) {
+                throw new BadRequestException("Phòng mới đã bị khóa");
+            }
+            if (newRoom.isFull()) {
+                throw new BadRequestException("Phòng mới đã hết chỗ");
+            }
+            
+            // If room changed, handle resident transfer
+            if (contract.getStudent() != null) {
+                User student = contract.getStudent();
+                student.setAllocatedRoom(newRoom);
+                userRepository.save(student);
+            }
+            contract.setRoom(newRoom);
         }
 
-        Contract contract = contractRepository.findById(id).orElseThrow(() -> new BadRequestException("Hợp đồng không tồn tại!"));
         contract.setDeadlineContract(LocalDateTime.parse(deadlineContract));
-        contract.setRoom(room);
         contract.setName(name);
         contract.setPhone(phone);
-        contract.setNumOfPeople(numOfPeople);
-        if (Objects.nonNull(files.get(0))) {
-            String file = fileStorageService.storeFile(files.get(0)).replace("photographer/files/", "");
-            contract.setFiles("http://localhost:8080/document/"+file);
-        }
+        contract.setNumOfPeople(1L); // Fixed for per-tenant model
         contract.setNameOfRent(nameOfRent);
+
+        if (files != null && !files.isEmpty() && !files.get(0).isEmpty()) {
+            String file = fileStorageService.storeFile(files.get(0)).replace("photographer/files/", "");
+            contract.setFiles("http://localhost:8080/document/" + file);
+        }
+
         contractRepository.save(contract);
+
+        // Update room statuses
+        if (newRoom.isFull()) {
+            newRoom.setStatus(RoomStatus.HIRED);
+        } else {
+            newRoom.setStatus(RoomStatus.ROOM_RENT);
+        }
+        roomRepository.save(newRoom);
+
+        if (!oldRoom.getId().equals(newRoom.getId())) {
+            if (oldRoom.isFull()) {
+                oldRoom.setStatus(RoomStatus.HIRED);
+            } else {
+                oldRoom.setStatus(RoomStatus.ROOM_RENT);
+            }
+            roomRepository.save(oldRoom);
+        }
+
         return MessageResponse.builder().message("Cập nhật hợp đồng thành công.").build();
     }
 

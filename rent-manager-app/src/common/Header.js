@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { Link, NavLink } from "react-router-dom";
 import "./Profile.css";
+import logo from "../assets/img/logo.jpg";
 
 class Header extends Component {
   render() {
@@ -23,7 +24,7 @@ class Header extends Component {
               <span></span>
             </button>
             <a className="navbar-brand text-brand" href="/">
-              Ktx<span className="color-b">AI</span>
+              <img src={logo} alt="KtxAI" style={{ height: "50px" }} />
             </a>
 
             <div

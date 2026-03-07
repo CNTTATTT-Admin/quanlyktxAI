@@ -46,8 +46,7 @@ public class MaintenanceRepositoryCustomImpl implements MaintenanceRepositoryCus
         }
 
 
-        String strSelectQuery = "SELECT * " + strQuery;
-
+        String strSelectQuery = "SELECT * " + strQuery + " ORDER BY m.id DESC";
         String strCountQuery = "SELECT COUNT(DISTINCT m.id)" + strQuery;
         return BaseRepository.getPagedNativeQuery(em,strSelectQuery, strCountQuery, params, pageable, Maintenance.class);
 
@@ -78,5 +77,19 @@ public class MaintenanceRepositoryCustomImpl implements MaintenanceRepositoryCus
         }
 
         return BigDecimal.valueOf(sumPrice);
+    }
+
+    @Override
+    public Page<Maintenance> getMaintenanceHistoryForUser(Long userId, Pageable pageable) {
+        StringBuilder strQuery = new StringBuilder();
+        strQuery.append(FROM_MAINTENANCE);
+        strQuery.append(" where reported_by = :userId");
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("userId", userId);
+
+        String strSelectQuery = "SELECT * " + strQuery + " ORDER BY id DESC";
+        String strCountQuery = "SELECT COUNT(DISTINCT m.id)" + strQuery;
+        return BaseRepository.getPagedNativeQuery(em, strSelectQuery, strCountQuery, params, pageable, Maintenance.class);
     }
 }

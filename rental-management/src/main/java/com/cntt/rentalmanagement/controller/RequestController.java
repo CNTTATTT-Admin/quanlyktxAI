@@ -14,15 +14,15 @@ public class RequestController {
     private final RequestService requestService;
 
     @GetMapping
-    public ResponseEntity<?> getRequestOfRentHome(@RequestParam String keyword,
+    public ResponseEntity<?> getRequestOfRentHome(@RequestParam(required = false, defaultValue = "") String keyword,
                                                   @RequestParam Integer pageNo,
                                                   @RequestParam Integer pageSize){
         return ResponseEntity.ok(requestService.getRequestOfRentHome(keyword, pageNo, pageSize));
     }
 
     @GetMapping("/customer")
-    public ResponseEntity<?> getRequestOfCustomer(@RequestParam String keyword,
-                                                  @RequestParam String phone,
+    public ResponseEntity<?> getRequestOfCustomer(@RequestParam(required = false, defaultValue = "") String keyword,
+                                                  @RequestParam(required = false, defaultValue = "") String phone,
                                                   @RequestParam Integer pageNo,
                                                   @RequestParam Integer pageSize){
         return ResponseEntity.ok(requestService.getRequestOfCustomer(keyword, phone, pageNo, pageSize));
@@ -46,5 +46,10 @@ public class RequestController {
     @PostMapping("/{id}/approve")
     public ResponseEntity<?> approveRequest(@PathVariable Long id) {
         return ResponseEntity.ok(requestService.approveRequest(id));
+    }
+
+    @GetMapping("/check/{roomId}")
+    public ResponseEntity<?> checkRequest(@PathVariable Long roomId) {
+        return ResponseEntity.ok(requestService.isRequested(roomId));
     }
 }

@@ -23,6 +23,12 @@ const SidebarNav = () => {
           <span className="align-middle">Quản lý phòng ktx</span>
         </NavLink>
       </li>
+      <li className="sidebar-item">
+        <NavLink to="/admin/banner-management" className="sidebar-link">
+          <i className="align-middle" data-feather="image"></i>{" "}
+          <span className="align-middle">Quản lý Banner</span>
+        </NavLink>
+      </li>
     </ul>
   );
 };

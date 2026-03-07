@@ -13,9 +13,9 @@ import com.cntt.rentalmanagement.secruity.TokenProvider;
 import com.cntt.rentalmanagement.services.AuthService;
 import com.cntt.rentalmanagement.services.BaseService;
 import com.cntt.rentalmanagement.services.FileStorageService;
+import com.cntt.rentalmanagement.services.MailService;
 import org.apache.activemq.kaha.impl.index.BadMagicException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -23,19 +23,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ResourceUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-
 import javax.mail.MessagingException;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Objects;
 
@@ -58,7 +51,7 @@ public class AuthServiceImpl extends BaseService implements AuthService {
     private TokenProvider tokenProvider;
 
     @Autowired
-    private JavaMailSender mailSender;
+    private MailService mailService;
 
     @Autowired
     private FileStorageService fileStorageService;
@@ -66,6 +59,7 @@ public class AuthServiceImpl extends BaseService implements AuthService {
 
     @Override
     public URI registerAccount(SignUpRequest signUpRequest) throws MessagingException, IOException {
+        System.out.println("DEBUG: Registering account for email: " + signUpRequest.getEmail());
         if(userRepository.existsByEmail(signUpRequest.getEmail())) {
             throw new BadRequestException("Email đã được sử dụng!!");
         }
@@ -78,8 +72,8 @@ public class AuthServiceImpl extends BaseService implements AuthService {
             throw new BadRequestException("Mật khẩu không khớp. Vui lòng thử lại.");
         }
         
-        if (!signUpRequest.getEmail().endsWith("@gmail.com")) {
-        	throw new BadRequestException("Định dạng email không hợp lệ. Vui lòng thử lại.");
+        if (!signUpRequest.getEmail().endsWith("@gmail.com") && !signUpRequest.getEmail().endsWith("@yopmail.com")) {
+            throw new BadRequestException("Định dạng email không hợp lệ. Vui lòng thử lại.");
         }
 
         // Creating user's account
@@ -92,7 +86,9 @@ public class AuthServiceImpl extends BaseService implements AuthService {
         user.setIsLocked(false);
         user.setIsConfirmed(false);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        sendEmailConfirmed(signUpRequest.getEmail(),signUpRequest.getName());
+        
+        System.out.println("DEBUG: Encoded password for " + user.getEmail());
+        mailService.sendEmailConfirmed(signUpRequest.getEmail(),signUpRequest.getName());
 
         if (RoleName.ROLE_USER.equals(signUpRequest.getRole())) {
             Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
@@ -111,6 +107,8 @@ public class AuthServiceImpl extends BaseService implements AuthService {
         } else {
             throw new IllegalArgumentException("Bạn không có quyền tạo tài khoản!!!!");
         }
+        
+        System.out.println("DEBUG: User saved successfully: " + result.getEmail());
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath().path("/user/me")
@@ -120,21 +118,36 @@ public class AuthServiceImpl extends BaseService implements AuthService {
 
     @Override
     public String login(LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.getEmail(),
-                        loginRequest.getPassword()
-                )
-        );
+        System.out.println("DEBUG: Login attempt for email: " + loginRequest.getEmail());
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getEmail(),
+                            loginRequest.getPassword()
+                    )
+            );
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        return tokenProvider.createToken(authentication);
+            System.out.println("DEBUG: Authentication successful for email: " + loginRequest.getEmail());
+
+            User user = userRepository.findByEmail(loginRequest.getEmail())
+                    .orElseThrow(() -> new BadRequestException("Tài khoản không tồn tại."));
+
+            if (user.getIsConfirmed() == null || !user.getIsConfirmed()) {
+                throw new BadRequestException("Tài khoản của bạn chưa được xác nhận. Vui lòng kiểm tra email để xác nhận tài khoản.");
+            }
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            return tokenProvider.createToken(authentication);
+        } catch (Exception e) {
+            System.out.println("DEBUG: Authentication failed for email: " + loginRequest.getEmail() + " | Error: " + e.getMessage());
+            throw e;
+        }
     }
 
     @Override
     public MessageResponse forgotPassword(EmailRequest emailRequest) throws MessagingException, IOException {
         userRepository.findByEmail(emailRequest.getEmail()).orElseThrow(() -> new BadRequestException("Email này không tồn tại."));
-        sendEmailFromTemplate(emailRequest.getEmail());
+        mailService.sendEmailFromTemplate(emailRequest.getEmail());
         return MessageResponse.builder().message("Gửi yêu cầu thành công.").build();
     }
 
@@ -202,11 +215,20 @@ public class AuthServiceImpl extends BaseService implements AuthService {
     }
 
     @Override
-    public MessageResponse uploadProfile(MultipartFile file, String zalo, String facebook, String address) {
+    public MessageResponse uploadProfile(MultipartFile file, String zalo, String facebook, String address, String phone) {
         User user = userRepository.findById(getUserId()).orElseThrow(() -> new BadRequestException("Tài khoảng không tồn tại"));
         user.setZaloUrl(zalo);
         user.setFacebookUrl(facebook);
         user.setAddress(address);
+        if (phone != null && !phone.isBlank()) {
+            // Check if phone is already used by another user
+            userRepository.findByPhone(phone).ifPresent(existing -> {
+                if (!existing.getId().equals(getUserId())) {
+                    throw new BadRequestException("Số điện thoại này đã được sử dụng bởi tài khoản khác.");
+                }
+            });
+            user.setPhone(phone);
+        }
         if (Objects.nonNull(file)) {
             String image = fileStorageService.storeFile(file).replace("photographer/files/", "");
             user.setImageUrl("http://localhost:8080/image/" + image);
@@ -215,53 +237,6 @@ public class AuthServiceImpl extends BaseService implements AuthService {
         return MessageResponse.builder().message("Thay thông tin cá nhân thành công.").build();
     }
 
-    public void sendEmailFromTemplate(String email) throws MessagingException, IOException {
-
-        MimeMessage message = mailSender.createMimeMessage();
-        message.setFrom(new InternetAddress("khanhhn.hoang@gmail.com"));
-        message.setRecipients(MimeMessage.RecipientType.TO, email);
-        message.setSubject("Yêu cầu cấp lại mật khẩu!!!");
-
-        // Read the HTML template into a String variable
-        String htmlTemplate = readFile("forgot-password.html");
-
-        htmlTemplate = htmlTemplate.replace("EMAILINFO", email);
-
-        // Set the email's content to be the HTML template
-        message.setContent(htmlTemplate, "text/html; charset=utf-8");
-
-        mailSender.send(message);
-    }
-
-    public void sendEmailConfirmed(String email,String name) throws MessagingException, IOException {
-        MimeMessage message = mailSender.createMimeMessage();
-        message.setFrom(new InternetAddress("khanhhn.hoang@gmail.com"));
-        message.setRecipients(MimeMessage.RecipientType.TO, email);
-        message.setSubject("Xác thực tài khoản.");
-
-        // Read the HTML template into a String variable
-        String htmlTemplate = readFileConfirmed("confirm-email.html");
-
-        htmlTemplate = htmlTemplate.replace("NAME", name);
-        htmlTemplate = htmlTemplate.replace("EMAIL", email);
-
-        // Set the email's content to be the HTML template
-        message.setContent(htmlTemplate, "text/html; charset=utf-8");
-
-        mailSender.send(message);
-    }
-
-    public static String readFile(String filename) throws IOException {
-        File file = ResourceUtils.getFile("classpath:forgot-password.html");
-        byte[] encoded = Files.readAllBytes(file.toPath());
-        return new String(encoded, StandardCharsets.UTF_8);
-    }
-
-    public static String readFileConfirmed(String filename) throws IOException {
-        File file = ResourceUtils.getFile("classpath:confirm-email.html");
-        byte[] encoded = Files.readAllBytes(file.toPath());
-        return new String(encoded, StandardCharsets.UTF_8);
-    }
 
     @Override
     public String faceLogin(User user) {

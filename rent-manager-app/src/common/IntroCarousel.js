@@ -1,87 +1,157 @@
-import React, { Component } from "react";
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, Navigation, Pagination } from 'swiper/modules';
+import React, { useEffect, useState } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, Navigation, Pagination } from "swiper/modules";
+import { getActiveBanners } from "../services/fetch/ApiUtils";
+import { API_BASE_URL } from "../constants/Connect";
 
-class IntroCarosel extends Component {
-    render() {
-        return (
-            <>
-                <div className="intro intro-carousel swiper position-relative">
+const IntroCarosel = () => {
+  const [banners, setBanners] = useState([]);
 
+  useEffect(() => {
+    getActiveBanners()
+      .then((res) => {
+        // Sort by orderIndex and take only the first 5
+        const sortedBanners = res
+          .sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0))
+          .slice(0, 5);
+        setBanners(sortedBanners);
+      })
+      .catch((err) => console.error("Could not fetch banners", err));
+  }, []);
 
+  if (!banners || banners.length === 0) {
+    return null; // or render a default fallback if desired
+  }
 
-                    <Swiper spaceBetween={30}
-                        centeredSlides={true}
-                        autoplay={{
-                            delay: 5000,
-                            disableOnInteraction: false,
+  return (
+    <>
+      <div className="intro intro-carousel swiper position-relative">
+        <Swiper
+          spaceBetween={0}
+          centeredSlides={true}
+          autoplay={{
+            delay: 5000,
+            disableOnInteraction: false,
+          }}
+          pagination={{
+            clickable: true,
+          }}
+          navigation={true}
+          modules={[Autoplay, Pagination, Navigation]}
+          className="swiper-wrapper"
+        >
+          {banners.map((banner) => (
+            <SwiperSlide
+              key={banner.id}
+              className="carousel-item-b swiper-slide"
+            >
+              <div className="relative w-full h-[500px] overflow-hidden">
+                {/* Ảnh nền */}
+                <img
+                  src={
+                    banner.imageUrl
+                      ? API_BASE_URL + "/document/" + banner.imageUrl
+                      : "assets/img/slide-1.jpg"
+                  }
+                  className="absolute w-full h-full object-cover"
+                  style={{
+                    objectFit: "cover",
+                    width: "100%",
+                    height: "100%",
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                  }}
+                  alt="Banner"
+                />
+
+                {/* Lớp phủ chuẩn (sử dụng style nội tuyến để mô phỏng Tailwind trong CSS thuần nếu dự án ko build Tailwind chuẩn,
+                     nhưng cũng đính class Tailwind theo yêu cầu) */}
+                <div
+                  className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent z-10"
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    background:
+                      "linear-gradient(to right, rgba(0,0,0,0.6) 0%, transparent 100%)",
+                    zIndex: 10,
+                    width: "100%",
+                    height: "100%",
+                    top: 0,
+                    left: 0,
+                  }}
+                ></div>
+
+                {/* Nội dung */}
+                <div
+                  className="absolute inset-0 z-20 flex flex-col justify-center text-left px-4"
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    zIndex: 20,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    padding: "0 10%",
+                    color: "white",
+                  }}
+                >
+                  <div className="container mx-auto">
+                    <p
+                      className="intro-title-top mb-2"
+                      style={{
+                        fontSize: "1.5rem",
+                        fontWeight: "bold",
+                        textShadow: "1px 1px 3px rgba(0,0,0,0.5)",
+                        maxWidth: "500px",
+                        color: "#ddd",
+                      }}
+                    >
+                      {banner.subtitle}
+                    </p>
+                    <h1
+                      className="intro-title"
+                      style={{
+                        fontSize: "3rem",
+                        fontWeight: "bolder",
+                        color: "white",
+                        textShadow: "2px 2px 4px rgba(0,0,0,0.6)",
+                        maxWidth: "600px",
+                      }}
+                    >
+                      {banner.title}
+                    </h1>
+                    <p className="intro-subtitle intro-price mt-2">
+                      <a
+                        href={banner.url || "/rental-home"}
+                        className="btn btn-primary"
+                        style={{
+                          backgroundColor: "#2eca6a",
+                          border: "none",
+                          padding: "12px 30px",
+                          fontSize: "1.2rem",
+                          color: "white",
+                          textDecoration: "none",
+                          borderRadius: "50px",
+                          fontWeight: "bold",
                         }}
-                        pagination={{
-                            clickable: true,
-                        }}
-                        navigation={true}
-                        modules={[Autoplay, Pagination, Navigation]} className="swiper-wrapper">
-                        <SwiperSlide className="carousel-item-b swiper-slide" >
-                            <div className="swiper-slide carousel-item-a intro-item bg-image" style={{ backgroundImage: `url(assets/img/slide-1.jpg)` }}>
-                                <div className="overlay overlay-a"></div>
-                                <div className="intro-content display-table">
-                                    <div className="table-cell">
-                                        <div className="container">
-                                            <div className="row">
-                                                <div className="col-lg-8">
-                                                    <div className="intro-body">
-                                                        <p className="intro-title-top">Phòng trọ tốt bạn muốn tìm kiếm
-                                                            <br /> 2024
-                                                        </p>
-                                                        <h1 className="intro-title mb-4 ">
-                                                            <span className="color-b">Hà Nội </span> Một
-                                                            <br /> Nơi tuyệt vời
-                                                        </h1>
-                                                        <p className="intro-subtitle intro-price">
-                                                            <a href="/rental-home"><span className="price-a">Ngay đây!</span></a>
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </SwiperSlide>
-                        <SwiperSlide className="carousel-item-b swiper-slide" >
-                            <div className="swiper-slide carousel-item-a intro-item bg-image" style={{ backgroundImage: `url(assets/img/slide-2.jpg)` }}>
-                                <div className="overlay overlay-a"></div>
-                                <div className="intro-content display-table">
-                                    <div className="table-cell">
-                                        <div className="container">
-                                            <div className="row">
-                                                <div className="col-lg-8">
-                                                    <div className="intro-body">
-                                                        <p className="intro-title-top">Nhà bao đẹp, bao sang xịn
-                                                            <br /> Goodjob!
-                                                        </p>
-                                                        <h1 className="intro-title mb-4">
-                                                            <span className="color-b">2000 </span> Phòng trọ
-                                                            <br /> Đã được thuê
-                                                        </h1>
-                                                        <p className="intro-subtitle intro-price">
-                                                            <a href="/rental-home"><span className="price-a">Ngay đây!</span></a>
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </SwiperSlide>
-                    </Swiper>
+                      >
+                        <span>{banner.buttonText}</span>
+                      </a>
+                    </p>
+                  </div>
                 </div>
-                <div className="swiper-pagination"></div>
-
-            </>
-        )
-    }
-}
+              </div>
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      </div>
+      <div className="swiper-pagination"></div>
+    </>
+  );
+};
 
 export default IntroCarosel;

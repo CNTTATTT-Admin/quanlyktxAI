@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -49,6 +50,13 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public Page<User> getAllAccountByRole(String keyword, List<RoleName> roles, Integer pageNo, Integer pageSize) {
+        int page = pageNo == 0 ? pageNo : pageNo - 1;
+        Pageable pageable = PageRequest.of(page, pageSize);
+        return userRepository.searchingAccountByRole(keyword, roles, pageable);
+    }
+
+    @Override
     public User getAccountById(Long id) {
         return userRepository.findById(id).orElseThrow(() -> new BadRequestException("Tài khoản không tồn tại"));
     }
@@ -66,6 +74,14 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public MessageResponse divideAuthorization(Long id, RoleRequest roleRequest) {
         User user = userRepository.findById(id).orElseThrow(() -> new BadRequestException("Tài khoản không tồn tại"));
+
+        // Check if the user is already an Admin
+        boolean isAdmin = user.getRoles().stream()
+                .anyMatch(role -> role.getName().equals(RoleName.ROLE_ADMIN));
+        if (isAdmin) {
+            throw new BadRequestException("Không thể thay đổi quyền của Admin");
+        }
+
         userRepository.deleteRoleOfAccount(user.getId());
         if (roleRequest.getRoleName().equals("RENTALER")) {
             Role userRole = roleRepository.findByName(RoleName.ROLE_RENTALER)

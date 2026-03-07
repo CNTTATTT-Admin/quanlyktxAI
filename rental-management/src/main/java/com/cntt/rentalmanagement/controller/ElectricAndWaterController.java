@@ -77,4 +77,15 @@ public class ElectricAndWaterController {
         ElectricAndWaterResponse electric = electricAndWaterService.getElectricAndWater(id);
         return ResponseEntity.ok(electric);
     }
+
+    @GetMapping("/room/{roomId}")
+    public ResponseEntity<?> getElectricByRoom(@PathVariable Long roomId) {
+        List<ElectricAndWaterResponse> electrics = electricAndWaterService.getElectricByRoom(roomId);
+        return ResponseEntity.ok(electrics);
+    }
+
+    @PutMapping("/{id}/pay")
+    public ResponseEntity<?> payElectricAndWater(@PathVariable Long id) {
+        return ResponseEntity.ok(electricAndWaterService.payElectric(id));
+    }
 }

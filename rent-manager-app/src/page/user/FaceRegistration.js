@@ -50,29 +50,35 @@ const FaceRegistration = ({ currentUser }) => {
     if (!modelsLoaded) return;
     setIsRegistering(true);
 
-    const detections = await faceapi
-      .detectSingleFace(videoRef.current)
-      .withFaceLandmarks()
-      .withFaceDescriptor();
+    try {
+      const detections = await faceapi
+        .detectSingleFace(videoRef.current)
+        .withFaceLandmarks()
+        .withFaceDescriptor();
 
-    if (detections) {
-      const faceVector = Array.from(detections.descriptor);
-      const faceRequest = {
-        userId: currentUser.id,
-        faceVector: faceVector,
-      };
+      if (detections) {
+        const faceVector = Array.from(detections.descriptor);
+        const faceRequest = {
+          userId: currentUser.id,
+          faceVector: faceVector,
+        };
 
-      registerFace(faceRequest)
-        .then((response) => {
-          toast.success("Đăng ký khuôn mặt thành công!");
-          window.location.href = "/"; // Force reload to update filter state
-        })
-        .catch((error) => {
-          toast.error(error.message || "Đăng ký khuôn mặt thất bại.");
-        })
-        .finally(() => setIsRegistering(false));
-    } else {
-      toast.warn("Không tìm thấy khuôn mặt. Vui lòng điều chỉnh vị trí.");
+        registerFace(faceRequest)
+          .then((response) => {
+            toast.success("Đăng ký khuôn mặt thành công!");
+            window.location.href = "/"; // Force reload to update filter state
+          })
+          .catch((error) => {
+            toast.error(error.message || "Đăng ký khuôn mặt thất bại.");
+            setIsRegistering(false);
+          });
+      } else {
+        toast.warn("Không tìm thấy khuôn mặt. Vui lòng điều chỉnh vị trí.");
+        setIsRegistering(false);
+      }
+    } catch (error) {
+      console.error("Error during face registration:", error);
+      toast.error("Có lỗi xảy ra trong quá trình nhận diện.");
       setIsRegistering(false);
     }
   };
@@ -91,9 +97,16 @@ const FaceRegistration = ({ currentUser }) => {
         <button
           onClick={handleRegister}
           disabled={isRegistering || loading || !modelsLoaded}
-          className="btn-register"
+          className={`btn-register ${isRegistering ? "processing" : ""}`}
         >
-          {isRegistering ? "Đang xử lý..." : "Xác thực khuôn mặt"}
+          {isRegistering ? (
+            <>
+              <span className="spinner"></span>
+              Đang xử lý...
+            </>
+          ) : (
+            "Xác thực khuôn mặt"
+          )}
         </button>
       </div>
     </div>

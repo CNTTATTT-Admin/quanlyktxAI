@@ -100,6 +100,11 @@ public class RoomController {
         return ResponseEntity.ok(roomService.checkoutRoom(id));
     }
 
+    @PostMapping("/contract/{id}/checkout")
+    public ResponseEntity<?> checkoutContract(@PathVariable Long id) {
+        return ResponseEntity.ok(roomService.checkoutContract(id));
+    }
+
     @DeleteMapping("/{roomId}/resident/{residentId}")
     public ResponseEntity<?> removeResident(@PathVariable Long roomId, @PathVariable Long residentId) {
         return ResponseEntity.ok(roomService.removeResident(roomId, residentId));

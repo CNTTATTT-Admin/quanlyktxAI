@@ -50,6 +50,15 @@ const SidebarNav = () => {
           <span className="align-middle">Quản lý đơn nghỉ</span>
         </NavLink>
       </li>
+      <li className="sidebar-item">
+        <NavLink
+          to="/rentaler/checkout-request-management"
+          className="sidebar-link"
+        >
+          <i className="align-middle" data-feather="sliders"></i>{" "}
+          <span className="align-middle">Quản lý trả phòng</span>
+        </NavLink>
+      </li>
     </ul>
   );
 };

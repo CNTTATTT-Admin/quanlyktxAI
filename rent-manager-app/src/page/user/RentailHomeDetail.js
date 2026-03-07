@@ -11,11 +11,13 @@ import { Button, Comment, Form } from "semantic-ui-react";
 import "semantic-ui-css/semantic.min.css";
 import Map from "../rentaler/map/MyMapComponent";
 import {
+  checkRequestStatus,
   saveBlog,
   sendEmailForContact,
   sendRequestForRentaler,
 } from "../../services/fetch/ApiUtils";
 import { toast } from "react-toastify";
+import { API_BASE_URL } from "../../constants/Connect";
 
 class RentailHomeDetail extends Component {
   constructor(props) {
@@ -33,13 +35,43 @@ class RentailHomeDetail extends Component {
       nameOfRentaler: "",
       requestSent: false, // Đã gửi request đăng ký ở
       requesting: false, // Đang trong quá trình gửi request
+      isSaved: false, // Trạng thái đã lưu bài đăng
     };
   }
 
   componentDidMount() {
     this.fetchRooms(); // Call the fetchRooms function when component mounts
     this.fetchComments();
+    this.fetchRequestStatus();
+    this.fetchSaveStatus();
   }
+
+  fetchSaveStatus = () => {
+    const id = window.location.pathname.split("/").pop();
+    if (this.props.authenticated) {
+      const { checkBlogSavedStatus } = require("../../services/fetch/ApiUtils");
+      checkBlogSavedStatus(id)
+        .then((response) => {
+          this.setState({ isSaved: response });
+        })
+        .catch((error) => {
+          console.error("Error checking save status:", error);
+        });
+    }
+  };
+
+  fetchRequestStatus = () => {
+    const id = window.location.pathname.split("/").pop();
+    if (this.props.authenticated) {
+      checkRequestStatus(id)
+        .then((response) => {
+          this.setState({ requestSent: response });
+        })
+        .catch((error) => {
+          console.error("Error checking request status:", error);
+        });
+    }
+  };
 
   handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -75,7 +107,7 @@ class RentailHomeDetail extends Component {
   fetchRooms = async () => {
     try {
       const id = window.location.pathname.split("/").pop();
-      const response = await axios.get(`http://localhost:8080/room/${id}`);
+      const response = await axios.get(`${API_BASE_URL}/room/${id}`);
       const data = response.data; // Assuming API returns rooms data
 
       this.setState({
@@ -93,9 +125,7 @@ class RentailHomeDetail extends Component {
   fetchComments = async () => {
     try {
       const id = window.location.pathname.split("/").pop();
-      const response = await axios.get(
-        `http://localhost:8080/room/${id}/comments`,
-      );
+      const response = await axios.get(`${API_BASE_URL}/room/${id}/comments`);
       const comments = response.data; // Assuming API returns comments data
 
       this.setState({
@@ -107,17 +137,43 @@ class RentailHomeDetail extends Component {
   };
 
   handleSaveBlog = (id) => {
-    const storeRequest = { roomId: id };
-    saveBlog(storeRequest)
-      .then((response) => {
-        toast.success(response.message);
-      })
-      .catch((error) => {
-        toast.error(
-          (error && error.message) ||
-            "Vui lòng đăng nhập để có thể lưu bài đăng.",
-        );
-      });
+    if (!this.props.authenticated) {
+      toast.error("Vui lòng đăng nhập để có thể lưu bài đăng.");
+      return;
+    }
+
+    const { isSaved } = this.state;
+    const { saveBlog, unsaveBlog } = require("../../services/fetch/ApiUtils");
+
+    if (isSaved) {
+      // Unsave
+      unsaveBlog(id)
+        .then((response) => {
+          console.log("Unsave response:", response);
+          toast.success(response.message);
+          this.setState({ isSaved: false });
+        })
+        .catch((error) => {
+          toast.error(
+            (error && error.message) ||
+              "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
+          );
+        });
+    } else {
+      // Save
+      const storeRequest = { roomId: id };
+      saveBlog(storeRequest)
+        .then((response) => {
+          toast.success(response.message);
+          this.setState({ isSaved: true });
+        })
+        .catch((error) => {
+          toast.error(
+            (error && error.message) ||
+              "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
+          );
+        });
+    }
   };
 
   handleRequestRoom = () => {
@@ -180,7 +236,7 @@ class RentailHomeDetail extends Component {
       this.setState({ submittingComment: true });
       // Make the API request to submit the comment
       const response = await axios.post(
-        `http://localhost:8080/room/${roomId}/comments`,
+        `${API_BASE_URL}/room/${roomId}/comments`,
         commentData,
         {
           headers: {
@@ -236,9 +292,15 @@ class RentailHomeDetail extends Component {
                     <button
                       type="button"
                       onClick={() => this.handleSaveBlog(rooms?.id)}
-                      class="btn btn-outline-success rounded-pill"
+                      className={`btn ${this.state.isSaved ? "btn-success" : "btn-outline-success"} rounded-pill`}
                     >
-                      Lưu +
+                      {this.state.isSaved ? (
+                        <>
+                          <i className="bi bi-bookmark-fill"></i> Đã lưu
+                        </>
+                      ) : (
+                        "+ Lưu"
+                      )}
                     </button>
                     &nbsp;&nbsp;
                     {rooms &&
@@ -313,10 +375,7 @@ class RentailHomeDetail extends Component {
                           rooms.roomMedia?.map((media) => (
                             <SwiperSlide className="carousel-item-b swiper-slide">
                               <img
-                                src={
-                                  "http://localhost:8080/document/" +
-                                  media.files
-                                }
+                                src={API_BASE_URL + "/document/" + media.files}
                                 alt=""
                                 style={{ width: "100%", height: "100%" }}
                               />
@@ -464,7 +523,7 @@ class RentailHomeDetail extends Component {
                     </div>
                   </div>
                 </div>
-                <div class="col-md-10 offset-md-1">
+                {/* <div class="col-md-10 offset-md-1">
                   <ul
                     class="nav nav-pills-a nav-pills mb-3 section-t3"
                     id="pills-tab"
@@ -551,7 +610,7 @@ class RentailHomeDetail extends Component {
                       />
                     </div>
                   </div>
-                </div>
+                </div> */}
                 <div class="col-md-12">
                   <div class="row section-t3">
                     <div class="col-sm-12">
@@ -583,7 +642,7 @@ class RentailHomeDetail extends Component {
                           >
                             <img
                               src={
-                                resident.imageUrl || "assets/img/agent-1.jpg"
+                                resident?.imageUrl || "/assets/img/agent-1.jpg"
                               }
                               alt={resident.name}
                               style={{

@@ -1,5 +1,6 @@
 package com.cntt.rentalmanagement.controller;
 
+import com.cntt.rentalmanagement.domain.enums.RoleName;
 import com.cntt.rentalmanagement.domain.payload.request.RoleRequest;
 import com.cntt.rentalmanagement.domain.payload.request.SendEmailRequest;
 import com.cntt.rentalmanagement.domain.payload.response.MessageResponse;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.mail.MessagingException;
 import java.io.IOException;
+import java.util.Arrays;
 
 @RestController
 @RequestMapping("/account")
@@ -29,7 +31,7 @@ public class AccountController {
     private ResponseEntity<?> getAllAccountForCustomer(@RequestParam(required = false) String keyword,
                                             @RequestParam Integer pageNo,
                                             @RequestParam Integer pageSize) {
-        return ResponseEntity.ok(accountService.getAllAccount(keyword,pageNo,pageSize));
+        return ResponseEntity.ok(accountService.getAllAccountByRole(keyword, Arrays.asList(RoleName.ROLE_RENTALER), pageNo, pageSize));
     }
 
     @GetMapping("/{id}")

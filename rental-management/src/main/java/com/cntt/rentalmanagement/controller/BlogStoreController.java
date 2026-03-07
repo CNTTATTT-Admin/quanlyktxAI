@@ -7,16 +7,27 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/blog-store")
 @RequiredArgsConstructor
 public class BlogStoreController {
     private final BlogStoreService blogStoreService;
 
-    @PostMapping("/blog-store/save")
+    @PostMapping("/save")
     public ResponseEntity<?> saveBlog(@RequestBody BlogStoreRequest storeRequest){
         return ResponseEntity.ok(blogStoreService.saveBlog(storeRequest));
     }
 
-    @GetMapping("/blog-store/all")
+    @DeleteMapping("/unsave/{roomId}")
+    public ResponseEntity<?> unsaveBlog(@PathVariable Long roomId) {
+        return ResponseEntity.ok(blogStoreService.unsaveBlog(roomId));
+    }
+
+    @GetMapping("/check/{roomId}")
+    public ResponseEntity<?> isBlogSaved(@PathVariable Long roomId) {
+        return ResponseEntity.ok(blogStoreService.isBlogSaved(roomId));
+    }
+
+    @GetMapping("/all")
     public ResponseEntity<?> getAllBlog(@RequestParam Integer pageNo,
                                         @RequestParam Integer pageSize) {
         return ResponseEntity.ok(blogStoreService.getPageOfBlog(pageNo, pageSize));

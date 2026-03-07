@@ -10,4 +10,5 @@ public interface ElectricAndWaterService {
     public ElectricAndWater updateElectric(ElectricAndWater electricAndWater, Long id);
     public List<ElectricAndWaterResponse> getElectricByRoom(Long id);
     public ElectricAndWaterResponse getElectricAndWater(Long id);
+    public com.cntt.rentalmanagement.domain.payload.response.MessageResponse payElectric(Long id);
 }

@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Objects;
+import java.util.UUID;
 
 @Service
 public class FileStorageServiceImpl implements FileStorageService {
@@ -43,23 +44,38 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     @Override
     public String storeFile(MultipartFile file) {
-        // Normalize file name
-        String fileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
+
+        // Lấy tên file gốc
+        String originalFileName = StringUtils.cleanPath(
+                Objects.requireNonNull(file.getOriginalFilename()));
 
         try {
-            // Check if the file's name contains invalid characters
-            if (fileName.contains(".."))
-                throw new FileStorageException("Invalid!!");
 
-            // Copy file to the target location (Replacing existing file with the same name)
-            Path targetLocation = this.fileStorageLocation.resolve(fileName);
-            String filePath = this.fileStorageLocation + "\\" + fileName;
-            ((MultipartFile) file).transferTo(new File(filePath));
-            //Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+            // Check tên file hợp lệ
+            if (originalFileName.contains("..")) {
+                throw new FileStorageException("Invalid file name");
+            }
 
-            return fileName;
+            // Lấy extension của file (.png, .jpg,...)
+            String extension = "";
+            int index = originalFileName.lastIndexOf(".");
+            if (index > 0) {
+                extension = originalFileName.substring(index);
+            }
+
+            // Tạo tên file mới bằng UUID
+            String newFileName = UUID.randomUUID().toString() + extension;
+
+            // Tạo đường dẫn lưu file
+            Path targetLocation = this.fileStorageLocation.resolve(newFileName);
+
+            // Copy file vào thư mục
+            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+
+            return newFileName;
+
         } catch (IOException ex) {
-            throw new FileStorageException("Invalid!!!");
+            throw new FileStorageException("Could not store file");
         }
     }
 

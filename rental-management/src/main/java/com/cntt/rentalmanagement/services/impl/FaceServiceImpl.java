@@ -39,6 +39,11 @@ public class FaceServiceImpl implements FaceService {
     @Override
     @Transactional
     public void registerFace(Long userId, List<Double> faceVector) {
+        User existingUser = recognizeUserByFace(faceVector);
+        if (existingUser != null && !existingUser.getId().equals(userId)) {
+            throw new BadRequestException("Khuôn mặt này đã được đăng ký bởi một tài khoản khác.");
+        }
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         try {

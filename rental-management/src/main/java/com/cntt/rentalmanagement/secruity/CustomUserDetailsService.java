@@ -32,12 +32,9 @@ public class CustomUserDetailsService implements UserDetailsService {
         {
             throw new BadRequestException("Tài khoản của bạn đã bị khóa. Lý do chi tiết sẽ có trong email của bạn.");
         }
-        if (Boolean.FALSE.equals(user.getIsConfirmed())) {
-            throw new BadRequestException("Tài khoản của bạn chưa đuợc xác thực!!!");
-        }
-        if (user.getFaceVector() == null) {
-            throw new BadRequestException("Tài khoản của bạn chưa xác thực khuôn mặt");
-        }
+//        if (Boolean.FALSE.equals(user.getIsConfirmed())) {
+//            throw new BadRequestException("Tài khoản của bạn chưa đuợc xác thực!!!");
+//        }
 
         return UserPrincipal.create(user);
     }

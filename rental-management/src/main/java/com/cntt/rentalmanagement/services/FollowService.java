@@ -9,4 +9,6 @@ public interface FollowService {
     MessageResponse addFollow(FollowRequest followRequest);
 
     Page<FollowResponse> getAllFollowOfCustomer(Integer pageNo, Integer pageSize);
+
+    Boolean isFollowing(Long rentalerId);
 }

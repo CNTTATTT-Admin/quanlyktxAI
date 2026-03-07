@@ -32,7 +32,7 @@ public interface AuthService {
 
     MessageResponse unlockAccount(Long id);
 
-    MessageResponse uploadProfile(MultipartFile file, String zalo, String facebook, String address);
+    MessageResponse uploadProfile(MultipartFile file, String zalo, String facebook, String address, String phone);
 
     String faceLogin(User user);
 }

@@ -1,9 +1,11 @@
 import { API_BASE_URL, ACCESS_TOKEN } from "../../constants/Connect";
 
 export const request = (options) => {
-  const headers = new Headers({
-    "Content-Type": "application/json",
-  });
+  const headers = new Headers();
+
+  if (!(options.body instanceof FormData)) {
+    headers.append("Content-Type", "application/json");
+  }
 
   if (localStorage.getItem(ACCESS_TOKEN)) {
     headers.append(
@@ -16,8 +18,36 @@ export const request = (options) => {
   options = Object.assign({}, defaults, options);
 
   return fetch(options.url, options).then((response) =>
-    response.json().then((json) => {
+    response.text().then((text) => {
+      // Handle empty bodies (e.g., HTTP 200 OK with no content or HTTP 204)
+      const isJson = response.headers
+        .get("content-type")
+        ?.includes("application/json");
+      let json = {};
+
+      if (text) {
+        try {
+          json = JSON.parse(text);
+        } catch (e) {
+          // If it's not valid JSON, but response is OK, we can just return the text
+          if (response.ok) {
+            return text;
+          }
+        }
+      }
+
       if (!response.ok) {
+        if (json.error === "FACE_REQUIRED") {
+          // Toast is now handled globally in index.js via monkey-patch.
+          // We still return a specific error that components can recognize.
+          const message =
+            json.message ||
+            "Vui lòng hoàn tất xác thực khuôn mặt để sử dụng chức năng này.";
+          const error = new Error(message);
+          error.json = json;
+          error.isHandled = true; // Signal to components that this error is common/handled
+          return Promise.reject(error);
+        }
         return Promise.reject(json);
       }
       return json;
@@ -90,6 +120,17 @@ export function getCurrentAdmin() {
 
   return request({
     url: API_BASE_URL + "/admin/me",
+    method: "GET",
+  });
+}
+
+export function getCurrentUserUnified() {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url: API_BASE_URL + "/api/user/me",
     method: "GET",
   });
 }
@@ -201,14 +242,16 @@ export function getAllRoomOfCustomer(
   });
 }
 
-export function getAllAccountRentalerForCustomer(pageNo, pageSize) {
+export function getAllAccountRentalerForCustomer(pageNo, pageSize, keyword) {
   return request({
     url:
       API_BASE_URL +
       "/account/customer?pageNo=" +
       pageNo +
       "&pageSize=" +
-      pageSize,
+      pageSize +
+      "&keyword=" +
+      (keyword || ""),
     method: "GET",
   });
 }
@@ -249,6 +292,28 @@ export function saveBlog(storeRequest) {
     url: API_BASE_URL + "/blog-store/save",
     method: "POST",
     body: JSON.stringify(storeRequest),
+  });
+}
+
+export function unsaveBlog(roomId) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url: API_BASE_URL + "/blog-store/unsave/" + roomId,
+    method: "DELETE",
+  });
+}
+
+export function checkBlogSavedStatus(roomId) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.resolve(false);
+  }
+
+  return request({
+    url: API_BASE_URL + "/blog-store/check/" + roomId,
+    method: "GET",
   });
 }
 
@@ -355,6 +420,28 @@ export function lockedAccount(id) {
   return request({
     url: API_BASE_URL + "/auth/" + id + "/locked",
     method: "POST",
+  });
+}
+
+export function unlockAccount(id) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url: API_BASE_URL + "/auth/unlock/" + id,
+    method: "POST",
+  });
+}
+
+export function checkFollow(rentalerId) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url: API_BASE_URL + "/follow/check/" + rentalerId,
+    method: "GET",
   });
 }
 
@@ -546,6 +633,77 @@ export function getRentOfHome() {
   });
 }
 
+export function getElectricByRoomUser(roomId) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url: API_BASE_URL + "/electric-water/room/" + roomId,
+    method: "GET",
+  });
+}
+
+export function payElectricBill(id) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url: API_BASE_URL + "/electric-water/" + id + "/pay",
+    method: "PUT",
+  });
+}
+
+export function createCheckoutRequest(data) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url: API_BASE_URL + "/checkout-request/user/create",
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function getCheckoutRequestsForRentaler(page, size) {
+  page = page || 0;
+  size = size || 10;
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+  return request({
+    url:
+      API_BASE_URL +
+      "/checkout-request/rentaler/history?pageNo=" +
+      page +
+      "&pageSize=" +
+      size,
+    method: "GET",
+  });
+}
+
+export function approveCheckoutRequest(id) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+  return request({
+    url: API_BASE_URL + "/checkout-request/rentaler/" + id + "/approve",
+    method: "PUT",
+  });
+}
+
+export function rejectCheckoutRequest(id) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+  return request({
+    url: API_BASE_URL + "/checkout-request/rentaler/" + id + "/reject",
+    method: "PUT",
+  });
+}
+
 export function getNumber() {
   if (!localStorage.getItem(ACCESS_TOKEN)) {
     return Promise.reject("No access token set.");
@@ -623,6 +781,17 @@ export function checkoutRoom(id) {
   });
 }
 
+export function checkoutContract(id) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url: API_BASE_URL + "/room/contract/" + id + "/checkout",
+    method: "POST",
+  });
+}
+
 export function sendRequestForRentaler(data) {
   if (!localStorage.getItem(ACCESS_TOKEN)) {
     return Promise.reject("No access token set.");
@@ -642,6 +811,17 @@ export function getRequestById(id) {
 
   return request({
     url: API_BASE_URL + "/request/" + id,
+    method: "GET",
+  });
+}
+
+export function checkRequestStatus(roomId) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url: API_BASE_URL + "/request/check/" + roomId,
     method: "GET",
   });
 }
@@ -730,6 +910,66 @@ export function deleteMaintenance(id) {
   });
 }
 
+export function reportMaintenance(data) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  const formData = new FormData();
+  formData.append("roomId", data.roomId);
+  formData.append("description", data.description);
+  if (data.files && data.files.length > 0) {
+    data.files.forEach((file) => {
+      formData.append("files", file);
+    });
+  }
+
+  return request({
+    url: API_BASE_URL + "/maintenance/user-request",
+    method: "POST",
+    body: formData,
+  });
+}
+
+export function updateMaintenanceStatus(id, data) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  const formData = new FormData();
+  formData.append("status", data.status);
+  if (data.price) formData.append("price", data.price);
+  if (data.maintenanceDate)
+    formData.append("maintenanceDate", data.maintenanceDate);
+  if (data.files && data.files.length > 0) {
+    data.files.forEach((file) => {
+      formData.append("files", file);
+    });
+  }
+
+  return request({
+    url: API_BASE_URL + "/maintenance/" + id + "/status",
+    method: "PUT",
+    body: formData,
+  });
+}
+
+export function getMaintenanceHistoryForUser(pageNo, pageSize) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url:
+      API_BASE_URL +
+      "/maintenance/user?pageNo=" +
+      pageNo +
+      "&pageSize=" +
+      pageSize,
+    method: "GET",
+  });
+}
+
 export function createLeaveRequest(leaveRequest) {
   if (!localStorage.getItem(ACCESS_TOKEN)) {
     return Promise.reject("No access token set.");
@@ -782,5 +1022,80 @@ export function updateLeaveRequestStatus(id, status) {
   return request({
     url: API_BASE_URL + "/leave-request/" + id + "?status=" + status,
     method: "PATCH",
+  });
+}
+
+export function getActiveBanners() {
+  return request({
+    url: API_BASE_URL + "/banner/active",
+    method: "GET",
+  });
+}
+
+export function getAllBanners(pageNo, pageSize) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+  return request({
+    url: API_BASE_URL + "/banner?pageNo=" + pageNo + "&pageSize=" + pageSize,
+    method: "GET",
+  });
+}
+
+export function getBannerById(id) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+  return request({
+    url: API_BASE_URL + "/banner/" + id,
+    method: "GET",
+  });
+}
+
+export function createBanner(bannerRequest) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+  return request({
+    url: API_BASE_URL + "/banner",
+    method: "POST",
+    body:
+      bannerRequest instanceof FormData
+        ? bannerRequest
+        : JSON.stringify(bannerRequest),
+  });
+}
+
+export function updateBanner(id, bannerRequest) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+  return request({
+    url: API_BASE_URL + "/banner/" + id,
+    method: "PUT",
+    body:
+      bannerRequest instanceof FormData
+        ? bannerRequest
+        : JSON.stringify(bannerRequest),
+  });
+}
+
+export function deleteBanner(id) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+  return request({
+    url: API_BASE_URL + "/banner/" + id,
+    method: "DELETE",
+  });
+}
+
+export function toggleBannerActive(id) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+  return request({
+    url: API_BASE_URL + "/banner/" + id + "/toggle",
+    method: "POST",
   });
 }

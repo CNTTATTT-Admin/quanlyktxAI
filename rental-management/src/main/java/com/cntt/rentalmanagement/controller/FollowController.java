@@ -23,4 +23,9 @@ public class FollowController {
                                           @RequestParam Integer pageSize) {
         return ResponseEntity.ok(followService.getAllFollowOfCustomer(pageNo, pageSize));
     }
+
+    @GetMapping("/check/{rentalerId}")
+    public ResponseEntity<?> checkFollow(@PathVariable Long rentalerId) {
+        return ResponseEntity.ok(followService.isFollowing(rentalerId));
+    }
 }

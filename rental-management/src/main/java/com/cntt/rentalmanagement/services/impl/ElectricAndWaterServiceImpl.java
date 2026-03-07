@@ -92,6 +92,17 @@ public class ElectricAndWaterServiceImpl implements ElectricAndWaterService {
             electricAndWaterResponse.setRoom(roomService.getRoomById(electricAndWater.getRoom().getId()));
             electricAndWaterResponse.setPaid(electricAndWater.isPaid());
 
+            // Calculation for split cost
+            Room room = electricAndWater.getRoom();
+            int occupancy = room.getCurrentOccupancy();
+            if (occupancy > 0) {
+                electricAndWaterResponse.setPerPersonElectric(electricAndWater.getTotalMoneyOfElectric().divide(BigDecimal.valueOf(occupancy), 2, BigDecimal.ROUND_HALF_UP));
+                electricAndWaterResponse.setPerPersonWater(electricAndWater.getTotalMoneyOfWater().divide(BigDecimal.valueOf(occupancy), 2, BigDecimal.ROUND_HALF_UP));
+            } else {
+                electricAndWaterResponse.setPerPersonElectric(electricAndWater.getTotalMoneyOfElectric());
+                electricAndWaterResponse.setPerPersonWater(electricAndWater.getTotalMoneyOfWater());
+            }
+
             return electricAndWaterResponse;
         }).toList();
     }
@@ -116,8 +127,26 @@ public class ElectricAndWaterServiceImpl implements ElectricAndWaterService {
 
                 electricAndWaterResponse.setRoom(roomService.getRoomById(electricAndWater.getRoom().getId()));
                 electricAndWaterResponse.setPaid(electricAndWater.isPaid());
+                
+                Room room = electricAndWater.getRoom();
+                int occupancy = room.getCurrentOccupancy();
+                if (occupancy > 0) {
+                    electricAndWaterResponse.setPerPersonElectric(electricAndWater.getTotalMoneyOfElectric().divide(BigDecimal.valueOf(occupancy), 2, BigDecimal.ROUND_HALF_UP));
+                    electricAndWaterResponse.setPerPersonWater(electricAndWater.getTotalMoneyOfWater().divide(BigDecimal.valueOf(occupancy), 2, BigDecimal.ROUND_HALF_UP));
+                } else {
+                    electricAndWaterResponse.setPerPersonElectric(electricAndWater.getTotalMoneyOfElectric());
+                    electricAndWaterResponse.setPerPersonWater(electricAndWater.getTotalMoneyOfWater());
+                }
                 return electricAndWaterResponse;
             })
             .orElseThrow(() -> new RuntimeException("Electric not found with id " + id));
+    }
+
+    @Override
+    public com.cntt.rentalmanagement.domain.payload.response.MessageResponse payElectric(Long id) {
+        ElectricAndWater electricAndWater = electricAndWaterRepository.findById(id).orElseThrow(() -> new RuntimeException("Not found"));
+        electricAndWater.setPaid(true);
+        electricAndWaterRepository.save(electricAndWater);
+        return com.cntt.rentalmanagement.domain.payload.response.MessageResponse.builder().message("Thanh toán thành công.").build();
     }
 }

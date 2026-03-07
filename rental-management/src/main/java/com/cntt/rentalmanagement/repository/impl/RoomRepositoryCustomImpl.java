@@ -110,7 +110,7 @@ public class RoomRepositoryCustomImpl implements RoomRepositoryCustom {
         StringBuilder strQuery = new StringBuilder();
         strQuery.append(" from rental_home.room r ");
         strQuery.append(" where 1=1");
-        strQuery.append(" AND r.status IN ('CHECKED_OUT','ROOM_RENT')");
+        strQuery.append(" AND r.status IN ('CHECKED_OUT','ROOM_RENT','AVAILABLE','OCCUPIED','HIRED')");
         strQuery.append(" AND r.is_locked = 'ENABLE'");
         Map<String, Object> params = new HashMap<>();
         if (Objects.nonNull(userId)) {

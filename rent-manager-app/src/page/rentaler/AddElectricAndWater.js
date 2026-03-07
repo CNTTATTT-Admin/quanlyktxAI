@@ -14,14 +14,14 @@ const AddElectric = (props) => {
 
   const [electricData, setElectricData] = useState({
     name: "",
-    month: "",
+    month: new Date().getMonth() + 1, // default to current month
     lastMonthNumberOfElectric: "",
     thisMonthNumberOfElectric: "",
     lastMonthBlockOfWater: "",
     thisMonthBlockOfWater: "",
     moneyEachNumberOfElectric: "",
     moneyEachBlockOfWater: "",
-    roomId: '',
+    roomId: "",
   });
 
   const handleInputChange = (event) => {
@@ -34,19 +34,19 @@ const AddElectric = (props) => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-      const data = {
-        name: electricData.name,
-        month: electricData.month,
-        lastMonthNumberOfElectric: electricData.lastMonthNumberOfElectric,
-        thisMonthNumberOfElectric: electricData.thisMonthNumberOfElectric,
-        lastMonthBlockOfWater: electricData.lastMonthBlockOfWater,
-        thisMonthBlockOfWater: electricData.thisMonthBlockOfWater,
-        moneyEachNumberOfElectric: electricData.moneyEachNumberOfElectric,
-        moneyEachBlockOfWater: electricData.moneyEachBlockOfWater,
-        room: {
-            id: electricData.roomId
-        }
-      };
+    const data = {
+      name: electricData.name,
+      month: electricData.month,
+      lastMonthNumberOfElectric: electricData.lastMonthNumberOfElectric,
+      thisMonthNumberOfElectric: electricData.thisMonthNumberOfElectric,
+      lastMonthBlockOfWater: electricData.lastMonthBlockOfWater,
+      thisMonthBlockOfWater: electricData.thisMonthBlockOfWater,
+      moneyEachNumberOfElectric: electricData.moneyEachNumberOfElectric,
+      moneyEachBlockOfWater: electricData.moneyEachBlockOfWater,
+      room: {
+        id: electricData.roomId,
+      },
+    };
     await axios
       .post("http://localhost:8080/electric-water/create", data, {
         headers: {
@@ -59,13 +59,13 @@ const AddElectric = (props) => {
   useEffect(() => {
     getRentOfHome()
       .then((response) => {
-        const room = response.content;
-        setRoomOptions(room);
+        const room = response.content || response;
+        setRoomOptions(Array.isArray(room) ? room : []);
       })
       .catch((error) => {
         toast.error(
           (error && error.message) ||
-            "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!"
+            "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
         );
       });
   }, []);
@@ -132,6 +132,7 @@ const AddElectric = (props) => {
                         value={electricData.month}
                         onChange={handleInputChange}
                       >
+                        <option value="">-- Chọn tháng --</option>
                         {Array.from({ length: 12 }, (_, i) => (
                           <option key={i + 1} value={i + 1}>
                             Tháng {i + 1}
@@ -140,7 +141,10 @@ const AddElectric = (props) => {
                       </select>
                     </div>
                     <div className="mb-3 col-md-6">
-                      <label className="form-label" htmlFor="lastMonthNumberOfElectric">
+                      <label
+                        className="form-label"
+                        htmlFor="lastMonthNumberOfElectric"
+                      >
                         Số điện tháng trước
                       </label>
                       <input
@@ -156,7 +160,10 @@ const AddElectric = (props) => {
 
                   <div className="row">
                     <div className="mb-3 col-md-6">
-                      <label className="form-label" htmlFor="thisMonthNumberOfElectric">
+                      <label
+                        className="form-label"
+                        htmlFor="thisMonthNumberOfElectric"
+                      >
                         Số điện tháng này
                       </label>
                       <input
@@ -169,7 +176,10 @@ const AddElectric = (props) => {
                       />
                     </div>
                     <div className="mb-3 col-md-6">
-                      <label className="form-label" htmlFor="moneyEachNumberOfElectric">
+                      <label
+                        className="form-label"
+                        htmlFor="moneyEachNumberOfElectric"
+                      >
                         Số tiền mỗi số
                       </label>
                       <input
@@ -185,49 +195,58 @@ const AddElectric = (props) => {
 
                   <div className="row">
                     <div className="mb-3 col-md-6">
-                        <label className="form-label" htmlFor="lastMonthBlockOfWater">
-                          Số khối tháng trước
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          id="lastMonthBlockOfWater"
-                          name="lastMonthBlockOfWater"
-                          value={electricData.lastMonthBlockOfWater}
-                          onChange={handleInputChange}
-                        />
-                      </div>
+                      <label
+                        className="form-label"
+                        htmlFor="lastMonthBlockOfWater"
+                      >
+                        Số khối tháng trước
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        id="lastMonthBlockOfWater"
+                        name="lastMonthBlockOfWater"
+                        value={electricData.lastMonthBlockOfWater}
+                        onChange={handleInputChange}
+                      />
+                    </div>
 
-                      <div className="mb-3 col-md-6">
-                        <label className="form-label" htmlFor="thisMonthBlockOfWater">
-                          Số khối tháng này
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          id="thisMonthBlockOfWater"
-                          name="thisMonthBlockOfWater"
-                          value={electricData.thisMonthBlockOfWater}
-                          onChange={handleInputChange}
-                        />
-                      </div>
+                    <div className="mb-3 col-md-6">
+                      <label
+                        className="form-label"
+                        htmlFor="thisMonthBlockOfWater"
+                      >
+                        Số khối tháng này
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        id="thisMonthBlockOfWater"
+                        name="thisMonthBlockOfWater"
+                        value={electricData.thisMonthBlockOfWater}
+                        onChange={handleInputChange}
+                      />
+                    </div>
                   </div>
 
                   <div className="row">
-                      <div className="mb-3 col-md-6">
-                        <label className="form-label" htmlFor="moneyEachBlockOfWater">
-                          Số tiền mỗi khối
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          id="moneyEachBlockOfWater"
-                          name="moneyEachBlockOfWater"
-                          value={electricData.moneyEachBlockOfWater}
-                          onChange={handleInputChange}
-                        />
-                      </div>
-                      <div className="mb-3 col-md-6">
+                    <div className="mb-3 col-md-6">
+                      <label
+                        className="form-label"
+                        htmlFor="moneyEachBlockOfWater"
+                      >
+                        Số tiền mỗi khối
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        id="moneyEachBlockOfWater"
+                        name="moneyEachBlockOfWater"
+                        value={electricData.moneyEachBlockOfWater}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                    <div className="mb-3 col-md-6">
                       <label className="form-label" htmlFor="roomId">
                         Chọn phòng
                       </label>
@@ -238,13 +257,13 @@ const AddElectric = (props) => {
                         value={electricData.roomId}
                         onChange={handleInputChange}
                       >
-                      <option value="">Chọn...</option>
-                      {roomOptions.map((roomOption) => (
-                        <option key={roomOption.id} value={roomOption.id}>
-                          {roomOption.title}
-                        </option>
-                      ))}
-                    </select>
+                        <option value="">Chọn...</option>
+                        {roomOptions.map((roomOption) => (
+                          <option key={roomOption.id} value={roomOption.id}>
+                            {roomOption.title}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                   </div>
 

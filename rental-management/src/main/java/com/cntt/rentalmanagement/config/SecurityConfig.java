@@ -114,6 +114,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 		"/send",
                 		"/ws/**",
                 		"/room/**",
+                        "/banner/**",
                         "/error",
                         "/favicon.ico",
                         "/**/*.png",
@@ -131,7 +132,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         "/view-file/**",
                         "/document/**",
                         "/image/**",
-                        "/api/auth/face-register")
+                        "/api/auth/face-register",
+                        "/blog-store/**")
                 .permitAll()
                 .anyRequest()
                 .authenticated()
