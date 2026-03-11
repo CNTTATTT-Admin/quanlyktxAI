@@ -55,9 +55,9 @@ public class ContractServiceImpl extends BaseService implements ContractService 
         // Link student by phone/ID if exists (Preferably by a provided identifier from frontend)
         User student = userRepository.findByPhone(phone).orElseThrow(() -> new BadRequestException("Người dùng với số điện thoại này không tồn tại trong hệ thống"));
         
-        // Validation: Check if student already has an active contract
-        if (contractRepository.existsByStudent(student)) {
-            throw new BadRequestException("Người dùng này đã có một hợp đồng đang hoạt động. Không thể tạo thêm.");
+        // Validation: Check if student already has an active contract or is in a room
+        if (contractRepository.existsByStudent(student) || student.getAllocatedRoom() != null) {
+            throw new BadRequestException("Người dùng này đã có một hợp đồng đang hoạt động hoặc đã được xếp phòng.");
         }
 
         Contract contract = new Contract(name, file, nameRentHome, deadline, getUsername(), getUsername(), room);
@@ -71,11 +71,12 @@ public class ContractServiceImpl extends BaseService implements ContractService 
 
         contractRepository.save(contract);
 
-        // Update room status: If full, set to HIRED. Otherwise, keep as ROOM_RENT (Available)
+        // Update room status:
+        int currentOccupancy = room.getResidents() != null ? room.getResidents().size() : 0;
         if (room.isFull()) {
-            room.setStatus(RoomStatus.HIRED);
+            room.setStatus(RoomStatus.FULL);
         } else {
-            room.setStatus(RoomStatus.ROOM_RENT);
+            room.setStatus(RoomStatus.PARTIALLY_FILLED);
         }
         roomRepository.save(room);
 
@@ -132,17 +133,20 @@ public class ContractServiceImpl extends BaseService implements ContractService 
 
         // Update room statuses
         if (newRoom.isFull()) {
-            newRoom.setStatus(RoomStatus.HIRED);
+            newRoom.setStatus(RoomStatus.FULL);
         } else {
-            newRoom.setStatus(RoomStatus.ROOM_RENT);
+            newRoom.setStatus(RoomStatus.PARTIALLY_FILLED);
         }
         roomRepository.save(newRoom);
 
         if (!oldRoom.getId().equals(newRoom.getId())) {
-            if (oldRoom.isFull()) {
-                oldRoom.setStatus(RoomStatus.HIRED);
+            int oldResidents = oldRoom.getResidents() != null ? oldRoom.getResidents().size() : 0;
+            if (oldResidents == 0) {
+                oldRoom.setStatus(RoomStatus.AVAILABLE);
+            } else if (oldRoom.isFull()) {
+                oldRoom.setStatus(RoomStatus.FULL);
             } else {
-                oldRoom.setStatus(RoomStatus.ROOM_RENT);
+                oldRoom.setStatus(RoomStatus.PARTIALLY_FILLED);
             }
             roomRepository.save(oldRoom);
         }

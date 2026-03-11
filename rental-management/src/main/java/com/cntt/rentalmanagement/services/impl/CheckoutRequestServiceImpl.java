@@ -18,6 +18,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.List;
@@ -58,6 +59,7 @@ public class CheckoutRequestServiceImpl implements CheckoutRequestService {
     }
 
     @Override
+    @Transactional
     public MessageResponse approveRequest(Long id) {
         CheckoutRequest request = checkoutRequestRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy yêu cầu"));
@@ -66,15 +68,9 @@ public class CheckoutRequestServiceImpl implements CheckoutRequestService {
             throw new IllegalArgumentException("Yêu cầu đã được xử lý.");
         }
 
-        // Action: Call actual checkout logic on Room. Wait, roomService.checkoutRoom calls what?
-        // Wait! The user might just be leaving the room but the room might still be occupied by others?
-        // The prompt says "trả phòng xong rồi chọn phòng khác", meaning check out user from room.
-        // Wait, roomService.checkoutRoom checks out the ENTIRE room (makes status AVAILABLE). 
-        // We only want the specific USER to check out! 
-        // Or wait, does "checkoutRoom" evict everyone and change contract? YES.
-        // "roomService.checkoutRoom(request.getRoom().getId())" does the exact action the user meant because in this app, "checkout" means terminating the lease.
-        
-        roomService.checkoutRoom(request.getRoom().getId());
+        // Hành động: Chỉ xóa đúng người gửi yêu cầu ra khỏi phòng
+        // roomService.removeResident đã bao gồm logic cập nhật trạng thái phòng (updateRoomStatus)
+        roomService.removeResident(request.getRoom().getId(), request.getUser().getId());
 
         request.setStatus(CheckoutStatus.APPROVED);
         checkoutRequestRepository.save(request);

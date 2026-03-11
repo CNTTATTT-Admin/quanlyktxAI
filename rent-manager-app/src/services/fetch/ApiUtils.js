@@ -218,6 +218,23 @@ export function getCheckInOutHistory(page, size) {
   });
 }
 
+export function getCheckInOutHistoryByRentaler(page, size, roomId) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  let url =
+    API_BASE_URL + "/auth/face-check/rentaler?page=" + page + "&size=" + size;
+  if (roomId) {
+    url += "&roomId=" + roomId;
+  }
+
+  return request({
+    url: url,
+    method: "GET",
+  });
+}
+
 export function getAllRoomOfCustomer(
   pageNo,
   pageSize,

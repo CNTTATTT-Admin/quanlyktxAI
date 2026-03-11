@@ -69,15 +69,18 @@ class Header extends Component {
                     Người cho thuê
                   </NavLink>
                 </li>
-                <li className="nav-item">
-                  <NavLink
-                    className="nav-link"
-                    to="/check-in-out"
-                    activeClassName="active"
-                  >
-                    Điểm danh (Face ID)
-                  </NavLink>
-                </li>
+                {(!this.props.authenticated ||
+                  this.props.currentUser?.allocatedRoomId != null) && (
+                    <li className="nav-item">
+                      <NavLink
+                        className="nav-link"
+                        to="/check-in-out"
+                        activeClassName="active"
+                      >
+                        Điểm danh (Face ID)
+                      </NavLink>
+                    </li>
+                  )}
               </ul>
             </div>
             {!this.props.authenticated ? (

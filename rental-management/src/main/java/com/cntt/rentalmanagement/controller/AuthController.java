@@ -11,6 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.access.prepost.PreAuthorize;
+import com.cntt.rentalmanagement.secruity.CurrentUser;
+import com.cntt.rentalmanagement.secruity.UserPrincipal;
 
 
 import java.util.List;
@@ -100,5 +103,14 @@ public class AuthController {
     public ResponseEntity<?> faceCheckHistory(@RequestParam(defaultValue = "0") int page,
                                               @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(faceService.getCheckInOutLogs(page, size));
+    }
+
+    @GetMapping("/face-check/rentaler")
+    @PreAuthorize("hasRole('ROLE_RENTALER') or hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> getFaceCheckHistoryForRentaler(@CurrentUser UserPrincipal userPrincipal,
+                                                          @RequestParam(required = false) Long roomId,
+                                                          @RequestParam(defaultValue = "0") int page,
+                                                          @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(faceService.getCheckInOutLogsForRentaler(userPrincipal.getId(), roomId, page, size));
     }
 }

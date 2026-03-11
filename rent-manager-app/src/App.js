@@ -73,6 +73,7 @@ import MaintenanceUserPage from "./page/user/MaintenanceUserPage";
 import ElectricAndWaterUserPage from "./page/user/ElectricAndWaterUserPage";
 import LeaveRequestManagement from "./page/rentaler/LeaveRequestManagement";
 import CheckoutRequestManagement from "./page/rentaler/CheckoutRequestManagement";
+import CheckInOutManagement from "./page/rentaler/CheckInOutManagement";
 import BannerManagement from "./page/admin/BannerManagement";
 import BannerForm from "./page/admin/BannerForm";
 
@@ -152,11 +153,13 @@ function App() {
   if (currentUser) {
     console.log("DEBUG Face ID Condition:", {
       hasFaceVector: !!currentUser.faceVector,
+      hasAllocatedRoom: currentUser.allocatedRoomId != null,
       isNotOnRegPage: window.location.pathname !== "/face-registration",
       shouldShowOverlay:
         authenticated &&
         currentUser &&
         !currentUser.faceVector &&
+        currentUser.allocatedRoomId != null &&
         window.location.pathname !== "/face-registration",
     });
   }
@@ -845,6 +848,24 @@ function App() {
           />
           <Route
             exact
+            path="/rentaler/check-in-out-management"
+            element={
+              <PrivateRoute
+                authenticated={authenticated}
+                role={role}
+                allowedRoles={["ROLE_RENTALER", "ROLE_ADMIN"]}
+              >
+                <CheckInOutManagement
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            exact
             path="/rentaler/export-contract/:id"
             element={
               <PrivateRoute
@@ -971,6 +992,7 @@ function App() {
         {authenticated &&
           currentUser &&
           !currentUser.faceVector &&
+          currentUser.allocatedRoomId != null &&
           window.location.pathname !== "/face-registration" && (
             <div
               style={{

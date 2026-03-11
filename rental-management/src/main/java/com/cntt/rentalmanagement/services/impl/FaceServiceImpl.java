@@ -3,9 +3,11 @@ package com.cntt.rentalmanagement.services.impl;
 import com.cntt.rentalmanagement.domain.enums.CheckType;
 import com.cntt.rentalmanagement.domain.models.CheckInOutLog;
 import com.cntt.rentalmanagement.domain.models.User;
+import com.cntt.rentalmanagement.domain.payload.response.CheckInOutLogResponse;
 import com.cntt.rentalmanagement.exception.BadRequestException;
 import com.cntt.rentalmanagement.repository.CheckInOutLogRepository;
 import com.cntt.rentalmanagement.repository.UserRepository;
+import com.cntt.rentalmanagement.secruity.UserPrincipal;
 import com.cntt.rentalmanagement.services.FaceService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,8 +16,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -81,10 +83,26 @@ public class FaceServiceImpl implements FaceService {
     @Override
     @Transactional
     public void logCheckInOut(List<Double> faceVector, CheckType type) {
-        User user = recognizeUserByFace(faceVector);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = null;
 
-        if (user == null) {
-            throw new BadRequestException("Không thể nhận diện khuôn mặt. Vui lòng thử lại hoặc đăng ký khuôn mặt.");
+        if (authentication != null && authentication.getPrincipal() instanceof UserPrincipal) {
+            UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+            user = userRepository.findById(userPrincipal.getId())
+                    .orElseThrow(() -> new BadRequestException("Không tìm thấy thông tin người dùng."));
+            
+            if (!verifyFace(user, faceVector)) {
+                throw new BadRequestException("Khuôn mặt không khớp với tài khoản đang đăng nhập. Vui lòng kiểm tra lại.");
+            }
+        } else {
+            user = recognizeUserByFace(faceVector);
+            if (user == null) {
+                throw new BadRequestException("Không thể nhận diện khuôn mặt. Vui lòng thử lại hoặc đăng ký khuôn mặt.");
+            }
+        }
+
+        if (user.getAllocatedRoom() == null) {
+            throw new BadRequestException("Bạn hiện không ở trong phòng nào, không thể thực hiện điểm danh.");
         }
 
         CheckInOutLog log = new CheckInOutLog();
@@ -132,12 +150,18 @@ public class FaceServiceImpl implements FaceService {
     }
 
     @Override
-    public Page<CheckInOutLog> getCheckInOutLogs(int page, int size) {
+    public Page<CheckInOutLogResponse> getCheckInOutLogs(int page, int size) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Current user not found"));
         
         Pageable pageable = PageRequest.of(page, size, Sort.by("checkTime").descending());
-        return checkInOutLogRepository.findByUser(user, pageable);
+        return checkInOutLogRepository.findByUser(user, pageable).map(CheckInOutLogResponse::new);
+    }
+
+    @Override
+    public Page<CheckInOutLogResponse> getCheckInOutLogsForRentaler(Long rentalerId, Long roomId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("checkTime").descending());
+        return checkInOutLogRepository.findByRentalerIdAndRoomId(rentalerId, roomId, pageable).map(CheckInOutLogResponse::new);
     }
 }
