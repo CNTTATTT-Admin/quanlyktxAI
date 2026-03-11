@@ -64,7 +64,7 @@ public class FaceCheckFilter extends OncePerRequestFilter {
             UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
             User user = userRepository.findById(userPrincipal.getId()).orElse(null);
 
-            if (user != null && user.getFaceVector() == null) {
+            if (user != null && user.getFaceVector() == null && user.getAllocatedRoom() != null) {
                 logger.warn("User {} attempted to access {} without facial registration", user.getEmail(), path);
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 response.setContentType("application/json");

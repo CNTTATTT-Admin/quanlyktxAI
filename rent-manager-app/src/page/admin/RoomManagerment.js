@@ -259,11 +259,15 @@ function RoomManagement(props) {
                                   currency: "VND",
                                 })}
                             </td>
-                            <td style={{ color: "green" }}>
-                              {item.status === "ROOM_RENT" ||
-                              item.status === "CHECKED_OUT"
-                                ? "Chưa thuê"
-                                : "Đã thuê"}
+                            <td>
+                              {item.status === "AVAILABLE" && <span style={{ color: "green" }}>Trống</span>}
+                              {item.status === "PARTIALLY_FILLED" && <span style={{ color: "orange" }}>Còn chỗ</span>}
+                              {item.status === "FULL" && <span style={{ color: "red" }}>Hết chỗ</span>}
+                              {item.status === "MAINTENANCE" && <span style={{ color: "gray" }}>Bảo trì</span>}
+                              {/* Fallback cho dữ liệu cũ nếu có */}
+                              {item.status === "ROOM_RENT" && <span style={{ color: "green" }}>Còn chỗ</span>}
+                              {item.status === "HIRED" && <span style={{ color: "red" }}>Hết chỗ</span>}
+                              {item.status === "CHECKED_OUT" && <span style={{ color: "gray" }}>Bảo trì</span>}
                             </td>
                             <td style={{ color: "green" }}>
                               <button

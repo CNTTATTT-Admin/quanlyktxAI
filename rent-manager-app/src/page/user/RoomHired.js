@@ -229,25 +229,20 @@ function RoomHired(props) {
                                     <span className="text-muted">Chưa có</span>
                                   )}
                                 </td>
-                                <td
-                                  style={{
-                                    color:
-                                      item.room?.status === "CHECKED_OUT"
-                                        ? "red"
-                                        : "green",
-                                  }}
-                                >
-                                  {item.room?.status === "CHECKED_OUT"
-                                    ? "Đã trả phòng"
-                                    : "Đang ở"}
+                                <td>
+                                  {item.room?.status === "FULL" || item.room?.status === "PARTIALLY_FILLED" || item.room?.status === "ROOM_RENT" ? (
+                                    <span style={{ color: "green" }}>Đang ở</span>
+                                  ) : (
+                                    <span style={{ color: "red" }}>
+                                      {item.room?.status === "MAINTENANCE" || item.room?.status === "CHECKED_OUT" ? "Đã trả phòng" : "Hết hạn"}
+                                    </span>
+                                  )}
                                 </td>
                                 <td>
-                                  {item.room?.status !== "CHECKED_OUT" && (
+                                  {(item.room?.status === "FULL" || item.room?.status === "PARTIALLY_FILLED" || item.room?.status === "ROOM_RENT") && (
                                     <button
                                       className="btn btn-sm btn-danger"
-                                      onClick={() =>
-                                        handleOpenModal(item.room?.id)
-                                      }
+                                      onClick={() => handleOpenModal(item.room?.id)}
                                     >
                                       Yêu cầu rời
                                     </button>

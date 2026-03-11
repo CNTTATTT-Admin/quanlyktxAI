@@ -165,30 +165,16 @@ const RentalHome = (props) => {
                         <div className="card-body-a">
                           <div className="price-box d-flex">
                             <span className="price-a">
-                              {room.status === "ROOM_RENT" &&
-                                `Cho thuê |  ${room.price.toLocaleString(
-                                  "vi-VN",
-                                  {
-                                    style: "currency",
-                                    currency: "VND",
-                                  },
-                                )}`}
-                              {room.status === "HIRED" &&
-                                `Đã thuê | ${room.price.toLocaleString(
-                                  "vi-VN",
-                                  {
-                                    style: "currency",
-                                    currency: "VND",
-                                  },
-                                )}`}
-                              {room.status === "CHECKED_OUT" &&
-                                `Đã trả phòng | ${room.price.toLocaleString(
-                                  "vi-VN",
-                                  {
-                                    style: "currency",
-                                    currency: "VND",
-                                  },
-                                )}`}
+                              {room.status === "AVAILABLE" && "Trống | "}
+                              {room.status === "PARTIALLY_FILLED" && "Còn chỗ | "}
+                              {room.status === "FULL" && "Đã đầy | "}
+                              {room.status === "MAINTENANCE" && "Bảo trì | "}
+                              {["ROOM_RENT", "AVAILABLE", "PARTIALLY_FILLED", "CHECKED_OUT"].includes(room.status) === false && room.status !== "FULL" && room.status !== "MAINTENANCE" && "Đã thuê | "}
+                              {/* Giá tiền */}
+                              {room.price.toLocaleString("vi-VN", {
+                                style: "currency",
+                                currency: "VND",
+                              })}
                             </span>
                           </div>
                           <Link

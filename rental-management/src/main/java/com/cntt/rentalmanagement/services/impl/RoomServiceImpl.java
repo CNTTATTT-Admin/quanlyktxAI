@@ -119,6 +119,9 @@ public class RoomServiceImpl extends BaseService implements RoomService {
     @Override
     public MessageResponse disableRoom(Long id) {
         Room room = roomRepository.findById(id).orElseThrow(() -> new BadRequestException("Thông tin phòng không tồn tại."));
+        if (room.getResidents() != null && !room.getResidents().isEmpty()) {
+            throw new BadRequestException("Không thể khóa phòng khi đang còn sinh viên ở.");
+        }
         room.setIsLocked(LockedStatus.DISABLE);
         roomRepository.save(room);
         return MessageResponse.builder().message("Bài đăng của phòng đã được ẩn đi.").build();
@@ -252,8 +255,8 @@ public class RoomServiceImpl extends BaseService implements RoomService {
     @Override
     public MessageResponse checkoutRoom(Long id) {
         Room room = roomRepository.findById(id).orElseThrow(() -> new BadRequestException("Phòng không còn tồn tại"));
-        // In KTX, mark whole room checked out only if admin explicitly wants to close it
-        room.setStatus(RoomStatus.CHECKED_OUT);
+        // Đặt về MAINTENANCE khi giải tán cả phòng
+        room.setStatus(RoomStatus.MAINTENANCE);
         // Also remove all residents
         if (room.getResidents() != null) {
             for (User resident : room.getResidents()) {
@@ -277,16 +280,7 @@ public class RoomServiceImpl extends BaseService implements RoomService {
             userRepository.save(student);
         }
 
-        // Check remaining occupancy
-        // Note: residents list might need refresh or we count manually
-        long remaining = room.getResidents().stream().filter(u -> !u.getId().equals(student != null ? student.getId() : -1)).count();
-
-        if (remaining == 0) {
-            room.setStatus(RoomStatus.CHECKED_OUT);
-        } else {
-            room.setStatus(RoomStatus.ROOM_RENT); // Keep available if there are others or room is not full
-        }
-        roomRepository.save(room);
+        updateRoomStatus(room);
 
         return MessageResponse.builder().message("Trả phòng thành công").build();
     }
@@ -306,6 +300,9 @@ public class RoomServiceImpl extends BaseService implements RoomService {
     @Override
     public MessageResponse removeRoom(Long id) {
         Room room = roomRepository.findById(id).orElseThrow(() -> new BadRequestException("Phòng không còn tồn tại"));
+        if (room.getResidents() != null && !room.getResidents().isEmpty()) {
+            throw new BadRequestException("Không thể gỡ bài đăng khi phòng đang có sinh viên ở.");
+        }
         if(Boolean.TRUE.equals(room.getIsRemove())){
             throw new BadRequestException("Bài đăng đã bị gỡ");
         }
@@ -349,6 +346,9 @@ public class RoomServiceImpl extends BaseService implements RoomService {
         user.setAllocatedRoom(null);
         userRepository.save(user);
 
+        // Cập nhật trạng thái phòng sau khi xóa cư dân
+        updateRoomStatus(room);
+
         // Send email (async)
         SendEmailRequest emailRequest = new SendEmailRequest();
         emailRequest.setToEmail(user.getEmail());
@@ -358,5 +358,19 @@ public class RoomServiceImpl extends BaseService implements RoomService {
         accountService.sendEmailForRentaler(user.getId(), emailRequest);
 
         return MessageResponse.builder().message("Xóa người dùng ra khỏi phòng thành công").build();
+    }
+
+    private void updateRoomStatus(Room room) {
+        int residents = room.getResidents() != null ? room.getResidents().size() : 0;
+        int max = room.getMaxOccupancy() != null ? room.getMaxOccupancy() : 1;
+
+        if (residents == 0) {
+            room.setStatus(RoomStatus.AVAILABLE);
+        } else if (residents >= max) {
+            room.setStatus(RoomStatus.FULL);
+        } else {
+            room.setStatus(RoomStatus.PARTIALLY_FILLED);
+        }
+        roomRepository.save(room);
     }
 }

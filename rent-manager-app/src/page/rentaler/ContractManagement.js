@@ -303,11 +303,14 @@ function ContractManagement(props) {
                               )}{" "}
                               tháng
                             </td>
-                            <td style={{ color: "green" }}>
-                              {item.room.status === "ROOM_RENT" ||
-                              item.room.status === "CHECKED_OUT"
-                                ? "Đang ở"
-                                : "Đang bảo trì"}
+                            <td>
+                              {item.room.status === "AVAILABLE" && <span style={{ color: "green" }}>Trống</span>}
+                              {item.room.status === "PARTIALLY_FILLED" && <span style={{ color: "orange" }}>Còn chỗ</span>}
+                              {item.room.status === "FULL" && <span style={{ color: "red" }}>Hết chỗ</span>}
+                              {item.room.status === "MAINTENANCE" && <span style={{ color: "gray" }}>Bảo trì</span>}
+                              {/* Fallback */}
+                              {item.room.status === "ROOM_RENT" && <span style={{ color: "green" }}>Còn chỗ</span>}
+                              {item.room.status === "HIRED" && <span style={{ color: "red" }}>Hết chỗ</span>}
                             </td>
                             <td>
                               <a
