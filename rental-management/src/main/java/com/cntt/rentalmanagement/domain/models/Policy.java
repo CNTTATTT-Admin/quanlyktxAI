@@ -1,6 +1,5 @@
 package com.cntt.rentalmanagement.domain.models;
 
-import com.cntt.rentalmanagement.domain.enums.CheckoutStatus;
 import com.cntt.rentalmanagement.domain.models.audit.DateAudit;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,28 +9,22 @@ import lombok.Setter;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "checkout_request")
+@Table(name = "policy")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CheckoutRequest extends DateAudit {
+public class Policy extends DateAudit {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
-
-    @ManyToOne
-    @JoinColumn(name = "room_id")
-    private Room room;
-
     @Column(columnDefinition = "TEXT")
-    private String reason;
+    private String content;
 
-    @Enumerated(EnumType.STRING)
-    private CheckoutStatus status;
+    private String title;
+
+    @Column(name = "is_active")
+    private Boolean isActive;
 }

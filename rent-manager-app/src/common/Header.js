@@ -63,6 +63,15 @@ class Header extends Component {
                 <li className="nav-item">
                   <NavLink
                     className="nav-link "
+                    to="/policy"
+                    activeClassName="active"
+                  >
+                    Nội quy
+                  </NavLink>
+                </li>
+                <li className="nav-item">
+                  <NavLink
+                    className="nav-link "
                     to="/angent-gird"
                     activeClassName="active"
                   >
@@ -71,16 +80,16 @@ class Header extends Component {
                 </li>
                 {(!this.props.authenticated ||
                   this.props.currentUser?.allocatedRoomId != null) && (
-                    <li className="nav-item">
-                      <NavLink
-                        className="nav-link"
-                        to="/check-in-out"
-                        activeClassName="active"
-                      >
-                        Điểm danh (Face ID)
-                      </NavLink>
-                    </li>
-                  )}
+                  <li className="nav-item">
+                    <NavLink
+                      className="nav-link"
+                      to="/check-in-out"
+                      activeClassName="active"
+                    >
+                      Điểm danh
+                    </NavLink>
+                  </li>
+                )}
               </ul>
             </div>
             {!this.props.authenticated ? (

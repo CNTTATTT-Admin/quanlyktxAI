@@ -14,7 +14,7 @@ import com.cntt.rentalmanagement.services.AuthService;
 import com.cntt.rentalmanagement.services.BaseService;
 import com.cntt.rentalmanagement.services.FileStorageService;
 import com.cntt.rentalmanagement.services.MailService;
-import org.apache.activemq.kaha.impl.index.BadMagicException;
+import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import javax.mail.MessagingException;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
@@ -65,7 +64,7 @@ public class AuthServiceImpl extends BaseService implements AuthService {
         }
 
         if (userRepository.findByPhone(signUpRequest.getPhone()).isPresent()) {
-            throw new BadMagicException("Số điện thoại đã được sử dụng.");
+            throw new BadRequestException("Số điện thoại đã được sử dụng.");
         }
 
         if (!signUpRequest.getPassword().equals(signUpRequest.getConfirmPassword())) {

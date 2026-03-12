@@ -8,8 +8,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -39,7 +39,7 @@ public class RequestCustomRepositoryImpl implements RequestCustomRepository {
             params.put("userId", userId);
         }
 
-        String strSelectQuery = "SELECT * " + strQuery + " ORDER BY r.id DESC";
+        String strSelectQuery = "SELECT r.* " + strQuery + " ORDER BY r.id DESC";
 
         String strCountQuery = "SELECT COUNT(DISTINCT r.id)" + strQuery;
 

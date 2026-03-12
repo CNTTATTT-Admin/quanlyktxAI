@@ -21,4 +21,6 @@ public interface CheckInOutLogRepository extends JpaRepository<CheckInOutLog, Lo
     Page<CheckInOutLog> findByRentalerIdAndRoomId(@Param("rentalerId") Long rentalerId, 
                                                 @Param("roomId") Long roomId, 
                                                 Pageable pageable);
+
+    List<CheckInOutLog> findByUserAndCheckTimeBetween(User user, java.time.LocalDateTime start, java.time.LocalDateTime end);
 }

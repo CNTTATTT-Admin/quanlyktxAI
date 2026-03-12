@@ -1116,3 +1116,22 @@ export function toggleBannerActive(id) {
     method: "POST",
   });
 }
+
+// POLICY
+export function getPolicy() {
+  return request({
+    url: API_BASE_URL + "/policy",
+    method: "GET",
+  });
+}
+
+export function updatePolicy(policy) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+  return request({
+    url: API_BASE_URL + "/policy",
+    method: "PUT",
+    body: JSON.stringify(policy),
+  });
+}

@@ -76,6 +76,10 @@ import CheckoutRequestManagement from "./page/rentaler/CheckoutRequestManagement
 import CheckInOutManagement from "./page/rentaler/CheckInOutManagement";
 import BannerManagement from "./page/admin/BannerManagement";
 import BannerForm from "./page/admin/BannerForm";
+import PolicyManagement from "./page/admin/PolicyManagement";
+import PolicyForm from "./page/admin/PolicyForm";
+import PolicyView from "./page/user/PolicyView";
+import ChatWidget from "./common/ChatWidget";
 
 const PrivateRoute = ({ children, authenticated, role, allowedRoles }) => {
   if (!authenticated) {
@@ -166,6 +170,7 @@ function App() {
   return (
     <>
       <Router>
+        <ChatWidget />
         <Routes>
           <Route
             exact
@@ -271,6 +276,17 @@ function App() {
             path="/contact"
             element={
               <Contact
+                authenticated={authenticated}
+                currentUser={currentUser}
+                onLogout={handleLogout}
+              />
+            }
+          />
+          <Route
+            exact
+            path="/policy"
+            element={
+              <PolicyView
                 authenticated={authenticated}
                 currentUser={currentUser}
                 onLogout={handleLogout}
@@ -511,6 +527,42 @@ function App() {
                 allowedRoles={["ROLE_ADMIN"]}
               >
                 <BannerForm
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            exact
+            path="/admin/policy-management"
+            element={
+              <PrivateRoute
+                authenticated={authenticated}
+                role={role}
+                allowedRoles={["ROLE_ADMIN"]}
+              >
+                <PolicyManagement
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            exact
+            path="/admin/policy-management/edit"
+            element={
+              <PrivateRoute
+                authenticated={authenticated}
+                role={role}
+                allowedRoles={["ROLE_ADMIN"]}
+              >
+                <PolicyForm
                   authenticated={authenticated}
                   currentUser={currentUser}
                   role={role}
