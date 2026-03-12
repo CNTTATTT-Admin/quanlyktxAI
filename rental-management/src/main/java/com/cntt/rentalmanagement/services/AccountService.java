@@ -8,7 +8,7 @@ import com.cntt.rentalmanagement.domain.payload.response.MessageResponse;
 import com.cntt.rentalmanagement.domain.payload.response.UserResponse;
 import org.springframework.data.domain.Page;
 
-import javax.mail.MessagingException;
+import jakarta.mail.MessagingException;
 import java.io.IOException;
 import java.util.List;
 

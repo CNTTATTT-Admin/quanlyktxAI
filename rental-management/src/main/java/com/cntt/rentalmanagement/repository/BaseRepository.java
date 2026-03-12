@@ -1,18 +1,17 @@
 package com.cntt.rentalmanagement.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.Query;
+import jakarta.persistence.Tuple;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.internal.SessionImpl;
-import org.hibernate.query.NativeQuery;
-import org.hibernate.transform.AliasToEntityMapResultTransformer;
+import org.hibernate.Session;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.Statement;
@@ -21,35 +20,42 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
 public class BaseRepository {
+
     private static final Logger log = LogManager.getLogger(BaseRepository.class);
 
     private BaseRepository() {
     }
 
-    public static <T> List<T> getResultListNativeQuery(EntityManager em, String strQuery, Map<String, Object> params, Class<T> clazz) {
+    // -------------------------------------------------------------------------
+    // Native Query - List
+    // -------------------------------------------------------------------------
+
+    public static <T> List<T> getResultListNativeQuery(EntityManager em, String strQuery,
+                                                       Map<String, Object> params, Class<T> clazz) {
         Query nativeQuery = em.createNativeQuery(strQuery, clazz);
         return getResultList(nativeQuery, params, clazz);
     }
 
-    public static <T> List<T> getResultListJpaQuery(EntityManager em, String strQuery, Map<String, Object> params, Class<T> clazz)  {
+    // -------------------------------------------------------------------------
+    // JPA Query - List
+    // -------------------------------------------------------------------------
+
+    public static <T> List<T> getResultListJpaQuery(EntityManager em, String strQuery,
+                                                    Map<String, Object> params, Class<T> clazz) {
         Query jpaQuery = em.createQuery(strQuery, clazz);
         return getResultList(jpaQuery, params, clazz);
     }
 
     private static <T> List<T> getResultList(Query query, Map<String, Object> params, Class<T> clazz) {
         params.forEach(query::setParameter);
-        List<T> resultList = new ArrayList();
-        Iterator var6 = query.getResultList().iterator();
+        List<T> resultList = new ArrayList<>();
 
-        while(var6.hasNext()) {
-            Object obj = var6.next();
+        for (Object obj : query.getResultList()) {
             if (obj != null) {
                 if (!clazz.isInstance(obj)) {
-                    throw new IllegalArgumentException("Error") ;
+                    throw new IllegalArgumentException("Error");
                 }
-
                 resultList.add(clazz.cast(obj));
             }
         }
@@ -57,12 +63,22 @@ public class BaseRepository {
         return resultList;
     }
 
-    public static <T> T getScalarResultNativeQuery(EntityManager em, String strQuery, Map<String, Object> params, Class<T> clazz) {
+    // -------------------------------------------------------------------------
+    // Native Query - Scalar
+    // -------------------------------------------------------------------------
+
+    public static <T> T getScalarResultNativeQuery(EntityManager em, String strQuery,
+                                                   Map<String, Object> params, Class<T> clazz) {
         Query nativeCountQuery = em.createNativeQuery(strQuery);
         return getScalarResult(nativeCountQuery, params, clazz);
     }
 
-    public static <T> T getScalarResultJpaQuery(EntityManager em, String strQuery, Map<String, Object> params, Class<T> clazz) {
+    // -------------------------------------------------------------------------
+    // JPA Query - Scalar
+    // -------------------------------------------------------------------------
+
+    public static <T> T getScalarResultJpaQuery(EntityManager em, String strQuery,
+                                                Map<String, Object> params, Class<T> clazz) {
         Query jpaCountQuery = em.createQuery(strQuery);
         return getScalarResult(jpaCountQuery, params, clazz);
     }
@@ -76,68 +92,90 @@ public class BaseRepository {
             String debugResult = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
             log.debug(debugResult);
             log.debug(obj.getClass());
+
             if (clazz.isInstance(obj)) {
                 return clazz.cast(obj);
             }
-        } catch (NoResultException var7) {
-            log.info(var7.getMessage());
-        } catch (Exception var8) {
-            log.error(var8.getMessage());
+        } catch (NoResultException e) {
+            log.info(e.getMessage());
+        } catch (Exception e) {
+            log.error(e.getMessage());
             if (log.isDebugEnabled()) {
-                log.debug(var8.getMessage(), var8);
+                log.debug(e.getMessage(), e);
             }
         }
 
         return null;
     }
 
-    public static <T> Page<T> getPagedNativeQuery(EntityManager em, String strQuery, String strCountQuery, Map<String, Object> params, Pageable pageable, Class<T> clazz) {
+    // -------------------------------------------------------------------------
+    // Native Query - Paged
+    // -------------------------------------------------------------------------
+
+    public static <T> Page<T> getPagedNativeQuery(EntityManager em, String strQuery, String strCountQuery,
+                                                  Map<String, Object> params, Pageable pageable, Class<T> clazz) {
         Query nativeQuery = em.createNativeQuery(strQuery, clazz);
-        Number total = (Number)getScalarResultNativeQuery(em, strCountQuery, params, Number.class);
+        Number total = getScalarResultNativeQuery(em, strCountQuery, params, Number.class);
         return getPaged(nativeQuery, params, pageable, total, clazz);
     }
 
-    public static <T> Page<T> getPagedJpaQuery(EntityManager em, String strQuery, String strCountQuery, Map<String, Object> params, Pageable pageable, Class<T> clazz) {
+    // -------------------------------------------------------------------------
+    // JPA Query - Paged
+    // -------------------------------------------------------------------------
+
+    public static <T> Page<T> getPagedJpaQuery(EntityManager em, String strQuery, String strCountQuery,
+                                               Map<String, Object> params, Pageable pageable, Class<T> clazz) {
         Query jpaQuery = em.createQuery(strQuery, clazz);
         Number total = null;
+
         if (pageable.getPageSize() != Integer.MAX_VALUE) {
-            total = (Number)getScalarResultJpaQuery(em, strCountQuery, params, Number.class);
+            total = getScalarResultJpaQuery(em, strCountQuery, params, Number.class);
         }
 
         return getPaged(jpaQuery, params, pageable, total, clazz);
     }
 
-    private static <T> Page<T> getPaged(Query query, Map<String, Object> params, Pageable pageable, Number total, Class<T> clazz) {
+    private static <T> Page<T> getPaged(Query query, Map<String, Object> params, Pageable pageable,
+                                        Number total, Class<T> clazz) {
         int firstResult = pageable.getPageNumber() * pageable.getPageSize();
         query.setFirstResult(firstResult);
         query.setMaxResults(pageable.getPageSize());
         params.forEach(query::setParameter);
-        List<T> resultList = new ArrayList();
-        Iterator var9 = query.getResultList().iterator();
 
-        while(var9.hasNext()) {
-            Object obj = var9.next();
+        List<T> resultList = new ArrayList<>();
+
+        for (Object obj : query.getResultList()) {
             if (!clazz.isInstance(obj)) {
                 throw new IllegalArgumentException("Error");
             }
-
             resultList.add(clazz.cast(obj));
         }
 
-        return new PageImpl(resultList, pageable, total == null ? (long)resultList.size() : total.longValue());
+        long totalCount = (total == null) ? resultList.size() : total.longValue();
+        return new PageImpl<>(resultList, pageable, totalCount);
     }
 
-    public static <T> T getFirstResultNativeQuery(EntityManager em, String strQuery, Map<String, Object> params, Class<T> clazz) {
+    // -------------------------------------------------------------------------
+    // Native Query - First Result
+    // -------------------------------------------------------------------------
+
+    public static <T> T getFirstResultNativeQuery(EntityManager em, String strQuery,
+                                                  Map<String, Object> params, Class<T> clazz) {
         List<T> list = getResultListNativeQuery(em, strQuery, params, clazz);
         return list.isEmpty() ? null : list.get(0);
     }
 
-    public static <T> Optional<T> getFirstOptionalResultNativeQuery(EntityManager em, String strQuery, Map<String, Object> params, Class<T> clazz) {
+    public static <T> Optional<T> getFirstOptionalResultNativeQuery(EntityManager em, String strQuery,
+                                                                    Map<String, Object> params, Class<T> clazz) {
         T t = getFirstResultNativeQuery(em, strQuery, params, clazz);
-        return t == null ? Optional.empty() : Optional.of(t);
+        return Optional.ofNullable(t);
     }
 
-    public static int countRowEffects(EntityManager em, String strQuery, Map<String, Object> params){
+    // -------------------------------------------------------------------------
+    // DML - Count Row Effects
+    // -------------------------------------------------------------------------
+
+    public static int countRowEffects(EntityManager em, String strQuery, Map<String, Object> params) {
         if (!em.isJoinedToTransaction()) {
             em.joinTransaction();
         }
@@ -147,84 +185,71 @@ public class BaseRepository {
 
         try {
             return nativeQuery.executeUpdate();
-        } catch (Exception var6) {
-            log.error("{}\n{}\n{}\n{}", var6.getMessage(), strQuery, params, var6);
+        } catch (Exception e) {
+            log.error("{}\n{}\n{}\n{}", e.getMessage(), strQuery, params, e);
             throw new IllegalArgumentException("countRowEffects ERROR");
         }
     }
 
-    public static void executeDDLQuery(EntityManager em, String strQuery)  {
+    // -------------------------------------------------------------------------
+    // DDL - Execute DDL Query
+    // -------------------------------------------------------------------------
+
+    public static void executeDDLQuery(EntityManager em, String strQuery) {
         if (!em.isJoinedToTransaction()) {
             em.joinTransaction();
         }
 
-        Connection connection = ((SessionImpl)em.unwrap(SessionImpl.class)).connection();
-
-        try {
-            Throwable var3 = null;
-            Object var4 = null;
-
-            try {
-                Statement statement = connection.createStatement();
-
-                try {
-                    statement.executeUpdate(strQuery);
-                } finally {
-                    if (statement != null) {
-                        statement.close();
-                    }
-
-                }
-
-            } catch (Throwable var13) {
-                if (var3 == null) {
-                    var3 = var13;
-                } else if (var3 != var13) {
-                    var3.addSuppressed(var13);
-                }
-
-                throw var3;
+        // Hibernate 6 (Spring Boot 3): unwrap Session thay vì SessionImpl
+        Session session = em.unwrap(Session.class);
+        session.doWork(connection -> {
+            try (Statement statement = connection.createStatement()) {
+                statement.executeUpdate(strQuery);
+            } catch (Exception e) {
+                log.error("{}\n{}\n{}", e.getMessage(), strQuery, e);
+                throw new IllegalArgumentException("executeQuery ERROR");
             }
-        } catch (Throwable var14) {
-            log.error("{}\n{}\n{}", var14.getMessage(), strQuery, var14);
-            throw new IllegalArgumentException("executeQuery ERROR");
-        }
+        });
     }
 
-    public static List<Map<String, Object>> getResultListNativeQuery(EntityManager em, String strQuery, Map<String, Object> params) {
-        Query nativeQuery = em.createNativeQuery(strQuery);
-        ((NativeQuery)nativeQuery.unwrap(NativeQuery.class)).setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
+    // -------------------------------------------------------------------------
+    // Native Query - Map Result (không dùng deprecated ResultTransformer)
+    // -------------------------------------------------------------------------
+
+    public static List<Map<String, Object>> getResultListNativeQuery(EntityManager em, String strQuery,
+                                                                     Map<String, Object> params) {
+        // Hibernate 6: dùng Tuple thay cho AliasToEntityMapResultTransformer (deprecated)
+        Query nativeQuery = em.createNativeQuery(strQuery, Tuple.class);
         params.forEach(nativeQuery::setParameter);
-        List<Map<String, Object>> resultList = new ArrayList();
+
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS'Z'");
-        Iterator var8 = nativeQuery.getResultList().iterator();
+        List<Map<String, Object>> resultList = new ArrayList<>();
 
-        while(var8.hasNext()) {
-            Object obj = var8.next();
-            if (obj != null) {
-                if (!(obj instanceof Map)) {
-                    throw new IllegalArgumentException("Error");
-                }
+        @SuppressWarnings("unchecked")
+        List<Tuple> tuples = nativeQuery.getResultList();
 
-                Map<?, ?> map = (Map)obj;
-                if (!map.isEmpty()) {
-                    log.info(map);
-                    resultList.add((Map)map.entrySet().parallelStream().filter((e) -> {
-                        return e != null && e.getKey() != null && e.getValue() != null;
-                    }).collect(Collectors.toMap((e) -> {
-                        return String.valueOf(e.getKey());
-                    }, (e) -> {
-                        if (e.getValue() instanceof Date) {
-                            Date date = (Date)e.getValue();
-                            return simpleDateFormat.format(date);
-                        } else if (e.getValue() instanceof Timestamp) {
-                            Timestamp datex = (Timestamp)e.getValue();
-                            return simpleDateFormat.format(datex);
-                        } else {
-                            return e.getValue();
-                        }
-                    })));
-                }
+        for (Tuple tuple : tuples) {
+            if (tuple == null) continue;
+
+            Map<String, Object> row = tuple.getElements().parallelStream()
+                    .filter(e -> e != null && e.getAlias() != null && tuple.get(e) != null)
+                    .collect(Collectors.toMap(
+                            e -> String.valueOf(e.getAlias()),
+                            e -> {
+                                Object value = tuple.get(e);
+                                if (value instanceof Date date) {
+                                    return simpleDateFormat.format(date);
+                                } else if (value instanceof Timestamp timestamp) {
+                                    return simpleDateFormat.format(timestamp);
+                                } else {
+                                    return value;
+                                }
+                            }
+                    ));
+
+            if (!row.isEmpty()) {
+                log.info(row);
+                resultList.add(row);
             }
         }
 

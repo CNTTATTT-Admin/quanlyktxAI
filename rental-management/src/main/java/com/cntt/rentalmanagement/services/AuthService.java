@@ -7,7 +7,7 @@ import com.cntt.rentalmanagement.domain.payload.request.*;
 import com.cntt.rentalmanagement.domain.payload.response.MessageResponse;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.mail.MessagingException;
+import jakarta.mail.MessagingException;
 import java.io.IOException;
 import java.net.URI;
 

@@ -6,6 +6,9 @@ spring:
   sql:
     init:
       mode: always
+  ai:
+    openai:
+      api-key: ${SPRING_AI_OPENAI_API_KEY}
 
   jpa:
     generate-ddl: true
@@ -16,7 +19,7 @@ spring:
       naming-strategy: org.hibernate.cfg.ImprovedNamingStrategy
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+        dialect: org.hibernate.dialect.MySQLDialect
   security:
     oauth2:
       client:

@@ -8,8 +8,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +46,7 @@ public class ContractRepositoryCustomImpl implements ContractRepositoryCustom {
             strQuery.append(" AND r.user_id = :userId");
             params.put("userId", userId);
         }
-        String strSelectQuery = "SELECT * " + strQuery;
+        String strSelectQuery = "SELECT c.* " + strQuery;
 
         String strCountQuery = "SELECT COUNT(DISTINCT c.id)" + strQuery;
         return BaseRepository.getPagedNativeQuery(em,strSelectQuery, strCountQuery, params, pageable, Contract.class);
@@ -66,7 +66,7 @@ public class ContractRepositoryCustomImpl implements ContractRepositoryCustom {
             params.put("userId", userId);
         }
 
-        String strSelectQuery = "SELECT * " + strQuery;
+        String strSelectQuery = "SELECT c.* " + strQuery;
         return BaseRepository.getResultListNativeQuery(em,strSelectQuery, params, Contract.class);
     }
 
@@ -84,7 +84,7 @@ public class ContractRepositoryCustomImpl implements ContractRepositoryCustom {
             params.put("phone", phone);
         }
 
-        String strSelectQuery = "SELECT * " + strQuery;
+        String strSelectQuery = "SELECT c.* " + strQuery;
 
         String strCountQuery = "SELECT COUNT(DISTINCT c.id)" + strQuery;
         return BaseRepository.getPagedNativeQuery(em,strSelectQuery, strCountQuery, params, pageable, Contract.class);

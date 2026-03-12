@@ -1,6 +1,6 @@
 package com.cntt.rentalmanagement.services;
 
-import javax.mail.MessagingException;
+import jakarta.mail.MessagingException;
 import java.io.IOException;
 
 public interface MailService {
