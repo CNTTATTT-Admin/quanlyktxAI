@@ -109,7 +109,8 @@ public class SecurityConfig {
                                 "/document/**",
                                 "/image/**",
                                 "/api/auth/face-register",
-                                "/blog-store/**"
+                                "/blog-store/**",
+                                "/api/ai/**"
                         ).permitAll()
                         // WebSocket
                         .requestMatchers(AntPathRequestMatcher.antMatcher("/ws/**")).permitAll()

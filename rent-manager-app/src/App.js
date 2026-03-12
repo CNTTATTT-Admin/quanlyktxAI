@@ -79,6 +79,7 @@ import BannerForm from "./page/admin/BannerForm";
 import PolicyManagement from "./page/admin/PolicyManagement";
 import PolicyForm from "./page/admin/PolicyForm";
 import PolicyView from "./page/user/PolicyView";
+import ChatWidget from "./common/ChatWidget";
 
 const PrivateRoute = ({ children, authenticated, role, allowedRoles }) => {
   if (!authenticated) {
@@ -169,6 +170,7 @@ function App() {
   return (
     <>
       <Router>
+        <ChatWidget />
         <Routes>
           <Route
             exact

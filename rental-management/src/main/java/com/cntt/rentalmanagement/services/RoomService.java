@@ -45,4 +45,6 @@ public interface RoomService {
 
     MessageResponse removeResident(Long roomId, Long residentId);
     MessageResponse checkoutContract(Long contractId);
+
+    List<RoomResponse> getTop3CheapestAvailableRooms();
 }

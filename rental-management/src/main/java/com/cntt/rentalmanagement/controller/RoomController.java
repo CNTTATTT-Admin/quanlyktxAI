@@ -161,7 +161,7 @@ public class RoomController {
                 .address(address)
                 .locationId(locationId)
                 .categoryId(categoryId)
-                .status(RoomStatus.ROOM_RENT)
+                .status(RoomStatus.AVAILABLE)
                 .assets(assets)
                 .files(files)
                 .internetCost(internetCost)

@@ -373,4 +373,17 @@ public class RoomServiceImpl extends BaseService implements RoomService {
         }
         roomRepository.save(room);
     }
+
+    @Override
+    public List<RoomResponse> getTop3CheapestAvailableRooms() {
+        return roomRepository.findAll().stream()
+                .filter(room ->
+                        RoomStatus.AVAILABLE == room.getStatus() || RoomStatus.PARTIALLY_FILLED == room.getStatus())
+                .filter(room -> Boolean.TRUE.equals(room.getIsApprove()))
+                .filter(room -> !Boolean.TRUE.equals(room.getIsRemove()))
+                .sorted(Comparator.comparing(room -> room.getPrice() != null ? room.getPrice() : java.math.BigDecimal.ZERO))
+                .limit(3)
+                .map(room -> mapperUtils.convertToResponse(room, RoomResponse.class))
+                .toList();
+    }
 }
