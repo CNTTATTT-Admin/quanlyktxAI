@@ -34,7 +34,9 @@ const PolicyView = (props) => {
               <div className="col-md-12 col-lg-8">
                 <div className="title-single-box">
                   <h1 className="title-single">Nội quy chung</h1>
-                  <span className="color-text-a">Các quy định và nội quy tại Kí túc xá</span>
+                  <span className="color-text-a">
+                    Các quy định và nội quy tại Kí túc xá
+                  </span>
                 </div>
               </div>
             </div>
@@ -47,7 +49,10 @@ const PolicyView = (props) => {
                 <div className="bg-white p-5 rounded shadow-sm border">
                   {loading ? (
                     <div className="text-center p-5">
-                      <div className="spinner-border text-primary" role="status">
+                      <div
+                        className="spinner-border text-primary"
+                        role="status"
+                      >
                         <span className="visually-hidden">Đang tải...</span>
                       </div>
                     </div>
@@ -56,19 +61,20 @@ const PolicyView = (props) => {
                       <h2 className="text-center text-primary mb-5 display-6 fw-bold border-bottom pb-4">
                         {policy.title}
                       </h2>
-                      <div 
-                        className="policy-body text-dark" 
-                        style={{ 
-                          whiteSpace: 'pre-line', 
-                          lineHeight: '2', 
-                          fontSize: '1.2rem',
-                          textAlign: 'justify'
+                      <div
+                        className="policy-body text-dark"
+                        style={{
+                          whiteSpace: "pre-line",
+                          lineHeight: "2",
+                          fontSize: "1.2rem",
+                          textAlign: "justify",
                         }}
                       >
                         {policy.content}
                       </div>
                       <div className="mt-5 pt-3 border-top text-muted small">
-                        Ngày cập nhật cuối cùng: {new Date(policy.updatedAt).toLocaleDateString('vi-VN')}
+                        Ngày cập nhật cuối cùng:{" "}
+                        {new Date(policy.updatedAt).toLocaleDateString("vi-VN")}
                       </div>
                     </>
                   ) : (

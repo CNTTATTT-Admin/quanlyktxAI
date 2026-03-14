@@ -166,10 +166,19 @@ const RentalHome = (props) => {
                           <div className="price-box d-flex">
                             <span className="price-a">
                               {room.status === "AVAILABLE" && "Trống | "}
-                              {room.status === "PARTIALLY_FILLED" && "Còn chỗ | "}
+                              {room.status === "PARTIALLY_FILLED" &&
+                                "Còn chỗ | "}
                               {room.status === "FULL" && "Đã đầy | "}
                               {room.status === "MAINTENANCE" && "Bảo trì | "}
-                              {["ROOM_RENT", "AVAILABLE", "PARTIALLY_FILLED", "CHECKED_OUT"].includes(room.status) === false && room.status !== "FULL" && room.status !== "MAINTENANCE" && "Đã thuê | "}
+                              {[
+                                "ROOM_RENT",
+                                "AVAILABLE",
+                                "PARTIALLY_FILLED",
+                                "CHECKED_OUT",
+                              ].includes(room.status) === false &&
+                                room.status !== "FULL" &&
+                                room.status !== "MAINTENANCE" &&
+                                "Đã thuê | "}
                               {/* Giá tiền */}
                               {room.price.toLocaleString("vi-VN", {
                                 style: "currency",

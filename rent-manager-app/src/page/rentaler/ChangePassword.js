@@ -48,64 +48,47 @@ function ChangePassword(props) {
     }
 
     return (
-        <div className="wrapper">
-            <nav id="sidebar" className="sidebar js-sidebar">
-                <div className="sidebar-content js-simplebar">
-                    <a className="sidebar-brand" href="index.html">
-                        <span className="align-middle">RENTALER PRO</span>
-                    </a>
-                    <SidebarNav />
-                </div>
-            </nav>
+        <div className="card">
+            <div className="card-body">
+                <h5 className="card-title">Thay đổi mật khẩu</h5>
 
-            <div className="main">
-                <Nav onLogout={onLogout} currentUser={currentUser} />
-
-                <main style={{ margin: "20px 20px 20px 20px" }}>
-                    <div className="card">
-                        <div className="card-body">
-                            <h5 className="card-title">Thay đổi mật khẩu</h5>
-
-                            <form onSubmit={handleSubmit}>
-                                <div className="mb-3">
-                                    <label className="form-label" htmlFor="inputPasswordCurrent">Mật khẩu cũ</label>
-                                    <input
-                                        type="password"
-                                        className="form-control"
-                                        id="inputPasswordCurrent"
-                                        name="oldPassword"
-                                        value={passwordRequest.oldPassword}
-                                        onChange={handleChange}
-                                    />
-                                    <small><a href="/forgot-password">Quên mật khẩu?</a></small>
-                                </div>
-                                <div className="mb-3">
-                                    <label className="form-label" htmlFor="inputPasswordNew">Mật khẩu mới</label>
-                                    <input
-                                        type="password"
-                                        className="form-control"
-                                        id="inputPasswordNew"
-                                        name="newPassword"
-                                        value={passwordRequest.newPassword}
-                                        onChange={handleChange}
-                                    />
-                                </div>
-                                <div className="mb-3">
-                                    <label className="form-label" htmlFor="inputPasswordNew2">Xác nhận mật khẩu mới</label>
-                                    <input
-                                        type="password"
-                                        className="form-control"
-                                        id="inputPasswordNew2"
-                                        name="confirmPassword"
-                                        value={passwordRequest.confirmPassword}
-                                        onChange={handleChange}
-                                    />
-                                </div>
-                                <button type="submit" className="btn btn-primary">Lưu</button>
-                            </form>
-                        </div>
+                <form onSubmit={handleSubmit}>
+                    <div className="mb-3">
+                        <label className="form-label" htmlFor="inputPasswordCurrent">Mật khẩu cũ</label>
+                        <input
+                            type="password"
+                            className="form-control"
+                            id="inputPasswordCurrent"
+                            name="oldPassword"
+                            value={passwordRequest.oldPassword}
+                            onChange={handleChange}
+                        />
+                        <small><a href="/forgot-password">Quên mật khẩu?</a></small>
                     </div>
-                </main>
+                    <div className="mb-3">
+                        <label className="form-label" htmlFor="inputPasswordNew">Mật khẩu mới</label>
+                        <input
+                            type="password"
+                            className="form-control"
+                            id="inputPasswordNew"
+                            name="newPassword"
+                            value={passwordRequest.newPassword}
+                            onChange={handleChange}
+                        />
+                    </div>
+                    <div className="mb-3">
+                        <label className="form-label" htmlFor="inputPasswordNew2">Xác nhận mật khẩu mới</label>
+                        <input
+                            type="password"
+                            className="form-control"
+                            id="inputPasswordNew2"
+                            name="confirmPassword"
+                            value={passwordRequest.confirmPassword}
+                            onChange={handleChange}
+                        />
+                    </div>
+                    <button type="submit" className="btn btn-primary">Lưu</button>
+                </form>
             </div>
         </div>
     )

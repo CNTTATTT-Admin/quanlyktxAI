@@ -79,178 +79,159 @@ const ElectricAndWaterManagement = (props) => {
   }
 
   return (
-    <div>
-      <div className="wrapper">
-        <nav id="sidebar" className="sidebar js-sidebar">
-          <div className="sidebar-content js-simplebar">
-            <a className="sidebar-brand" href="index.html">
-              <span className="align-middle">RENTALER PRO</span>
-            </a>
-            <SidebarNav />
-          </div>
-        </nav>
-
-        <div className="main">
-          <Nav onLogout={onLogout} currentUser={currentUser} />
-          <br />
-          <div className="container-fluid p-0"></div>
-          <div className="card">
-            <div className="card-header">
-              <h5 className="card-title">Quản lý tiền điện nước</h5>
-              <h6 className="card-subtitle text-muted">
-                Quản lý tiền điện nước của những người thuê trọ.
-              </h6>
-            </div>
-            <div className="card-body">
-              <div
-                id="datatables-buttons_wrapper"
-                className="dataTables_wrapper dt-bootstrap5 no-footer"
-              >
-                <div className="row">
-                  <div className="col-sm-12 col-md-6">
-                    <div className="dt-buttons btn-group flex-wrap">
-                      <button
-                        className="btn btn-secondary buttons-copy buttons-html5"
-                        type="button"
-                        onClick={handleRedirectAddElectric}
-                      >
-                        Thêm tiền điện nước
-                      </button>
-                    </div>
-                  </div>
-                  <div className="col-sm-12 col-md-6">
-                    <div
-                      id="datatables-buttons_filter"
-                      className="dataTables_filter"
-                    >
-                      <label>
-                        Search:
-                        <input
-                          type="search"
-                          className="form-control form-control-sm"
-                          placeholder=""
-                          aria-controls="datatables-buttons"
-                          value={searchQuery}
-                          onChange={handleSearch}
-                        />
-                      </label>
-                    </div>
-                  </div>
+    <div className="container-fluid p-0">
+      <div className="card">
+        <div className="card-header">
+          <h5 className="card-title">Quản lý tiền điện nước</h5>
+          <h6 className="card-subtitle text-muted">
+            Quản lý tiền điện nước của những người thuê trọ.
+          </h6>
+        </div>
+        <div className="card-body">
+          <div
+            id="datatables-buttons_wrapper"
+            className="dataTables_wrapper dt-bootstrap5 no-footer"
+          >
+            <div className="row">
+              <div className="col-sm-12 col-md-6">
+                <div className="dt-buttons btn-group flex-wrap">
+                  <button
+                    className="btn btn-secondary buttons-copy buttons-html5"
+                    type="button"
+                    onClick={handleRedirectAddElectric}
+                  >
+                    Thêm tiền điện nước
+                  </button>
                 </div>
-                <div className="row dt-row">
-                  <div className="col-sm-12">
-                    <table
-                      id="datatables-buttons"
-                      className="table table-striped dataTable no-footer dtr-inline"
-                      style={{ width: "100%" }}
-                      aria-describedby="datatables-buttons_info"
-                    >
-                      <thead>
-                        <tr>
-                          <th>Tên hóa đơn</th>
-                          <th>Phòng</th>
-                          <th>Tháng sử dụng</th>
-                          <th>Số điện tháng trước</th>
-                          <th>Số điện tháng này</th>
-                          <th>Số khối tháng trước</th>
-                          <th>Số khối tháng này</th>
-                          <th>Tổng tiền điện</th>
-                          <th>Tổng tiền nước</th>
-                          <th>Trạng Thái</th>
-                          <th>Chế độ</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {tableData.map((item) => (
-                          <tr key={item.id} className="odd">
-                            <td>{item.name}</td>
-                            <td>{item.room?.title}</td>
-                            <td className="dtr-control sorting_1">
-                              Tháng {item.month}
-                            </td>
-                            <td>{item.lastMonthNumberOfElectric}</td>
-                            <td>{item.thisMonthNumberOfElectric}</td>{" "}
-                            <td>{item.lastMonthBlockOfWater}</td>
-                            <td>{item.thisMonthBlockOfWater}</td>{" "}
-                            {/* Sửa thành thisMonthBlock thay vì moneyEachBlock */}
-                            <td>
-                              {item.totalMoneyOfElectric?.toLocaleString(
-                                "vi-VN",
-                                {
-                                  style: "currency",
-                                  currency: "VND",
-                                },
-                              )}
-                              <br />
-                              <small className="text-muted">
-                                (Mỗi người:{" "}
-                                {item.perPersonElectric?.toLocaleString(
-                                  "vi-VN",
-                                  {
-                                    style: "currency",
-                                    currency: "VND",
-                                  },
-                                )}
-                                )
-                              </small>
-                            </td>
-                            <td>
-                              {item.totalMoneyOfWater?.toLocaleString("vi-VN", {
-                                style: "currency",
-                                currency: "VND",
-                              })}
-                              <br />
-                              <small className="text-muted">
-                                (Mỗi người:{" "}
-                                {item.perPersonWater?.toLocaleString("vi-VN", {
-                                  style: "currency",
-                                  currency: "VND",
-                                })}
-                                )
-                              </small>
-                            </td>
-                            <td>
-                              {item.paid ? "Đã thanh toán" : "Chưa thanh toán"}
-                            </td>{" "}
-                            <td>
-                              <a
-                                href=""
-                                onClick={() => handleEditElectric(item.id)}
-                                data-toggle="tooltip"
-                                data-placement="bottom"
-                                title="Sửa thông tin tiền điện nước"
-                              >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="24"
-                                  height="24"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  stroke-width="2"
-                                  stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                  class="feather feather-edit-2 align-middle"
-                                >
-                                  <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
-                                </svg>
-                              </a>
-                              {/* &nbsp;&nbsp; */}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+              </div>
+              <div className="col-sm-12 col-md-6">
+                <div
+                  id="datatables-buttons_filter"
+                  className="dataTables_filter"
+                >
+                  <label>
+                    Search:
+                    <input
+                      type="search"
+                      className="form-control form-control-sm"
+                      placeholder=""
+                      aria-controls="datatables-buttons"
+                      value={searchQuery}
+                      onChange={handleSearch}
+                    />
+                  </label>
                 </div>
-                <Pagination
-                  itemsPerPage={itemsPerPage}
-                  totalItems={totalItems}
-                  currentPage={currentPage}
-                  paginate={paginate}
-                />
               </div>
             </div>
+            <div className="row dt-row">
+              <div className="col-sm-12">
+                <table
+                  id="datatables-buttons"
+                  className="table table-striped dataTable no-footer dtr-inline"
+                  style={{ width: "100%" }}
+                  aria-describedby="datatables-buttons_info"
+                >
+                  <thead>
+                    <tr>
+                      <th>Tên hóa đơn</th>
+                      <th>Phòng</th>
+                      <th>Tháng sử dụng</th>
+                      <th>Số điện tháng trước</th>
+                      <th>Số điện tháng này</th>
+                      <th>Số khối tháng trước</th>
+                      <th>Số khối tháng này</th>
+                      <th>Tổng tiền điện</th>
+                      <th>Tổng tiền nước</th>
+                      <th>Trạng Thái</th>
+                      <th>Chế độ</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tableData.map((item) => (
+                      <tr key={item.id} className="odd">
+                        <td>{item.name}</td>
+                        <td>{item.room?.title}</td>
+                        <td className="dtr-control sorting_1">
+                          Tháng {item.month}
+                        </td>
+                        <td>{item.lastMonthNumberOfElectric}</td>
+                        <td>{item.thisMonthNumberOfElectric}</td>{" "}
+                        <td>{item.lastMonthBlockOfWater}</td>
+                        <td>{item.thisMonthBlockOfWater}</td>{" "}
+                        {/* Sửa thành thisMonthBlock thay vì moneyEachBlock */}
+                        <td>
+                          {item.totalMoneyOfElectric?.toLocaleString("vi-VN", {
+                            style: "currency",
+                            currency: "VND",
+                          })}
+                          <br />
+                          <small className="text-muted">
+                            (Mỗi người:{" "}
+                            {item.perPersonElectric?.toLocaleString("vi-VN", {
+                              style: "currency",
+                              currency: "VND",
+                            })}
+                            )
+                          </small>
+                        </td>
+                        <td>
+                          {item.totalMoneyOfWater?.toLocaleString("vi-VN", {
+                            style: "currency",
+                            currency: "VND",
+                          })}
+                          <br />
+                          <small className="text-muted">
+                            (Mỗi người:{" "}
+                            {item.perPersonWater?.toLocaleString("vi-VN", {
+                              style: "currency",
+                              currency: "VND",
+                            })}
+                            )
+                          </small>
+                        </td>
+                        <td>
+                          {item.paid ? "Đã thanh toán" : "Chưa thanh toán"}
+                        </td>{" "}
+                        <td>
+                          <a
+                            href=""
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleEditElectric(item.id);
+                            }}
+                            data-toggle="tooltip"
+                            data-placement="bottom"
+                            title="Sửa thông tin tiền điện nước"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="feather feather-edit-2 align-middle"
+                            >
+                              <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                            </svg>
+                          </a>
+                          {/* &nbsp;&nbsp; */}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <Pagination
+              itemsPerPage={itemsPerPage}
+              totalItems={totalItems}
+              currentPage={currentPage}
+              paginate={paginate}
+            />
           </div>
         </div>
       </div>

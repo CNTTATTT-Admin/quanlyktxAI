@@ -80,134 +80,112 @@ function CheckoutRequestManagement(props) {
 
   return (
     <>
-      <div className="wrapper">
-        <nav id="sidebar" className="sidebar js-sidebar">
-          <div className="sidebar-content js-simplebar">
-            <a className="sidebar-brand" href="/">
-              <span className="align-middle">RENTALER PRO</span>
-            </a>
-            <SidebarNav />
+      <div className="container-fluid p-0">
+        <div className="card">
+          <div className="card-header">
+            <h5 className="card-title">Quản lý Yêu cầu trả phòng</h5>
+            <h6 className="card-subtitle text-muted">
+              Duyệt hoặc từ chối các yêu cầu trả phòng của người thuê. Việc
+              duyệt sẽ tự động kết thúc hợp đồng hiện tại.
+            </h6>
           </div>
-        </nav>
-
-        <div className="main">
-          <Nav onLogout={onLogout} currentUser={currentUser} />
-
-          <br />
-          <div className="container-fluid p-0">
-            <div className="card">
-              <div className="card-header">
-                <h5 className="card-title">Quản lý Yêu cầu trả phòng</h5>
-                <h6 className="card-subtitle text-muted">
-                  Duyệt hoặc từ chối các yêu cầu trả phòng của người thuê. Việc
-                  duyệt sẽ tự động kết thúc hợp đồng hiện tại.
-                </h6>
-              </div>
-              <div className="card-body">
-                <div
-                  id="datatables-buttons_wrapper"
-                  className="dataTables_wrapper dt-bootstrap5 no-footer"
-                >
-                  <div className="row dt-row">
-                    <div className="col-sm-12">
-                      <table
-                        className="table table-striped dataTable no-footer"
-                        style={{ width: "100%" }}
-                      >
-                        <thead>
-                          <tr>
-                            <th>Phòng</th>
-                            <th>Người trả</th>
-                            <th>Lý do</th>
-                            <th>Ngày yêu cầu</th>
-                            <th>Trạng thái</th>
-                            <th>Thao tác</th>
+          <div className="card-body">
+            <div
+              id="datatables-buttons_wrapper"
+              className="dataTables_wrapper dt-bootstrap5 no-footer"
+            >
+              <div className="row dt-row">
+                <div className="col-sm-12">
+                  <table
+                    className="table table-striped dataTable no-footer"
+                    style={{ width: "100%" }}
+                  >
+                    <thead>
+                      <tr>
+                        <th>Phòng</th>
+                        <th>Người trả</th>
+                        <th>Lý do</th>
+                        <th>Ngày yêu cầu</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {!tableData || tableData.length === 0 ? (
+                        <tr>
+                          <td colSpan="6" className="text-center">
+                            Chưa có yêu cầu trả phòng nào.
+                          </td>
+                        </tr>
+                      ) : (
+                        tableData.map((item) => (
+                          <tr key={item.id}>
+                            <td>{item.room?.title}</td>
+                            <td>
+                              {item.user?.name}
+                              <br />
+                              <small className="text-muted">
+                                {item.user?.phone}
+                              </small>
+                            </td>
+                            <td>{item.reason}</td>
+                            <td>
+                              {moment(item.createdAt).format(
+                                "DD/MM/YYYY HH:mm",
+                              )}
+                            </td>
+                            <td>
+                              {item.status === "PENDING" && (
+                                <span className="badge bg-warning text-dark">
+                                  Chờ duyệt
+                                </span>
+                              )}
+                              {item.status === "APPROVED" && (
+                                <span className="badge bg-success">
+                                  Đã duyệt
+                                </span>
+                              )}
+                              {item.status === "REJECTED" && (
+                                <span className="badge bg-danger">
+                                  Từ chối
+                                </span>
+                              )}
+                            </td>
+                            <td>
+                              {item.status === "PENDING" && (
+                                <>
+                                  <button
+                                    className="btn btn-sm btn-success me-2"
+                                    onClick={() =>
+                                      handleUpdateStatus(item.id, "APPROVED")
+                                    }
+                                  >
+                                    Duyệt
+                                  </button>
+                                  <button
+                                    className="btn btn-sm btn-danger"
+                                    onClick={() =>
+                                      handleUpdateStatus(item.id, "REJECTED")
+                                    }
+                                  >
+                                    Từ chối
+                                  </button>
+                                </>
+                              )}
+                            </td>
                           </tr>
-                        </thead>
-                        <tbody>
-                          {!tableData || tableData.length === 0 ? (
-                            <tr>
-                              <td colSpan="6" className="text-center">
-                                Chưa có yêu cầu trả phòng nào.
-                              </td>
-                            </tr>
-                          ) : (
-                            tableData.map((item) => (
-                              <tr key={item.id}>
-                                <td>{item.room?.title}</td>
-                                <td>
-                                  {item.user?.name}
-                                  <br />
-                                  <small className="text-muted">
-                                    {item.user?.phone}
-                                  </small>
-                                </td>
-                                <td>{item.reason}</td>
-                                <td>
-                                  {moment(item.createdAt).format(
-                                    "DD/MM/YYYY HH:mm",
-                                  )}
-                                </td>
-                                <td>
-                                  {item.status === "PENDING" && (
-                                    <span className="badge bg-warning text-dark">
-                                      Chờ duyệt
-                                    </span>
-                                  )}
-                                  {item.status === "APPROVED" && (
-                                    <span className="badge bg-success">
-                                      Đã duyệt
-                                    </span>
-                                  )}
-                                  {item.status === "REJECTED" && (
-                                    <span className="badge bg-danger">
-                                      Từ chối
-                                    </span>
-                                  )}
-                                </td>
-                                <td>
-                                  {item.status === "PENDING" && (
-                                    <>
-                                      <button
-                                        className="btn btn-sm btn-success me-2"
-                                        onClick={() =>
-                                          handleUpdateStatus(
-                                            item.id,
-                                            "APPROVED",
-                                          )
-                                        }
-                                      >
-                                        Duyệt
-                                      </button>
-                                      <button
-                                        className="btn btn-sm btn-danger"
-                                        onClick={() =>
-                                          handleUpdateStatus(
-                                            item.id,
-                                            "REJECTED",
-                                          )
-                                        }
-                                      >
-                                        Từ chối
-                                      </button>
-                                    </>
-                                  )}
-                                </td>
-                              </tr>
-                            ))
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                  <Pagination
-                    itemsPerPage={itemsPerPage}
-                    totalItems={totalItems}
-                    currentPage={currentPage}
-                    paginate={paginate}
-                  />
+                        ))
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               </div>
+              <Pagination
+                itemsPerPage={itemsPerPage}
+                totalItems={totalItems}
+                currentPage={currentPage}
+                paginate={paginate}
+              />
             </div>
           </div>
         </div>

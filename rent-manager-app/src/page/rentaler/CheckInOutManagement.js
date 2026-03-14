@@ -53,102 +53,85 @@ const CheckInOutManagement = (props) => {
   };
 
   return (
-    <div className="wrapper">
-      <nav id="sidebar" className="sidebar js-sidebar">
-        <div className="sidebar-content js-simplebar">
-          <a className="sidebar-brand" href="/">
-            <span className="align-middle">RENTALER PRO</span>
-          </a>
-          <SidebarNav />
-        </div>
-      </nav>
+    <div className="container-fluid p-0">
+      <h1 className="h3 mb-3">Lịch sử điểm danh (Face ID)</h1>
 
-      <div className="main">
-        <Nav onLogout={onLogout} currentUser={currentUser} />
-
-        <main className="content" style={{ margin: "20px" }}>
-          <div className="container-fluid p-0">
-            <h1 className="h3 mb-3">Lịch sử điểm danh (Face ID)</h1>
-
-            <div className="row">
-              <div className="col-12">
-                <div className="card">
-                  <div className="card-header">
-                    <div className="row">
-                      <div className="col-md-4">
-                        <label className="form-label">Lọc theo phòng:</label>
-                        <select
-                          className="form-select"
-                          value={selectedRoomId}
-                          onChange={handleRoomChange}
-                        >
-                          <option value="">Tất cả phòng</option>
-                          {rooms.map((room) => (
-                            <option key={room.id} value={room.id}>
-                              {room.title}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="card-body">
-                    <table className="table table-hover my-0">
-                      <thead>
-                        <tr>
-                          <th>Họ tên</th>
-                          <th>Email</th>
-                          <th>Phòng</th>
-                          <th>Loại</th>
-                          <th>Thời gian</th>
-                          <th>Độ tin cậy</th>
-                          <th>Trạng thái</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {logs.map((log) => (
-                          <tr key={log.id}>
-                            <td>{log.userName}</td>
-                            <td>{log.userEmail}</td>
-                            <td>{log.roomTitle || "N/A"}</td>
-                            <td>
-                              <span
-                                className={`badge ${
-                                  log.checkType === "CHECK_IN"
-                                    ? "bg-success"
-                                    : "bg-warning"
-                                }`}
-                              >
-                                {log.checkType}
-                              </span>
-                            </td>
-                            <td>{new Date(log.checkTime).toLocaleString()}</td>
-                            <td>{(log.confidence * 100).toFixed(1)}%</td>
-                            <td>
-                              {log.success ? (
-                                <span className="text-success">Thành công</span>
-                              ) : (
-                                <span className="text-danger">Thất bại</span>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div className="card-footer">
-                    <Pagination
-                      itemsPerPage={pageSize}
-                      totalItems={totalItems}
-                      currentPage={currentPage + 1}
-                      paginate={paginate}
-                    />
-                  </div>
+      <div className="row">
+        <div className="col-12">
+          <div className="card">
+            <div className="card-header">
+              <div className="row">
+                <div className="col-md-4">
+                  <label className="form-label">Lọc theo phòng:</label>
+                  <select
+                    className="form-select"
+                    value={selectedRoomId}
+                    onChange={handleRoomChange}
+                  >
+                    <option value="">Tất cả phòng</option>
+                    {rooms.map((room) => (
+                      <option key={room.id} value={room.id}>
+                        {room.title}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </div>
+            <div className="card-body">
+              <table className="table table-hover my-0">
+                <thead>
+                  <tr>
+                    <th>Họ tên</th>
+                    <th>Email</th>
+                    <th>Phòng</th>
+                    <th>Loại</th>
+                    <th>Thời gian</th>
+                    <th>Độ tin cậy</th>
+                    <th>Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {logs.map((log) => (
+                    <tr key={log.id}>
+                      <td>{log.userName}</td>
+                      <td>{log.userEmail}</td>
+                      <td>{log.roomTitle || "N/A"}</td>
+                      <td>
+                        <span
+                          className={`badge ${
+                            log.checkType === "CHECK_IN"
+                              ? "bg-success"
+                              : "bg-warning"
+                          }`}
+                        >
+                          {log.checkType}
+                        </span>
+                      </td>
+                      <td>{new Date(log.checkTime).toLocaleString()}</td>
+                      <td>{(log.confidence * 100).toFixed(1)}%</td>
+                      <td>
+                        {log.success ? (
+                          <span className="text-success">Thành công</span>
+                        ) : (
+                          <span className="text-danger">Thất bại</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="card-footer">
+              <Pagination
+                itemsPerPage={pageSize}
+                totalItems={totalItems}
+                currentPage={currentPage + 1}
+                paginate={paginate}
+              />
+            </div>
           </div>
-        </main>
+        </div>
       </div>
     </div>
   );

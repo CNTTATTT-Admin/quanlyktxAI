@@ -92,18 +92,7 @@ function RoomManagement(props) {
 
   return (
     <>
-      <div className="wrapper">
-        <nav id="sidebar" className="sidebar js-sidebar">
-          <div className="sidebar-content js-simplebar">
-            <a className="sidebar-brand" href="index.html">
-              <span className="align-middle">KTX MANAGER PRO</span>
-            </a>
-            <SidebarNav />
-          </div>
-        </nav>
-
-        <div className="main">
-          <Nav onLogout={onLogout} currentUser={currentUser} />
+      <div className="container-fluid p-0">
 
           <br />
           <div className="container-fluid p-0"></div>
@@ -419,7 +408,6 @@ function RoomManagement(props) {
               </div>
             </div>
           </div>
-        </div>
       </div>
     </>
   );

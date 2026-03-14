@@ -1,15 +1,12 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import "./Login.css";
 import {
   ACCESS_TOKEN,
-  FACEBOOK_AUTH_URL,
   GOOGLE_AUTH_URL,
 } from "../../constants/Connect";
-import { Link, Navigate, useNavigate, useLocation } from "react-router-dom";
+import { Navigate, useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useEffect } from "react";
 import { login } from "../../services/fetch/ApiUtils";
-import { useState } from "react";
 
 function Login(props) {
   const history = useNavigate();
@@ -30,14 +27,13 @@ function Login(props) {
   }, [location.state, location.pathname, history]);
 
   if (props.authenticated) {
-    return (
-      <Navigate
-        to={{
-          pathname: "/",
-          state: { from: location },
-        }}
-      />
-    );
+    if (props.role === "ROLE_ADMIN") {
+      return <Navigate to="/admin" />;
+    } else if (props.role === "ROLE_RENTALER") {
+      return <Navigate to="/rentaler" />;
+    } else {
+      return <Navigate to="/" />;
+    }
   }
 
   return (
@@ -86,21 +82,13 @@ function Login(props) {
 }
 
 function SocialLogin() {
+  const handleLogin = () => {
+    localStorage.setItem("social_login_redirect", "/");
+  };
+
   return (
     <div className="social-login">
-      {/* <a href={FACEBOOK_AUTH_URL} className="facebook">
-        <span className="icon-facebook mr-3">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            height="1.5em"
-            viewBox="0 0 512 512"
-          >
-            <path d="M504 256C504 119 393 8 256 8S8 119 8 256c0 123.78 90.69 226.38 209.25 245V327.69h-63V256h63v-54.64c0-62.15 37-96.48 93.67-96.48 27.14 0 55.52 4.84 55.52 4.84v61h-31.28c-30.8 0-40.41 19.12-40.41 38.73V256h68.78l-11 71.69h-57.78V501C413.31 482.38 504 379.78 504 256z" />
-          </svg>{" "}
-        </span>
-      </a>
-      &nbsp;&nbsp; */}
-      <a href={GOOGLE_AUTH_URL} className="google">
+      <a href={GOOGLE_AUTH_URL} className="google" onClick={handleLogin}>
         <span className="icon-google mr-3">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -116,7 +104,6 @@ function SocialLogin() {
 }
 
 function LoginForm() {
-  const history = useNavigate();
   const [formState, setFormState] = useState({
     email: "",
     password: "",
@@ -142,10 +129,7 @@ function LoginForm() {
       .then((response) => {
         localStorage.setItem(ACCESS_TOKEN, response.accessToken);
         toast.success("Bạn đã đăng nhập thành công!!");
-        history("/");
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
+        window.location.href = "/";
       })
       .catch((error) => {
         toast.error(
@@ -179,9 +163,9 @@ function LoginForm() {
           required
         />
       </div>
-      <div class="d-flex mb-5 align-items-center">
-        <span class="ml-auto">
-          <a href="/forgot-password" class="forgot-pass">
+      <div className="d-flex mb-5 align-items-center">
+        <span className="ml-auto">
+          <a href="/forgot-password" title="Quên mật khẩu" className="forgot-pass">
             Quên mật khẩu
           </a>
         </span>

@@ -103,147 +103,129 @@ function EditContract(props) {
     );
   }
   return (
-    <>
-      <div className="wrapper">
-        <nav id="sidebar" className="sidebar js-sidebar">
-          <div className="sidebar-content js-simplebar">
-            <a className="sidebar-brand" href="index.html">
-              <span className="align-middle">RENTALER PRO</span>
-            </a>
-            <SidebarNav />
-          </div>
-        </nav>
-
-        <div className="main">
-          <Nav onLogout={onLogout} currentUser={currentUser} />
-
-          <br />
-          <div className="container-fluid p-0">
-            <div className="card">
-              <div className="card-header">
-                <h5 className="card-title">Chỉnh sửa hợp đồng</h5>
+    <div className="container-fluid p-0">
+      <div className="card">
+        <div className="card-header">
+          <h5 className="card-title">Chỉnh sửa hợp đồng</h5>
+        </div>
+        <div className="card-body">
+          <form onSubmit={handleSubmit}>
+            <div className="row">
+              <div className="mb-3 col-md-6">
+                <label className="form-label" htmlFor="title">
+                  Tên hợp đồng
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="title"
+                  name="name"
+                  value={contractData.name}
+                  onChange={handleInputChange}
+                />
               </div>
-              <div className="card-body">
-                <form onSubmit={handleSubmit}>
-                  <div className="row">
-                    <div className="mb-3 col-md-6">
-                      <label className="form-label" htmlFor="title">
-                        Tên hợp đồng
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        id="title"
-                        name="name"
-                        value={contractData.name}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                    <div className="mb-3 col-md-6">
-                      <label className="form-label" htmlFor="description">
-                        Người thuê
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        id="description"
-                        name="nameOfRent"
-                        value={contractData.nameOfRent}
-                        readOnly
-                      />
-                    </div>
-                  </div>
-                  <div className="row">
-                    <div className="mb-3 col-md-6">
-                      <label className="form-label" htmlFor="description">
-                        Số điện thoại
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        id="description"
-                        name="phone"
-                        value={contractData.phone}
-                        readOnly
-                      />
-                    </div>
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label" htmlFor="locationId">
-                      Chọn phòng
-                    </label>
-                    <select
-                      className="form-select"
-                      id="locationId"
-                      name="roomId"
-                      value={contractData.roomId}
-                      onChange={handleInputChange}
-                      disabled
-                    >
-                      <option
-                        key={contractData.room.id}
-                        value={contractData.room.id}
-                      >
-                        {contractData.room.title}
-                      </option>
-                    </select>
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label" htmlFor="price">
-                      Thời Hạn Hợp Đồng
-                    </label>
-                    <input
-                      type="datetime-local"
-                      className="form-control"
-                      id="price"
-                      name="deadlineContract"
-                      value={contractData.deadlineContract}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="row">
-                    <div className="mb-3">
-                      <label className="form-label">Tải File Hợp Đồng</label>{" "}
-                      <br />
-                      <h6 className="card-subtitle text-muted">
-                        Tải mẫu hợp đồng để tạo hợp đồng với người thuê và đẩy
-                        lên lưu trữ trên hệ thống. Sau đó chuyển sang file .pdf
-                        để upload.
-                        <a href="https://image.luatvietnam.vn/uploaded/Others/2021/04/08/hop-dong-thue-nha-o_2810144434_2011152916_0804150405.doc">
-                          Tải Mẫu
-                        </a>
-                      </h6>
-                      <button
-                        type="button"
-                        class="btn btn-outline-success"
-                        style={{ marginBottom: "10px" }}
-                      >
-                        <a href={contractData.files} target="_blank">
-                          Xem Hợp Đồng
-                        </a>
-                      </button>
-                      <input
-                        className="form-control"
-                        id="fileInput"
-                        type="file"
-                        accept=".pdf"
-                        name="files"
-                        multiple
-                        onChange={handleFileChange}
-                      />
-                    </div>
-                  </div>
-                  <button type="submit" className="btn btn-primary">
-                    Submit
-                  </button>
-                </form>
+              <div className="mb-3 col-md-6">
+                <label className="form-label" htmlFor="description">
+                  Người thuê
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="description"
+                  name="nameOfRent"
+                  value={contractData.nameOfRent}
+                  readOnly
+                />
               </div>
             </div>
-          </div>
+            <div className="row">
+              <div className="mb-3 col-md-6">
+                <label className="form-label" htmlFor="description">
+                  Số điện thoại
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="description"
+                  name="phone"
+                  value={contractData.phone}
+                  readOnly
+                />
+              </div>
+            </div>
+            <div className="mb-3">
+              <label className="form-label" htmlFor="locationId">
+                Chọn phòng
+              </label>
+              <select
+                className="form-select"
+                id="locationId"
+                name="roomId"
+                value={contractData.roomId}
+                onChange={handleInputChange}
+                disabled
+              >
+                <option
+                  key={contractData.room.id}
+                  value={contractData.room.id}
+                >
+                  {contractData.room.title}
+                </option>
+              </select>
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label" htmlFor="price">
+                Thời Hạn Hợp Đồng
+              </label>
+              <input
+                type="datetime-local"
+                className="form-control"
+                id="price"
+                name="deadlineContract"
+                value={contractData.deadlineContract}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className="row">
+              <div className="mb-3">
+                <label className="form-label">Tải File Hợp Đồng</label>{" "}
+                <br />
+                <h6 className="card-subtitle text-muted">
+                  Tải mẫu hợp đồng để tạo hợp đồng với người thuê và đẩy
+                  lên lưu trữ trên hệ thống. Sau đó chuyển sang file .pdf
+                  để upload.
+                  <a href="https://image.luatvietnam.vn/uploaded/Others/2021/04/08/hop-dong-thue-nha-o_2810144434_2011152916_0804150405.doc">
+                    Tải Mẫu
+                  </a>
+                </h6>
+                <button
+                  type="button"
+                  className="btn btn-outline-success"
+                  style={{ marginBottom: "10px" }}
+                >
+                  <a href={contractData.files} target="_blank">
+                    Xem Hợp Đồng
+                  </a>
+                </button>
+                <input
+                  className="form-control"
+                  id="fileInput"
+                  type="file"
+                  accept=".pdf"
+                  name="files"
+                  multiple
+                  onChange={handleFileChange}
+                />
+              </div>
+            </div>
+            <button type="submit" className="btn btn-primary">
+              Submit
+            </button>
+          </form>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

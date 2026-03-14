@@ -439,21 +439,31 @@ class RentailHomeDetail extends Component {
                               </strong>
                               <span
                                 class={`badge ${
-                                  rooms?.status === "AVAILABLE" ? "bg-success" :
-                                  rooms?.status === "PARTIALLY_FILLED" ? "bg-warning" :
-                                  rooms?.status === "FULL" ? "bg-danger" :
-                                  rooms?.status === "MAINTENANCE" ? "bg-secondary" :
-                                  rooms?.status === "ROOM_RENT" ? "bg-success" : "bg-danger"
+                                  rooms?.status === "AVAILABLE"
+                                    ? "bg-success"
+                                    : rooms?.status === "PARTIALLY_FILLED"
+                                      ? "bg-warning"
+                                      : rooms?.status === "FULL"
+                                        ? "bg-danger"
+                                        : rooms?.status === "MAINTENANCE"
+                                          ? "bg-secondary"
+                                          : rooms?.status === "ROOM_RENT"
+                                            ? "bg-success"
+                                            : "bg-danger"
                                 }`}
                               >
-                                {rooms?.status === "AVAILABLE" && "Trống (Khả dụng)"}
-                                {rooms?.status === "PARTIALLY_FILLED" && "Còn chỗ"}
+                                {rooms?.status === "AVAILABLE" &&
+                                  "Trống (Khả dụng)"}
+                                {rooms?.status === "PARTIALLY_FILLED" &&
+                                  "Còn chỗ"}
                                 {rooms?.status === "FULL" && "Đã đủ người"}
-                                {rooms?.status === "MAINTENANCE" && "Đang bảo trì/vệ sinh"}
+                                {rooms?.status === "MAINTENANCE" &&
+                                  "Đang bảo trì/vệ sinh"}
                                 {/* Fallback cho data cũ */}
                                 {rooms?.status === "ROOM_RENT" && "Khả dụng"}
                                 {rooms?.status === "HIRED" && "Đã đủ người"}
-                                {rooms?.status === "CHECKED_OUT" && "Đã trả phòng"}
+                                {rooms?.status === "CHECKED_OUT" &&
+                                  "Đã trả phòng"}
                               </span>
                             </li>
                             <li class="d-flex justify-content-between">

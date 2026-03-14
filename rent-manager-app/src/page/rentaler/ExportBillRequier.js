@@ -69,68 +69,48 @@ function ExportBillRequier(props) {
             }} />;
     }
     return (
-        <>
-            <div className="wrapper">
-                <nav id="sidebar" className="sidebar js-sidebar">
-                    <div className="sidebar-content js-simplebar">
-                        <a className="sidebar-brand" href="index.html">
-                            <span className="align-middle">RENTALER PRO</span>
-                        </a>
-                        <SidebarNav />
-                    </div>
-                </nav>
-
-                <div className="main">
-                    <Nav onLogout={onLogout} currentUser={currentUser} />
-
-                    <br />
-                    <div className="container-fluid p-0">
-                        <div className="card">
-                            <div className="card-header">
-                                <h5 className="card-title">Xuất hóa đơn</h5>
-                            </div>
-                            <div className="card-body">
-                                <form onSubmit={handleSubmit}>
-
-                                    <div className="mb-3">
-                                        <label className="form-label" htmlFor="price">Tên Hóa Đơn</label>
-                                        <input type="text" className="form-control" id="price" name="nameBill" value={contractData.nameBill}
-                                            onChange={handleInputChange}
-                                        />
-                                    </div>
-                                    <div className="mb-3">
-                                        <label className="form-label" htmlFor="price">Mô tả</label>
-                                        <input type="text" className="form-control" id="price" name="description" value={contractData.description}
-                                            onChange={handleInputChange}
-                                        />
-                                    </div>
-                                    <div className="mb-3">
-                                        <label className="form-label" htmlFor="price">Chi Phí</label>
-                                        <input type="number" className="form-control" id="price" name="price" value={contractData.price}
-                                            onChange={handleInputChange}
-                                        />
-                                    </div>
-                                    <div className="mb-3">
-                                        <label className="form-label" htmlFor="price">Tên Phòng</label>
-                                        <input type="text" className="form-control" id="price" name="nameRoom" value={contractData.nameRoom}
-                                            onChange={handleInputChange}
-                                        />
-                                    </div>
-                                    <div className="mb-3">
-                                        <label className="form-label" htmlFor="price">Người thuê</label>
-                                        <input type="text" className="form-control" id="price" name="nameOfRent" value={contractData.nameOfRent}
-                                            onChange={handleInputChange}
-                                        />
-                                    </div>
-                                    <button type="submit" onClick={handleExport} className="btn btn-primary">Xuất hóa đơn</button>
-                                </form>
-                            </div>
+        <div className="container-fluid p-0">
+            <div className="card">
+                <div className="card-header">
+                    <h5 className="card-title">Xuất hóa đơn</h5>
+                </div>
+                <div className="card-body">
+                    <form onSubmit={handleSubmit}>
+                        <div className="mb-3">
+                            <label className="form-label" htmlFor="price">Tên Hóa Đơn</label>
+                            <input type="text" className="form-control" id="price" name="nameBill" value={contractData.nameBill}
+                                onChange={handleInputChange}
+                            />
                         </div>
-                    </div>
-                </div >
-            </div >
-
-        </>
+                        <div className="mb-3">
+                            <label className="form-label" htmlFor="price">Mô tả</label>
+                            <input type="text" className="form-control" id="price" name="description" value={contractData.description}
+                                onChange={handleInputChange}
+                            />
+                        </div>
+                        <div className="mb-3">
+                            <label className="form-label" htmlFor="price">Chi Phí</label>
+                            <input type="number" className="form-control" id="price" name="price" value={contractData.price}
+                                onChange={handleInputChange}
+                            />
+                        </div>
+                        <div className="mb-3">
+                            <label className="form-label" htmlFor="price">Tên Phòng</label>
+                            <input type="text" className="form-control" id="price" name="nameRoom" value={contractData.nameRoom}
+                                onChange={handleInputChange}
+                            />
+                        </div>
+                        <div className="mb-3">
+                            <label className="form-label" htmlFor="price">Người thuê</label>
+                            <input type="text" className="form-control" id="price" name="nameOfRent" value={contractData.nameOfRent}
+                                onChange={handleInputChange}
+                            />
+                        </div>
+                        <button type="submit" onClick={handleExport} className="btn btn-primary">Xuất hóa đơn</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     )
 }
 

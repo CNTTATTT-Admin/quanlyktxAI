@@ -89,66 +89,47 @@ function AddMaintence(props) {
             }} />;
     }
     return (
-        <>
-            <div className="wrapper">
-                <nav id="sidebar" className="sidebar js-sidebar">
-                    <div className="sidebar-content js-simplebar">
-                        <a className="sidebar-brand" href="index.html">
-                            <span className="align-middle">RENTALER PRO</span>
-                        </a>
-                        <SidebarNav />
-                    </div>
-                </nav>
+        <div className="container-fluid p-0">
+            <div className="card">
+                <div className="card-header">
+                    <h5 className="card-title">Thiết lập phiếu bảo trì</h5>
+                </div>
+                <div className="card-body">
+                    <form onSubmit={handleSubmit}>
+                        <div className="mb-3">
+                            <label className="form-label" htmlFor="locationId">Chọn phòng</label>
+                            <select className="form-select" id="locationId" name="roomId" value={contractData.roomId} onChange={handleInputChange}>
+                                <option value="">Chọn...</option>
+                                {roomOptions.map(roomOption => (
+                                    <option key={roomOption.id} value={roomOption.id}>{roomOption.title}</option>
+                                ))}
+                            </select>
+                        </div>
 
-                <div className="main">
-                    <Nav onLogout={onLogout} currentUser={currentUser} />
-
-                    <br />
-                    <div className="container-fluid p-0">
-                        <div className="card">
-                            <div className="card-header">
-                                <h5 className="card-title">Thiết lập phiếu bảo trì</h5>
-                            </div>
-                            <div className="card-body">
-                                <form onSubmit={handleSubmit}>
-                                <div className="mb-3">
-                                        <label className="form-label" htmlFor="locationId">Chọn phòng</label>
-                                        <select className="form-select" id="locationId" name="roomId" value={contractData.roomId} onChange={handleInputChange}>
-                                            <option value="">Chọn...</option>
-                                            {roomOptions.map(roomOption => (
-                                                <option key={roomOption.id} value={roomOption.id}>{roomOption.title}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    
-                                    <div className="mb-3">
-                                        <label className="form-label" htmlFor="price">Chi Phí Bảo Trì</label>
-                                        <input type="number" className="form-control" id="price" name="price" 
-                                        onChange={handleInputChange}
-                                        />
-                                    </div>
-                                    <div className="mb-3">
-                                        <label className="form-label" htmlFor="price">Thời Gian</label>
-                                        <input type="datetime-local" className="form-control" id="price" name="maintenanceDate" 
-                                        onChange={handleInputChange}
-                                        />
-                                    </div>
-                                    <div className="row">
-                                        <div className="mb-3">
-                                            <label className="form-label">Tải Phiếu Bảo Trì</label>
-                                            <input className="form-control" type="file" accept=".pdf" name="files" multiple onChange={handleFileChange} />
-                                        </div>
-                                    </div>
-                                    <button type="submit" className="btn btn-primary">Submit</button>
-                                </form>
+                        <div className="mb-3">
+                            <label className="form-label" htmlFor="price">Chi Phí Bảo Trì</label>
+                            <input type="number" className="form-control" id="price" name="price"
+                                onChange={handleInputChange}
+                            />
+                        </div>
+                        <div className="mb-3">
+                            <label className="form-label" htmlFor="price">Thời Gian</label>
+                            <input type="datetime-local" className="form-control" id="price" name="maintenanceDate"
+                                onChange={handleInputChange}
+                            />
+                        </div>
+                        <div className="row">
+                            <div className="mb-3">
+                                <label className="form-label">Tải Phiếu Bảo Trì</label>
+                                <input className="form-control" type="file" accept=".pdf" name="files" multiple onChange={handleFileChange} />
                             </div>
                         </div>
-                    </div>
-                </div >
-            </div >
-
-        </>
-    )
+                        <button type="submit" className="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    );
 }
 
 export default AddMaintence;

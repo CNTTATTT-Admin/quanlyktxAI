@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
-import Nav from "./Nav";
-import SidebarNav from "./SidebarNav";
 import "../../assets/css/app.css";
 import {
   approveRoomOfAdmin,
@@ -148,21 +146,8 @@ const DashboardAdmin = (props) => {
   }
 
   return (
-    <div className="wrapper">
-      <nav id="sidebar" className="sidebar js-sidebar">
-        <div className="sidebar-content js-simplebar">
-          <a className="sidebar-brand" href="index.html">
-            <span className="align-middle">ADMIN PRO</span>
-          </a>
-          <SidebarNav />
-        </div>
-      </nav>
-
-      <div className="main">
-        <Nav onLogout={onLogout} currentUser={currentUser} />
-
-        <main style={{ margin: "20px 20px 20px 20px" }}>
-          <div className="container-fluid p-0">
+    <>
+      <div className="container-fluid p-0">
             <div class="row mb-2 mb-xl-3">
               <div class="col-auto d-none d-sm-block">
                 <h3>
@@ -570,9 +555,7 @@ const DashboardAdmin = (props) => {
             </div>
             {showModal && <ModalRoomDetails roomId={roomId} />}
           </div>
-        </main>
-      </div>
-    </div>
+    </>
   );
 };
 

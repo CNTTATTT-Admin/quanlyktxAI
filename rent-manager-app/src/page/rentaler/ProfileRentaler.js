@@ -81,85 +81,72 @@ const ProfileRentaler = (props) => {
 
 
     return (
-        <div className="wrapper">
-            <nav id="sidebar" className="sidebar js-sidebar">
-                <div className="sidebar-content js-simplebar">
-                    <a className="sidebar-brand" href="index.html">
-                        <span className="align-middle">RENTALER PRO</span>
-                    </a>
-                    <SidebarNav />
+        <div className="container-fluid p-0">
+            <main style={{ margin: "20px 20px 20px 20px" }}>
+                <div className="profile-info">
+                    <div className="profile-avatar">
+                        {
+                            currentUser && currentUser.imageUrl ? (
+                                <img src={currentUser.imageUrl} alt={currentUser.name} />
+                            ) : (
+                                <div className="text-avatar">
+                                    <span>{currentUser && currentUser.name && currentUser.name[0]}</span>
+                                </div>
+                            )
+                        }
+                    </div>
+                    <div className="profile-name">
+                        <h2>{currentUser && currentUser.name}</h2>
+                        <p className="profile-email">{currentUser && currentUser.email}</p>
+                    </div>
                 </div>
-            </nav>
 
-            <div className="main">
-                <Nav onLogout={onLogout} currentUser={currentUser} />
-
-                <main style={{ margin: "20px 20px 20px 20px" }}>
-                    <div className="profile-info">
-                        <div className="profile-avatar">
-                            {
-                                currentUser && currentUser.imageUrl ? (
-                                    <img src={currentUser.imageUrl} alt={currentUser.name} />
-                                ) : (
-                                    <div className="text-avatar">
-                                        <span>{currentUser && currentUser.name && currentUser.name[0]}</span>
-                                    </div>
-                                )
-                            }
-                        </div>
-                        <div className="profile-name">
-                            <h2>{currentUser && currentUser.name}</h2>
-                            <p className="profile-email">{currentUser && currentUser.email}</p>
-                        </div>
+                <div className="card">
+                    <div className="card-body">
+                        <form onSubmit={handleSubmit}>
+                            <div className="row">
+                                <div className="mb-3 col-md-6">
+                                    <label className="form-label">Email</label>
+                                    <input type="email" className="form-control" name="email" value={currentUser && currentUser.email} id="inputEmail4" placeholder="Email" disabled />
+                                </div>
+                                <div className="mb-3 col-md-6">
+                                    <label className="form-label">Số điện thoại</label>
+                                    <input type="text" className="form-control" name="phone" value={currentUser && currentUser.phone} id="inputPassword4" placeholder="Số điện thoại" disabled />
+                                </div>
+                            </div>
+                            <div className="mb-3">
+                                <label className="form-label" htmlFor="inputAddress">Họ và Tên</label>
+                                <input type="text" className="form-control" name="name" value={currentUser && currentUser.name} id="inputAddress" placeholder="Peter Parker" disabled />
+                            </div>
+                            <div className="mb-3">
+                                <label className="form-label" htmlFor="inputAddress">Địa chỉ</label>
+                                <input type="text" className="form-control" name="address" value={currentUser && currentUser.address} id="inputAddress" placeholder="Peter Parker" disabled />
+                            </div>
+                            <div className="mb-3">
+                                <label className="form-label">Tải Hình Ảnh</label>
+                                <input className="form-control" accept=".png, .jpeg" type="file" onChange={onFileChange} />
+                            </div>
+                            <div className="mb-3">
+                                <label className="form-label" htmlFor="inputAddress">Liện hệ Zalo </label>
+                                <input type="text" className="form-control" name="zalo"
+                                    value={zalo}
+                                    onChange={handleZaloChange}
+                                    id="inputAddress" placeholder="https://zalo.me/(Số điện thoại)" />
+                            </div>
+                            <div className="mb-3">
+                                <label className="form-label" htmlFor="inputAddress">Liên Hệ Facebook</label>
+                                <input type="text" className="form-control" name="facebook"
+                                    value={facebook}
+                                    onChange={handleFacebookChange}
+                                    id="inputAddress" placeholder="https://www.facebook.com/(Domain trang cá nhân)" />
+                            </div>
+                            <button type="submit" className="btn btn-primary">Submit</button>
+                        </form>
                     </div>
-
-                    <div class="card">
-                        <div class="card-body">
-                            <form onSubmit={handleSubmit}>
-                                <div class="row">
-                                    <div class="mb-3 col-md-6">
-                                        <label class="form-label">Email</label>
-                                        <input type="email" className="form-control" name='email' value={currentUser && currentUser.email} id="inputEmail4" placeholder="Email" disabled />
-                                    </div>
-                                    <div class="mb-3 col-md-6">
-                                        <label class="form-label" >Số điện thoại</label>
-                                        <input type="text" className="form-control" name='phone' value={currentUser && currentUser.phone} id="inputPassword4" placeholder="Số điện thoại" disabled />
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label" for="inputAddress">Họ và Tên</label>
-                                    <input type="text" className="form-control" name='name' value={currentUser && currentUser.name} id="inputAddress" placeholder="Peter Parker" disabled />
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label" for="inputAddress">Địa chỉ</label>
-                                    <input type="text" className="form-control" name='address' value={currentUser && currentUser.address} id="inputAddress" placeholder="Peter Parker" disabled />
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Tải Hình Ảnh</label>
-                                    <input class="form-control" accept=".png, .jpeg" type="file" onChange={onFileChange} />
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label" for="inputAddress">Liện hệ Zalo </label>
-                                    <input type="text" className="form-control" name='zalo'
-                                        value={zalo}
-                                        onChange={handleZaloChange}
-                                        id="inputAddress" placeholder="https://zalo.me/(Số điện thoại)" />
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label" for="inputAddress">Liên Hệ Facebook</label>
-                                    <input type="text" className="form-control" name='facebook'
-                                        value={facebook}
-                                        onChange={handleFacebookChange}
-                                        id="inputAddress" placeholder="https://www.facebook.com/(Domain trang cá nhân)" />
-                                </div>
-                                <button type="submit" class="btn btn-primary">Submit</button>
-                            </form>
-                        </div>
-                    </div>
-                </main>
-            </div>
+                </div>
+            </main>
         </div>
-    )
+    );
 }
 
 

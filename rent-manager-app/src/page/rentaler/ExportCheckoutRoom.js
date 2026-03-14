@@ -86,178 +86,160 @@ function ExportCheckoutRoom(props) {
     );
   }
   return (
-    <>
-      <div className="wrapper">
-        <nav id="sidebar" className="sidebar js-sidebar">
-          <div className="sidebar-content js-simplebar">
-            <a className="sidebar-brand" href="index.html">
-              <span className="align-middle">RENTALER PRO</span>
-            </a>
-            <SidebarNav />
-          </div>
-        </nav>
-
-        <div className="main">
-          <Nav onLogout={onLogout} currentUser={currentUser} />
-
-          <br />
-          <div className="container-fluid p-0">
-            <div className="card">
-              <div className="card-header">
-                <h5 className="card-title">Xuất hóa đơn trả phòng</h5>
-              </div>
-              <div className="card-body">
-                <form onSubmit={handleSubmit}>
-                  <div className="mb-3">
-                    <label className="form-label" htmlFor="price">
-                      Tên Hóa Đơn
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="price"
-                      name="nameBill"
-                      value={contractData.nameBill}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label" htmlFor="price">
-                      Tên Phòng
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="price"
-                      name="nameRoom"
-                      value={contractData.room && contractData.room.title}
-                      onChange={handleInputChange}
-                      disabled
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label" htmlFor="price">
-                      Giá Phòng
-                    </label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      id="price"
-                      name="price"
-                      value={contractData.room && contractData.room.price}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label" htmlFor="waterCost">
-                      Tiền nước
-                    </label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      id="waterCost"
-                      name="waterCost"
-                      value={contractData.room && contractData.room.waterCost}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label" htmlFor="publicElectricCost">
-                      Tiền điện chung
-                    </label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      id="publicElectricCost"
-                      name="publicElectricCost"
-                      value={
-                        contractData.room &&
-                        contractData.room.publicElectricCost
-                      }
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label" htmlFor="internetCost">
-                      Tiền mạng
-                    </label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      id="internetCost"
-                      name="internetCost"
-                      value={
-                        contractData.room && contractData.room.internetCost
-                      }
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label" htmlFor="price">
-                      Thời Gian Điểm Bắt Đầu Thuê
-                    </label>
-                    <input
-                      type="datetime"
-                      className="form-control"
-                      id="price"
-                      name="createAt"
-                      value={contractData.createdAt}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label" htmlFor="price">
-                      Thời Hạn
-                    </label>
-                    <input
-                      type="datetime"
-                      className="form-control"
-                      id="price"
-                      name="deadlineContract"
-                      value={contractData.deadlineContract}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label" htmlFor="price">
-                      Chi phí lặp đặt (Theo yêu cầu){" "}
-                    </label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      id="price"
-                      name="priceRequest"
-                      value={contractData.priceRequest}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label" htmlFor="price">
-                      Người thuê
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="price"
-                      name="nameOfRent"
-                      value={contractData.nameOfRent}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    onClick={() => handleExport(contractData.id)}
-                    className="btn btn-primary"
-                  >
-                    Xuất hóa đơn
-                  </button>
-                </form>
-              </div>
+    <div className="container-fluid p-0">
+      <div className="card">
+        <div className="card-header">
+          <h5 className="card-title">Xuất hóa đơn trả phòng</h5>
+        </div>
+        <div className="card-body">
+          <form onSubmit={handleSubmit}>
+            <div className="mb-3">
+              <label className="form-label" htmlFor="price">
+                Tên Hóa Đơn
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                id="price"
+                name="nameBill"
+                value={contractData.nameBill}
+                onChange={handleInputChange}
+              />
             </div>
-          </div>
+            <div className="mb-3">
+              <label className="form-label" htmlFor="price">
+                Tên Phòng
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                id="price"
+                name="nameRoom"
+                value={contractData.room && contractData.room.title}
+                onChange={handleInputChange}
+                disabled
+              />
+            </div>
+            <div className="mb-3">
+              <label className="form-label" htmlFor="price">
+                Giá Phòng
+              </label>
+              <input
+                type="number"
+                className="form-control"
+                id="price"
+                name="price"
+                value={contractData.room && contractData.room.price}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className="mb-3">
+              <label className="form-label" htmlFor="waterCost">
+                Tiền nước
+              </label>
+              <input
+                type="number"
+                className="form-control"
+                id="waterCost"
+                name="waterCost"
+                value={contractData.room && contractData.room.waterCost}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className="mb-3">
+              <label className="form-label" htmlFor="publicElectricCost">
+                Tiền điện chung
+              </label>
+              <input
+                type="number"
+                className="form-control"
+                id="publicElectricCost"
+                name="publicElectricCost"
+                value={
+                  contractData.room &&
+                  contractData.room.publicElectricCost
+                }
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className="mb-3">
+              <label className="form-label" htmlFor="internetCost">
+                Tiền mạng
+              </label>
+              <input
+                type="number"
+                className="form-control"
+                id="internetCost"
+                name="internetCost"
+                value={
+                  contractData.room && contractData.room.internetCost
+                }
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className="mb-3">
+              <label className="form-label" htmlFor="price">
+                Thời Gian Điểm Bắt Đầu Thuê
+              </label>
+              <input
+                type="datetime"
+                className="form-control"
+                id="price"
+                name="createAt"
+                value={contractData.createdAt}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className="mb-3">
+              <label className="form-label" htmlFor="price">
+                Thời Hạn
+              </label>
+              <input
+                type="datetime"
+                className="form-control"
+                id="price"
+                name="deadlineContract"
+                value={contractData.deadlineContract}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className="mb-3">
+              <label className="form-label" htmlFor="price">
+                Chi phí lặp đặt (Theo yêu cầu){" "}
+              </label>
+              <input
+                type="number"
+                className="form-control"
+                id="price"
+                name="priceRequest"
+                value={contractData.priceRequest}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className="mb-3">
+              <label className="form-label" htmlFor="price">
+                Người thuê
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                id="price"
+                name="nameOfRent"
+                value={contractData.nameOfRent}
+                onChange={handleInputChange}
+              />
+            </div>
+            <button
+              type="submit"
+              onClick={() => handleExport(contractData.id)}
+              className="btn btn-primary"
+            >
+              Xuất hóa đơn
+            </button>
+          </form>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

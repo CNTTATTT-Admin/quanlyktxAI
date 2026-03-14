@@ -19,28 +19,9 @@ function Chat(props) {
     }
 
     return (
-        <div className="wrapper">
-            <nav id="sidebar" className="sidebar js-sidebar">
-                <div className="sidebar-content js-simplebar">
-                    <a className="sidebar-brand" href="index.html">
-                        <span className="align-middle">RENTALER PRO</span>
-                    </a>
-                    <SidebarNav />
-                </div>
-            </nav>
-
-            <div className="main">
-                <Nav onLogout={onLogout} currentUser={currentUser} />
-
-
-                <main style={{ margin: "20px 20px 20px 20px" }}>
-
-                    <Message authenticated={authenticated} currentUser={currentUser} onLogout={onLogout} />
-
-                </main>
-
-            </div>
-        </div>
+        <main style={{ margin: "20px 20px 20px 20px" }}>
+            <Message authenticated={authenticated} currentUser={currentUser} onLogout={onLogout} />
+        </main>
     )
 }
 
