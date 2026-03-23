@@ -104,7 +104,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public void deleteMultipleAccounts(List<Long> ids) {
-        userRepository.deleteAllById(ids);
+        userRepository.deleteAllById(ids).orElseThrow(() -> new BadRequestException("Tài khoản không tồn tại"));
     }
 
     @Override
