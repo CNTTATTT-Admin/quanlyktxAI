@@ -1,5 +1,8 @@
 package com.cntt.rentalmanagement.repository;
 
+import org.springframework.data.repository.query.Param;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.transaction.annotation.Transactional;
 import com.cntt.rentalmanagement.domain.models.Contract;
 import com.cntt.rentalmanagement.domain.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,4 +17,9 @@ public interface ContractRepository extends JpaRepository<Contract, Long>, Contr
     boolean existsByStudent(User student);
 
     List<Contract> findByStudentId(Long studentId);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM Contract c WHERE c.student.id = :userId")
+    void deleteByStudentId(@Param("userId") Long userId);
 }

@@ -8,6 +8,12 @@ import com.cntt.rentalmanagement.domain.payload.request.SendEmailRequest;
 import com.cntt.rentalmanagement.domain.payload.response.MessageResponse;
 import com.cntt.rentalmanagement.domain.payload.response.UserResponse;
 import com.cntt.rentalmanagement.exception.BadRequestException;
+import com.cntt.rentalmanagement.repository.CheckInOutLogRepository;
+import com.cntt.rentalmanagement.repository.LeaveRequestRepository;
+import com.cntt.rentalmanagement.repository.InvoiceRepository;
+import com.cntt.rentalmanagement.repository.ParkingCardRepository;
+import com.cntt.rentalmanagement.repository.ContractRepository;
+import com.cntt.rentalmanagement.repository.RequestRepository;
 import com.cntt.rentalmanagement.repository.RoleRepository;
 import com.cntt.rentalmanagement.repository.UserRepository;
 import com.cntt.rentalmanagement.services.AccountService;
@@ -20,6 +26,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
+import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
@@ -37,6 +44,12 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
+    private final CheckInOutLogRepository checkInOutLogRepository;
+    private final LeaveRequestRepository leaveRequestRepository;
+    private final InvoiceRepository invoiceRepository;
+    private final ParkingCardRepository parkingCardRepository;
+    private final ContractRepository contractRepository;
+    private final RequestRepository requestRepository;
     private final UserRepository userRepository;
     private final MapperUtils mapperUtils;
     private final JavaMailSender mailSender;
@@ -103,9 +116,25 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    @Transactional
     public void deleteMultipleAccounts(List<Long> ids) {
-        userRepository.deleteAllById(ids).orElseThrow(() -> new BadRequestException("Tài khoản không tồn tại"));
+    for (Long id : ids) {
+ 
+        checkInOutLogRepository.deleteByUserId(id);
+        leaveRequestRepository.deleteByUserId(id);
+        requestRepository.deleteByUserId(id);
+        
+        invoiceRepository.deleteByUserId(id);
+        parkingCardRepository.deleteByUserId(id);
+        
+        contractRepository.deleteByStudentId(id);
+        userRepository.deleteRoleOfAccount(id);
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException("Tài khoản không tồn tại"));
+        userRepository.delete(user);
     }
+}
 
     @Override
     @Async
