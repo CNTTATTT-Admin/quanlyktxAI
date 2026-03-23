@@ -9,6 +9,7 @@ import {
   getAllAccpuntOfAdmin,
   lockedAccount,
   unlockAccount,
+  deleteMultipleAccounts,
 } from "../../services/fetch/ApiUtils";
 
 function AccountManagement(props) {
@@ -20,6 +21,7 @@ function AccountManagement(props) {
   const [itemsPerPage] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedIds, setSelectedIds] = useState([]);
 
   // Fetch data from the API
   useEffect(() => {
@@ -31,6 +33,7 @@ function AccountManagement(props) {
       .then((response) => {
         setTableData(response.content);
         setTotalItems(response.totalElements);
+        setSelectedIds([]);
       })
       .catch((error) => {
         toast.error(
@@ -80,6 +83,43 @@ function AccountManagement(props) {
     setCurrentPage(pageNumber);
   };
 
+  const handleSelectAll = (event) => {
+    if (event.target.checked) {
+      const allIds = tableData.map((item) => item.id);
+      setSelectedIds(allIds);
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleSelectOne = (event, id) => {
+    if (event.target.checked) {
+      setSelectedIds([...selectedIds, id]);
+    } else {
+      setSelectedIds(selectedIds.filter((itemId) => itemId !== id));
+    }
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedIds.length === 0) {
+      toast.warning("Vui lòng chọn ít nhất một tài khoản để xóa.");
+      return;
+    }
+
+    if (window.confirm(`Bạn có chắc chắn muốn xóa ${selectedIds.length} tài khoản đã chọn không?`)) {
+      deleteMultipleAccounts(selectedIds)
+        .then(() => {
+          toast.success("Xóa tài khoản thành công!");
+          fetchData();
+        })
+        .catch((error) => {
+          toast.error(
+            (error && error.message) || "Không thể xóa tài khoản. Vui lòng thử lại!"
+          );
+        });
+    }
+  };
+
   if (!authenticated) {
     return (
       <Navigate
@@ -112,7 +152,15 @@ function AccountManagement(props) {
               >
                 <div className="row">
                   <div className="col-sm-12 col-md-6">
-                    <div className="dt-buttons btn-group flex-wrap"></div>
+                    <div className="dt-buttons btn-group flex-wrap">
+                      <button 
+                        className="btn btn-danger" 
+                        onClick={handleDeleteSelected}
+                        disabled={selectedIds.length === 0}
+                      >
+                        <i className="align-middle" data-feather="trash-2"></i> 🗑️ Xóa đã chọn ({selectedIds.length})
+                      </button>
+                    </div>
                   </div>
                   <div className="col-sm-12 col-md-6">
                     <div
@@ -143,6 +191,13 @@ function AccountManagement(props) {
                     >
                       <thead>
                         <tr>
+                          <th style={{ width: "40px", textAlign: "center" }}>
+                            <input 
+                              type="checkbox" 
+                              onChange={handleSelectAll}
+                              checked={selectedIds.length === tableData.length && tableData.length > 0} 
+                            />
+                          </th>
                           <th
                             className="sorting sorting_asc"
                             tabindex="0"
@@ -197,7 +252,14 @@ function AccountManagement(props) {
                       </thead>
                       <tbody>
                         {tableData.map((item) => (
-                          <tr className="odd">
+                          <tr key={item.id} className={selectedIds.includes(item.id) ? "table-active" : "odd"}>
+                            <td style={{ textAlign: "center" }}>
+                              <input 
+                                type="checkbox" 
+                                checked={selectedIds.includes(item.id)}
+                                onChange={(e) => handleSelectOne(e, item.id)}
+                              />
+                            </td>
                             <td className="dtr-control sorting_1" tabindex="0">
                               {item.name}
                             </td>

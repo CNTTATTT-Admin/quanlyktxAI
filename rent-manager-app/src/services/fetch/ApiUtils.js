@@ -407,6 +407,18 @@ export function getAccountById(id) {
   });
 }
 
+export function deleteMultipleAccounts(ids) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url: API_BASE_URL + "/account/delete-multiple", 
+    method: "DELETE",
+    body: JSON.stringify(ids), 
+  });
+}
+
 export function approveRoomOfAdmin(id) {
   if (!localStorage.getItem(ACCESS_TOKEN)) {
     return Promise.reject("No access token set.");

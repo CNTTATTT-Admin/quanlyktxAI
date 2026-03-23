@@ -103,6 +103,11 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public void deleteMultipleAccounts(List<Long> ids) {
+        userRepository.deleteAllById(ids);
+    }
+
+    @Override
     @Async
     public void sendEmailForRentaler(SendEmailRequest sendEmailRequest) {
         try {
