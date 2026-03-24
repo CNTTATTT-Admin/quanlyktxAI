@@ -65,6 +65,12 @@ const SidebarNav = () => {
           <span className="align-middle">Quản lý điểm danh</span>
         </NavLink>
       </li>
+      <li className="sidebar-item">
+        <NavLink to="/rentaler/parking-management" className="sidebar-link">
+          <i className="align-middle" data-feather="sliders"></i>{" "}
+          <span className="align-middle">Quản lý thẻ xe</span>
+        </NavLink>
+      </li>
     </ul>
   );
 };

@@ -1129,6 +1129,36 @@ export function toggleBannerActive(id) {
   });
 }
 
+export function getAllParkingCards(pageNo, pageSize, keyword) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url:
+      API_BASE_URL +
+      "/parking-cards/rentaler?pageNo=" +
+      pageNo +
+      "&pageSize=" +
+      pageSize +
+      "&keyword=" +
+      (keyword || ""),
+    method: "GET",
+  });
+}
+
+export function updateParkingCardStatus(id, data) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url: API_BASE_URL + "/parking-cards/" + id + "/status",
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
 // POLICY
 export function getPolicy() {
   return request({

@@ -74,6 +74,7 @@ import ElectricAndWaterUserPage from "./page/user/ElectricAndWaterUserPage";
 import LeaveRequestManagement from "./page/rentaler/LeaveRequestManagement";
 import CheckoutRequestManagement from "./page/rentaler/CheckoutRequestManagement";
 import CheckInOutManagement from "./page/rentaler/CheckInOutManagement";
+import ParkingManagement from "./page/rentaler/ParkingManagement";
 import BannerManagement from "./page/admin/BannerManagement";
 import BannerForm from "./page/admin/BannerForm";
 import PolicyManagement from "./page/admin/PolicyManagement";
@@ -424,6 +425,10 @@ function App() {
               element={<CheckInOut currentUser={currentUser} />}
             />
             <Route
+              path="parking-card-management"
+              element={<ParkingManagement currentUser={currentUser} />}
+            />
+            <Route
               path="face-registration"
               element={<FaceRegistration currentUser={currentUser} />}
             />
@@ -745,6 +750,17 @@ function App() {
               path="request-management"
               element={
                 <RequierManagement
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              }
+            />
+            <Route
+              path="parking-management"
+              element={
+                <ParkingManagement
                   authenticated={authenticated}
                   currentUser={currentUser}
                   role={role}

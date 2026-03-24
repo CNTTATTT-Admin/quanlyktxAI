@@ -12,6 +12,7 @@ import com.cntt.rentalmanagement.repository.CheckInOutLogRepository;
 import com.cntt.rentalmanagement.repository.LeaveRequestRepository;
 import com.cntt.rentalmanagement.repository.InvoiceRepository;
 import com.cntt.rentalmanagement.repository.ParkingCardRepository;
+import com.cntt.rentalmanagement.repository.ParkingPackageRepository;
 import com.cntt.rentalmanagement.repository.ContractRepository;
 import com.cntt.rentalmanagement.repository.RequestRepository;
 import com.cntt.rentalmanagement.repository.RoleRepository;
@@ -48,6 +49,7 @@ public class AccountServiceImpl implements AccountService {
     private final LeaveRequestRepository leaveRequestRepository;
     private final InvoiceRepository invoiceRepository;
     private final ParkingCardRepository parkingCardRepository;
+    private final ParkingPackageRepository parkingPackageRepository;
     private final ContractRepository contractRepository;
     private final RequestRepository requestRepository;
     private final UserRepository userRepository;
@@ -126,6 +128,7 @@ public class AccountServiceImpl implements AccountService {
         
         invoiceRepository.deleteByUserId(id);
         parkingCardRepository.deleteByUserId(id);
+        parkingPackageRepository.deleteByRentalerId(id);
         
         contractRepository.deleteByStudentId(id);
         userRepository.deleteRoleOfAccount(id);
