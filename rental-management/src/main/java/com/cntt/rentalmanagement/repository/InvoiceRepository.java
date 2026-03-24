@@ -1,5 +1,6 @@
 package com.cntt.rentalmanagement.repository;
 
+import com.cntt.rentalmanagement.domain.enums.InvoiceStatus;
 import com.cntt.rentalmanagement.domain.models.Invoice;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -8,6 +9,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     
@@ -25,4 +28,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
             @Param("rentalerId") Long rentalerId, 
             @Param("keyword") String keyword, 
             Pageable pageable);
+
+    @Query("SELECT i FROM Invoice i WHERE i.parkingCard.parkingPackage.rentaler.id = :rentalerId AND i.status = :status")
+    List<Invoice> findPaidInvoicesByRentaler(@Param("rentalerId") Long rentalerId, @Param("status") InvoiceStatus status);       
 }

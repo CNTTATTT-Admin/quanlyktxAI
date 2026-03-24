@@ -1,9 +1,11 @@
 package com.cntt.rentalmanagement.services.impl;
 
 import com.cntt.rentalmanagement.domain.enums.RoomStatus;
+import com.cntt.rentalmanagement.domain.enums.InvoiceStatus;
 import com.cntt.rentalmanagement.domain.models.Contract;
 import com.cntt.rentalmanagement.domain.models.Room;
 import com.cntt.rentalmanagement.domain.models.User;
+import com.cntt.rentalmanagement.domain.models.Invoice;
 import com.cntt.rentalmanagement.domain.payload.request.TotalNumberRequest;
 import com.cntt.rentalmanagement.domain.payload.response.CostResponse;
 import com.cntt.rentalmanagement.domain.payload.response.RevenueResponse;
@@ -13,6 +15,7 @@ import com.cntt.rentalmanagement.repository.ContractRepository;
 import com.cntt.rentalmanagement.repository.MaintenanceRepository;
 import com.cntt.rentalmanagement.repository.RoomRepository;
 import com.cntt.rentalmanagement.repository.UserRepository;
+import com.cntt.rentalmanagement.repository.InvoiceRepository;
 import com.cntt.rentalmanagement.services.BaseService;
 import com.cntt.rentalmanagement.services.StatisticalService;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Comparator;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +40,7 @@ public class StatisticalServiceImpl extends BaseService implements StatisticalSe
     private final UserRepository userRepository;
     private final RoomRepository roomRepository;
     private final MaintenanceRepository maintenanceRepository;
+    private final InvoiceRepository invoiceRepository;
 
     @Override
     public TotalNumberRequest getNumberOfRentalerForStatistical() {
@@ -124,7 +129,7 @@ public class StatisticalServiceImpl extends BaseService implements StatisticalSe
             while (currentMonth.isBefore(endMonth) || currentMonth.equals(endMonth)) {
                 RevenueDetails details = monthTotalMap.getOrDefault(currentMonth, new RevenueDetails());
             
-                int months = (int) currentMonth.until(endMonth, ChronoUnit.MONTHS);
+                int months = (int) currentMonth.until(endMonth, ChronoUnit.MONTHS);  //không còn dùng tới
             
                 details.revenue +=   contract.getRoom().getPrice().intValue();
                 // Check for null and use 0 if null
@@ -140,6 +145,21 @@ public class StatisticalServiceImpl extends BaseService implements StatisticalSe
                 currentMonth = currentMonth.plusMonths(1);
             }
         }
+
+        //Thêm tiền hóa đơn xe
+        List<Invoice> paidInvoices = invoiceRepository.findPaidInvoicesByRentaler(getUserId(), InvoiceStatus.PAID);
+    
+            for (Invoice invoice : paidInvoices) {
+                if (invoice.getPaidAt() != null) {
+                    YearMonth paidMonth = YearMonth.from(invoice.getPaidAt());
+            
+                    RevenueDetails details = monthTotalMap.getOrDefault(paidMonth, new RevenueDetails());
+            
+                    details.parkingCost += invoice.getAmount().intValue();
+            
+                    monthTotalMap.put(paidMonth, details);
+                }
+            }
     
         for (Map.Entry<YearMonth, RevenueDetails> entry : monthTotalMap.entrySet()) {
             RevenueResponse response = new RevenueResponse();
@@ -149,9 +169,13 @@ public class StatisticalServiceImpl extends BaseService implements StatisticalSe
             response.setWaterCost(BigDecimal.valueOf(details.waterCost));
             response.setPublicElectricCost(BigDecimal.valueOf(details.publicElectricCost));
             response.setInternetCost(BigDecimal.valueOf(details.internetCost));
+            response.setParkingCost(BigDecimal.valueOf(details.parkingCost));
             list.add(response);
         }
-    
+
+        //sort từ tháng 1-12
+        list.sort(Comparator.comparingInt(RevenueResponse::getMonth));
+
         return new PageImpl<>(list);
     }
     
@@ -161,6 +185,7 @@ public class StatisticalServiceImpl extends BaseService implements StatisticalSe
         int waterCost = 0;
         int publicElectricCost = 0;
         int internetCost = 0;
+        int parkingCost = 0;
     }
 
     @Override
