@@ -1159,6 +1159,35 @@ export function updateParkingCardStatus(id, data) {
   });
 }
 
+export function getAllInvoices(pageNo, pageSize, keyword) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url:
+      API_BASE_URL +
+      "/invoices/rentaler?pageNo=" +
+      pageNo +
+      "&pageSize=" +
+      pageSize +
+      "&keyword=" +
+      (keyword || ""),
+    method: "GET",
+  });
+}
+
+export function updateInvoiceStatus(id, status) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+  // data ở params
+  return request({
+    url: API_BASE_URL + "/invoices/" + id + "/status?status=" + status,
+    method: "PUT",
+  });
+}
+
 // POLICY
 export function getPolicy() {
   return request({
