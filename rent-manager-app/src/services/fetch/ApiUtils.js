@@ -273,6 +273,26 @@ export function getAllAccountRentalerForCustomer(pageNo, pageSize, keyword) {
   });
 }
 
+export function getParkingPackagesByRentaler(rentalerId) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+  return request({
+    url: API_BASE_URL + "/parking-packages/rentaler/" + rentalerId,
+    method: "GET",
+  });
+}
+
+export function getParkingCardsForUser(pageNo, pageSize) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+  return request({
+    url: API_BASE_URL + "/parking-cards/user?pageNo=" + pageNo + "&pageSize=" + pageSize,
+    method: "GET",
+  });
+}
+
 export function getAllrRoomByUserId(pageNo, pageSize, userId) {
   return request({
     url:

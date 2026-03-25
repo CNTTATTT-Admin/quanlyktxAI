@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { FiCheck, FiX, FiEye } from "react-icons/fi";
 import { getAllParkingCards, updateParkingCardStatus } from "../../services/fetch/ApiUtils";
 
-const ParkingManagement = (props) => {
+const ParkingCardManagement = (props) => {
     const { authenticated, location } = props;
     const history = useNavigate();
 
@@ -16,7 +16,10 @@ const ParkingManagement = (props) => {
     const [searchQuery, setSearchQuery] = useState("");
 
     const [showImageModal, setShowImageModal] = useState(false);
-    const [selectedImage, setSelectedImage] = useState("");
+    const [selectedImages, setSelectedImages] = useState([]);
+
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [imageModalTitle, setImageModalTitle] = useState("");
 
     const [showInvoiceModal, setShowInvoiceModal] = useState(false);
     const [selectedInvoice, setSelectedInvoice] = useState(null);
@@ -67,9 +70,24 @@ const ParkingManagement = (props) => {
         }
     };
 
-    const openImageModal = (imageUrl) => {
-        setSelectedImage(imageUrl);
+    const openImagesModal = (images, title) => {
+        if (!images || images.length === 0) {
+            toast.info("Người dùng không tải lên ảnh này.");
+            return;
+        }
+        //Ép kiểu về mảng để xử lý chung
+        setSelectedImages(Array.isArray(images) ? images : [images]);
+        setCurrentImageIndex(0);
+        setImageModalTitle(title);
         setShowImageModal(true);
+    };
+
+    const handleNextImage = () => {
+        setCurrentImageIndex((prev) => (prev + 1) % selectedImages.length);
+    };
+
+    const handlePrevImage = () => {
+        setCurrentImageIndex((prev) => (prev - 1 + selectedImages.length) % selectedImages.length);
     };
 
     const openInvoiceModal = (invoice) => {
@@ -98,6 +116,7 @@ const ParkingManagement = (props) => {
             case "PAID": return <span className="text-success fw-bold"><FiCheck /> Đã thu</span>;
             case "PENDING": return <span className="text-warning fw-bold">Chờ đóng tiền</span>;
             case "FAILED": return <span className="text-danger fw-bold">Thất bại</span>;
+            case "CANCELLED": return <span className="text-secondary fw-bold">Đã hủy</span>;
             default: return <span className="text-muted">{invoiceStatus}</span>;
         }
     };
@@ -189,12 +208,19 @@ const ParkingManagement = (props) => {
                                                         </td>
                                                         <td className="text-center">
                                                             <button
-                                                                className="btn btn-sm btn-outline-info"
-                                                                onClick={() => openImageModal(item.registrationImageUrl)}
-                                                                title="Xem giấy tờ"
+                                                                className="btn btn-sm btn-outline-info mb-1 w-100 d-flex align-items-center justify-content-center gap-1"
+                                                                onClick={() => openImagesModal(item.registrationImageUrl, "Giấy Tờ Đăng Ký Xe")}
                                                             >
-                                                                <FiEye /> Xem ảnh
+                                                                <FiEye /> Giấy tờ
                                                             </button>
+                                                            {item.vehicleImages && item.vehicleImages.length > 0 && (
+                                                                <button
+                                                                    className="btn btn-sm btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-1"
+                                                                    onClick={() => openImagesModal(item.vehicleImages, "Ảnh Thực Tế Của Xe")}
+                                                                >
+                                                                    <FiEye /> Ảnh xe ({item.vehicleImages.length})
+                                                                </button>
+                                                            )}
                                                         </td>
                                                         <td className="text-center">
                                                             {item.status === "PENDING" && (
@@ -277,22 +303,59 @@ const ParkingManagement = (props) => {
             )}
 
             {/* Modal Xem Ảnh */}
-            {showImageModal && (
-                <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0,0,0,0.6)" }} tabIndex="-1">
+            {showImageModal && selectedImages.length > 0 && (
+                <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0,0,0,0.85)" }} tabIndex="-1">
                     <div className="modal-dialog modal-dialog-centered modal-lg">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h5 className="modal-title">Ảnh Giấy Tờ Đăng Ký Xe</h5>
-                                <button type="button" className="btn-close" onClick={() => setShowImageModal(false)}></button>
+                        <div className="modal-content bg-transparent border-0">
+                            <div className="modal-header border-0 pb-0 justify-content-center position-relative">
+                                <h5 className="modal-title text-white fw-bold">{imageModalTitle}</h5>
+                                <button 
+                                    type="button" 
+                                    className="btn-close btn-close-white position-absolute end-0" 
+                                    style={{ top: '15px', right: '15px' }} 
+                                    onClick={() => setShowImageModal(false)}
+                                ></button>
                             </div>
-                            <div className="modal-body text-center">
+                            
+                            <div className="modal-body text-center position-relative d-flex align-items-center justify-content-center" style={{ minHeight: "60vh" }}>
+                                {/* Nút Prev (Chỉ hiện nếu có nhiều hơn 1 ảnh) */}
+                                {selectedImages.length > 1 && (
+                                    <button 
+                                        className="btn btn-light rounded-circle position-absolute start-0 ms-3 shadow" 
+                                        onClick={handlePrevImage} 
+                                        style={{ zIndex: 10, width: '40px', height: '40px' }}
+                                    >
+                                        &lt;
+                                    </button>
+                                )}
+                                
                                 <img
-                                    src={selectedImage?.startsWith("http") ? selectedImage : `http://localhost:8080/image/${selectedImage}`}
-                                    alt="Giấy tờ xe"
-                                    className="img-fluid rounded"
-                                    style={{ maxHeight: "70vh", objectFit: "contain" }}
+                                    src={selectedImages[currentImageIndex]?.startsWith("http") 
+                                            ? selectedImages[currentImageIndex] 
+                                            : `http://localhost:8080/image/${selectedImages[currentImageIndex]}`}
+                                    alt="Ảnh"
+                                    className="img-fluid rounded shadow-lg"
+                                    style={{ maxHeight: "70vh", objectFit: "contain", transition: "all 0.3s ease" }}
                                 />
+                                
+                                {/* Nút Next (Chỉ hiện nếu có nhiều hơn 1 ảnh) */}
+                                {selectedImages.length > 1 && (
+                                    <button 
+                                        className="btn btn-light rounded-circle position-absolute end-0 me-3 shadow" 
+                                        onClick={handleNextImage} 
+                                        style={{ zIndex: 10, width: '40px', height: '40px' }}
+                                    >
+                                        &gt;
+                                    </button>
+                                )}
                             </div>
+                            
+                            {/* Bộ đếm ảnh */}
+                            {selectedImages.length > 1 && (
+                                <div className="text-center text-white pb-4 fs-5 fw-bold">
+                                    {currentImageIndex + 1} / {selectedImages.length}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -301,4 +364,4 @@ const ParkingManagement = (props) => {
     );
 };
 
-export default ParkingManagement;
+export default ParkingCardManagement;

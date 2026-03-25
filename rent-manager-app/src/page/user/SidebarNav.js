@@ -23,6 +23,18 @@ const SidebarNav = () => {
         </NavLink>
       </li>
       <li className="sidebar-item">
+        <NavLink to="/register-parking-card" className="sidebar-link">
+          <i className="align-middle" data-feather="sliders"></i>{" "}
+          <span className="align-middle">Đăng ký gửi xe</span>
+        </NavLink>
+      </li>
+      <li className="sidebar-item">
+        <NavLink to="/parking-card-history" className="sidebar-link">
+          <i className="align-middle" data-feather="list"></i>{" "}
+          <span className="align-middle">Lịch sử thẻ xe</span>
+        </NavLink>
+      </li>
+      <li className="sidebar-item">
         <NavLink to="/follow-agents" className="sidebar-link">
           <i className="align-middle" data-feather="sliders"></i>{" "}
           <span className="align-middle">Người theo dõi</span>

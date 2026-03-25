@@ -146,7 +146,7 @@ public class StatisticalServiceImpl extends BaseService implements StatisticalSe
             }
         }
 
-        //Thêm tiền hóa đơn xe
+        //Gộp tiền hóa đơn xe
         List<Invoice> paidInvoices = invoiceRepository.findPaidInvoicesByRentaler(getUserId(), InvoiceStatus.PAID);
     
             for (Invoice invoice : paidInvoices) {

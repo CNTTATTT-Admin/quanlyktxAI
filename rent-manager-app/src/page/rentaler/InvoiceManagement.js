@@ -71,9 +71,9 @@ const InvoiceManagement = (props) => {
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case "PENDING": return <span className="badge bg-warning text-dark"><FiClock className="me-1"/> Chờ thanh toán</span>;
-      case "PAID": return <span className="badge bg-success"><FiCheckCircle className="me-1"/> Đã thu</span>;
-      case "FAILED": return <span className="badge bg-danger"><FiXCircle className="me-1"/> Thất bại</span>;
+      case "PENDING": return <span className="badge bg-warning text-dark"><FiClock className="me-1" /> Chờ thanh toán</span>;
+      case "PAID": return <span className="badge bg-success"><FiCheckCircle className="me-1" /> Đã thu</span>;
+      case "FAILED": return <span className="badge bg-danger"><FiXCircle className="me-1" /> Thất bại</span>;
       case "CANCELLED": return <span className="badge bg-secondary">Đã hủy</span>;
       default: return <span className="badge bg-light text-dark">{status}</span>;
     }
@@ -104,7 +104,7 @@ const InvoiceManagement = (props) => {
                 </label>
               </div>
             </div>
-            
+
             <div className="row dt-row">
               <div className="col-sm-12 table-responsive">
                 <table className="table table-striped dataTable no-footer" style={{ width: "100%" }}>
@@ -128,22 +128,24 @@ const InvoiceManagement = (props) => {
                         <tr key={item.id}>
                           <td><small className="text-muted">{item.transactionId || `#INV-${item.id}`}</small></td>
                           <td>
-                            <strong>{item.user?.name}</strong><br/>
+                            <strong>{item.user?.name}</strong><br />
                             <small className="text-muted">{item.user?.phone}</small>
                           </td>
                           <td>
-                            <span className="badge bg-dark">{item.parkingCard?.licensePlate}</span><br/>
+                            <span className="badge bg-dark">{item.parkingCard?.licensePlate}</span><br />
                             <small>{item.parkingCard?.packageInfo?.name}</small>
                           </td>
                           <td className="text-danger fw-bold">
-                            {item.amount?.toLocaleString('vi-VN', {style : 'currency', currency : 'VND'}) || "0 ₫"}
+                            {item.amount?.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) || "0 ₫"}
                           </td>
                           <td>
                             {item.paidAt ? new Date(item.paidAt).toLocaleString("vi-VN") : "-"}
                           </td>
                           <td>
                             <span className="badge bg-light text-dark border">
-                              {item.paymentMethod || "Tiền mặt / Chuyển khoản"}
+                              {item.status === "PENDING" ? "Chưa thanh toán" :
+                                item.status === "CANCELLED" ? "-" :
+                                  (item.paymentMethod || "Tiền mặt")}
                             </span>
                           </td>
                           <td>{getStatusBadge(item.status)}</td>

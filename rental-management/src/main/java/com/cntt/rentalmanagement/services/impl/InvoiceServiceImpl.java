@@ -1,11 +1,13 @@
 package com.cntt.rentalmanagement.services.impl;
 
 import com.cntt.rentalmanagement.domain.enums.InvoiceStatus;
+import com.cntt.rentalmanagement.domain.enums.ParkingCardStatus;
 import com.cntt.rentalmanagement.domain.models.Invoice;
 import com.cntt.rentalmanagement.domain.payload.response.InvoiceResponse;
 import com.cntt.rentalmanagement.domain.payload.response.MessageResponse;
 import com.cntt.rentalmanagement.exception.BadRequestException;
 import com.cntt.rentalmanagement.repository.InvoiceRepository;
+import com.cntt.rentalmanagement.repository.ParkingCardRepository;
 import com.cntt.rentalmanagement.services.InvoiceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -13,6 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -21,6 +24,7 @@ import java.time.LocalDateTime;
 public class InvoiceServiceImpl implements InvoiceService {
 
     private final InvoiceRepository invoiceRepository;
+    private final ParkingCardRepository parkingCardRepository;
 
     @Override
     public Page<InvoiceResponse> getInvoicesForRentaler(Long rentalerId, Integer pageNo, Integer pageSize, String keyword) {
@@ -31,6 +35,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
+    @Transactional
     public MessageResponse updateInvoiceStatus(Long id, InvoiceStatus status) {
         Invoice invoice = invoiceRepository.findById(id)
                 .orElseThrow(() -> new BadRequestException("Hóa đơn không tồn tại"));
@@ -42,8 +47,25 @@ public class InvoiceServiceImpl implements InvoiceService {
             if (invoice.getPaymentMethod() == null) {
                 invoice.setPaymentMethod("Tiền mặt");
             }
+            
+            if (invoice.getParkingCard() != null) {
+                var card = invoice.getParkingCard();
+                card.setStatus(ParkingCardStatus.ACTIVE);
+                
+                if (card.getIssueDate() == null) {
+                    card.setIssueDate(LocalDateTime.now());
+                }
+                parkingCardRepository.save(card);
+            }
+            
         } else if (status == InvoiceStatus.CANCELLED || status == InvoiceStatus.FAILED) {
             invoice.setPaidAt(null);
+            
+            if (invoice.getParkingCard() != null && status == InvoiceStatus.CANCELLED) {
+                var card = invoice.getParkingCard();
+                card.setStatus(ParkingCardStatus.CANCELLED);
+                parkingCardRepository.save(card);
+            }
         }
 
         invoiceRepository.save(invoice);

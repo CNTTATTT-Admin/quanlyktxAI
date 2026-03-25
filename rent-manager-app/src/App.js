@@ -71,10 +71,12 @@ import CheckInOutHistory from "./page/user/CheckInOutHistory";
 import LeaveRequestForm from "./page/user/LeaveRequestForm";
 import MaintenanceUserPage from "./page/user/MaintenanceUserPage";
 import ElectricAndWaterUserPage from "./page/user/ElectricAndWaterUserPage";
+import RegisterParkingCard from "./page/user/RegisterParkingCard";
+import ParkingCardHistory from "./page/user/ParkingCardHistory";
 import LeaveRequestManagement from "./page/rentaler/LeaveRequestManagement";
 import CheckoutRequestManagement from "./page/rentaler/CheckoutRequestManagement";
 import CheckInOutManagement from "./page/rentaler/CheckInOutManagement";
-import ParkingManagement from "./page/rentaler/ParkingManagement";
+import ParkingCardManagement from "./page/rentaler/ParkingCardManagement";
 import InvoiceManagement from "./page/rentaler/InvoiceManagement";
 import BannerManagement from "./page/admin/BannerManagement";
 import BannerForm from "./page/admin/BannerForm";
@@ -426,8 +428,24 @@ function App() {
               element={<CheckInOut currentUser={currentUser} />}
             />
             <Route
-              path="parking-card-management"
-              element={<ParkingManagement currentUser={currentUser} />}
+              path="register-parking-card"
+              element={
+                <RegisterParkingCard 
+                  authenticated={authenticated} 
+                  currentUser={currentUser}
+                  onLogout={handleLogout} 
+                />
+              }
+            />
+            <Route
+              path="parking-card-history"
+              element={
+                <ParkingCardHistory
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  onLogout={handleLogout}
+                />
+              }
             />
             <Route
               path="face-registration"
@@ -759,9 +777,9 @@ function App() {
               }
             />
             <Route
-              path="parking-management"
+              path="parking-card-management"
               element={
-                <ParkingManagement
+                <ParkingCardManagement
                   authenticated={authenticated}
                   currentUser={currentUser}
                   role={role}
