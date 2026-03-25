@@ -25,4 +25,6 @@ public interface ParkingCardRepository extends JpaRepository<ParkingCard, Long> 
     @Modifying
     @Transactional
     void deleteByUserId(Long userId);
+
+    boolean existsByLicensePlate(String licensePlate);
 }

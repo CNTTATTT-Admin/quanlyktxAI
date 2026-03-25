@@ -1188,6 +1188,19 @@ export function updateInvoiceStatus(id, status) {
   });
 }
 
+// USERS
+export function registerParkingCard(formData) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url: API_BASE_URL + "/parking-cards/user/register",
+    method: "POST",
+    body: formData,
+  });
+}
+
 // POLICY
 export function getPolicy() {
   return request({

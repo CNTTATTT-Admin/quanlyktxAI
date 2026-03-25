@@ -1,9 +1,11 @@
 package com.cntt.rentalmanagement.controller;
 
+import com.cntt.rentalmanagement.domain.payload.request.ParkingCardRequest;
 import com.cntt.rentalmanagement.domain.payload.request.ParkingCardStatusRequest;
 import com.cntt.rentalmanagement.secruity.TokenProvider;
 import com.cntt.rentalmanagement.services.ParkingCardService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +36,16 @@ public class ParkingCardController {
         return ResponseEntity.ok(parkingCardService.updateParkingCardStatus(id, request));
     }
 
+    @PostMapping(value = "/user/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> registerParkingCard(
+            @RequestHeader("Authorization") String token,
+            @ModelAttribute ParkingCardRequest request) {
+        
+        token = token.substring(7);
+        Long userId = tokenProvider.getUserIdFromToken(token);
+        
+        return ResponseEntity.ok(parkingCardService.registerParkingCard(userId, request));
+    }
 
     @GetMapping("/user")
     public ResponseEntity<?> getParkingCardsForUser(
