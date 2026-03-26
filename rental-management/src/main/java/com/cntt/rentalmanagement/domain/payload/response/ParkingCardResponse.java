@@ -25,6 +25,8 @@ public class ParkingCardResponse {
     private String rejectedReason;
     private LocalDateTime issueDate;
     private LocalDateTime expiryDate;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private String invoiceStatus;
 
     private InvoiceDetail invoice;

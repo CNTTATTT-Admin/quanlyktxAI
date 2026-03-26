@@ -39,4 +39,9 @@ public class InvoiceController {
         InvoiceStatus invoiceStatus = InvoiceStatus.valueOf(status.toUpperCase());
         return ResponseEntity.ok(invoiceService.updateInvoiceStatus(id, invoiceStatus, paymentMethod));
     }
+
+    @PostMapping("/renew/parking-card/{cardId}")
+    public ResponseEntity<?> createRenewalInvoice(@PathVariable Long cardId) {
+        return ResponseEntity.ok(invoiceService.createRenewalInvoice(cardId));
+    }
 }

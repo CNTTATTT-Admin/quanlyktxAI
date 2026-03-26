@@ -9,4 +9,6 @@ public interface InvoiceService {
     Page<InvoiceResponse> getInvoicesForRentaler(Long rentalerId, Integer pageNo, Integer pageSize, String keyword);
     
     MessageResponse updateInvoiceStatus(Long id, InvoiceStatus status, String paymentMethod);
+
+    InvoiceResponse createRenewalInvoice(Long parkingCardId);
 }

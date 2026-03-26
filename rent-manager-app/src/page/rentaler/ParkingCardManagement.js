@@ -163,6 +163,8 @@ const ParkingCardManagement = (props) => {
                                                 <th>Người thuê</th>
                                                 <th>Thông tin xe</th>
                                                 <th>Gói cước</th>
+                                                <th>Ngày tạo</th>
+                                                <th>Ngày cập nhật</th>
                                                 <th>Trạng thái Thẻ</th>
                                                 <th>Thanh toán</th>
                                                 <th className="text-center">Giấy tờ</th>
@@ -191,7 +193,20 @@ const ParkingCardManagement = (props) => {
                                                             <strong>{item.packageInfo?.name || "Gói gửi xe"}</strong><br />
                                                             <span className="text-danger">
                                                                 {item.packageInfo?.price?.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) || "0 ₫"}
-                                                            </span>
+                                                            </span><br />
+                                                            <small className="text-primary fw-bold">
+                                                                Hạn: {item.expiryDate ? new Date(item.expiryDate).toLocaleDateString("vi-VN") : "Chưa kích hoạt"}
+                                                            </small>
+                                                        </td>
+                                                        <td>
+                                                            <small className="text-muted">
+                                                                {item.createdAt ? new Date(item.createdAt).toLocaleString("vi-VN") : "-"}
+                                                            </small>
+                                                        </td>
+                                                        <td>
+                                                            <small className="text-muted fw-bold">
+                                                                {item.updatedAt ? new Date(item.updatedAt).toLocaleString("vi-VN") : "-"}
+                                                            </small>
                                                         </td>
                                                         <td>{getCardStatusBadge(item.status)}</td>
                                                         <td>
@@ -281,7 +296,7 @@ const ParkingCardManagement = (props) => {
                                         </div>
                                         <div className="d-flex justify-content-between mb-2">
                                             <span className="text-muted">Phương thức:</span>
-                                            <strong>{selectedInvoice.paymentMethod || "Tiền mặt"}</strong>
+                                            <strong>{selectedInvoice.paymentMethod || "-"}</strong>
                                         </div>
                                         <div className="d-flex justify-content-between mb-2">
                                             <span className="text-muted">Mã giao dịch (VNPAY):</span>

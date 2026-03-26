@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.time.LocalDateTime;
 
 public interface ParkingCardRepository extends JpaRepository<ParkingCard, Long> {
 
@@ -40,4 +41,6 @@ public interface ParkingCardRepository extends JpaRepository<ParkingCard, Long> 
     boolean existsByLicensePlate(String licensePlate);
 
     boolean existsByLicensePlateAndStatusIn(String licensePlate, List<ParkingCardStatus> statuses);
+
+    List<ParkingCard> findByStatusAndExpiryDateBefore(ParkingCardStatus status, LocalDateTime time);
 }

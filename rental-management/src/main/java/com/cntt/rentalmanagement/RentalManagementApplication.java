@@ -9,12 +9,14 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.modelmapper.ModelMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 
 import jakarta.annotation.PostConstruct;
 
 @SpringBootApplication
+@EnableScheduling
 @EnableAsync
 @EnableConfigurationProperties({FileStorageProperties.class, AppProperties.class})
 @Slf4j

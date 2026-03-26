@@ -93,11 +93,11 @@ const InvoiceManagement = (props) => {
             <div className="row mb-3">
               <div className="col-sm-12 col-md-6"></div>
               <div className="col-sm-12 col-md-6 text-end">
-                <label>
-                  Tìm tên / Biển số:
+                <label className="d-flex align-items-center justify-content-end">
+                  <span className="me-2 text-muted fw-bold">Tìm tên / Biển số:</span>
                   <input
                     type="search"
-                    className="form-control form-control-sm d-inline-block w-auto ms-2"
+                    className="form-control form-control-sm w-auto shadow-sm"
                     value={searchQuery}
                     onChange={handleSearch}
                   />
@@ -114,6 +114,7 @@ const InvoiceManagement = (props) => {
                       <th>Người thanh toán</th>
                       <th>Chi tiết Thẻ xe</th>
                       <th>Số tiền</th>
+                      <th>Ngày tạo</th>
                       <th>Ngày thu</th>
                       <th>Phương thức</th>
                       <th>Trạng thái</th>
@@ -137,6 +138,9 @@ const InvoiceManagement = (props) => {
                           </td>
                           <td className="text-danger fw-bold">
                             {item.amount?.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) || "0 ₫"}
+                          </td>
+                          <td>
+                            {item.createdAt ? new Date(item.createdAt).toLocaleString("vi-VN") : "-"}
                           </td>
                           <td>
                             {item.paidAt ? new Date(item.paidAt).toLocaleString("vi-VN") : "-"}

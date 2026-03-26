@@ -31,11 +31,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import java.util.List;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 
 @Service
 @RequiredArgsConstructor
@@ -76,7 +78,7 @@ public class ParkingCardServiceImpl implements ParkingCardService {
         String oldStatus = card.getStatus().name();
         String newStatus = request.getStatus().name();
 
-        // 1. CẬP NHẬT TRẠNG THÁI THẺ XE
+        //Cập nhật trạng thái thẻ xe
         card.setStatus(request.getStatus());
         
         if (newStatus.equals("REJECTED")) {
@@ -88,37 +90,35 @@ public class ParkingCardServiceImpl implements ParkingCardService {
                 card.setIssueDate(LocalDateTime.now());
             }
         }
-
+        card.setUpdatedAt(LocalDateTime.now());
         parkingCardRepository.save(card);
 
-        // 2. XỬ LÝ HÓA ĐƠN
+        //xử lý invoice
         var invoice = invoiceRepository.findFirstByParkingCardIdOrderByIdDesc(card.getId());
 
-        // TRƯỜNG HỢP 1: TẠO MỚI HÓA ĐƠN KHI CHỦ TRỌ DUYỆT THẺ (TỪ PENDING -> APPROVED_WAITING_PAYMENT)
+        //pending -> approve
         if (newStatus.equals("APPROVED_WAITING_PAYMENT") && oldStatus.equals("PENDING")) {
             Invoice newInvoice = new Invoice();
             
             newInvoice.setParkingCard(card);
             newInvoice.setUser(card.getUser());
-            // Lấy giá tiền từ Gói cước (ParkingPackage) và gán vào amount
+            //gán giá vào amount
             newInvoice.setAmount(card.getParkingPackage().getPrice()); 
-            // Đặt trạng thái hóa đơn là PENDING (Theo đúng InvoiceStatus.java của bạn)
             newInvoice.setStatus(InvoiceStatus.PENDING); 
             newInvoice.setCreatedAt(LocalDateTime.now());
             
             invoiceRepository.save(newInvoice);
         } 
-        // TRƯỜNG HỢP 2: CẬP NHẬT HÓA ĐƠN ĐÃ CÓ (THANH TOÁN HOẶC HỦY)
+        //approve -> active
         else if (invoice != null) {
-            // Khi User thanh toán (APPROVED_WAITING_PAYMENT -> ACTIVE)
             if (newStatus.equals("ACTIVE") && oldStatus.equals("APPROVED_WAITING_PAYMENT")) {
                 invoice.setStatus(InvoiceStatus.PAID); 
-                invoice.setPaidAt(LocalDateTime.now()); // Lưu lại thời gian thanh toán
+                invoice.setPaidAt(LocalDateTime.now());
                 invoice.setPaymentMethod("Chuyển khoản"); 
                 invoiceRepository.save(invoice);
             }
             
-            // Khi User hủy yêu cầu đăng ký thẻ (PENDING/APPROVED_WAITING_PAYMENT -> CANCELLED)
+            //pending -> cancel
             if (newStatus.equals("CANCELLED") && invoice.getStatus().name().equals("PENDING")) {
                 invoice.setStatus(InvoiceStatus.CANCELLED); 
                 invoiceRepository.save(invoice);
@@ -186,6 +186,24 @@ public class ParkingCardServiceImpl implements ParkingCardService {
         return "http://localhost:8080/image/" + image;
     }
 
+    @Scheduled(fixedRate = 60000)
+    @Transactional
+    public void autoExpireParkingCards() {
+        LocalDateTime now = LocalDateTime.now();
+        
+        List<ParkingCard> expiredCards = parkingCardRepository.findByStatusAndExpiryDateBefore(ParkingCardStatus.ACTIVE, now);
+
+        for (ParkingCard card : expiredCards) {
+            card.setStatus(ParkingCardStatus.EXPIRED);
+            card.setUpdatedAt(now);
+        }
+
+        if (!expiredCards.isEmpty()) {
+            parkingCardRepository.saveAll(expiredCards);
+            System.out.println("Đã tự động chuyển " + expiredCards.size() + " thẻ xe sang trạng thái HẾT HẠN.");
+        }
+    }
+
     private ParkingCardResponse mapToResponse(ParkingCard card) {
 
         UserResponse userResponse = new UserResponse();
@@ -205,21 +223,34 @@ public class ParkingCardServiceImpl implements ParkingCardService {
         String invStatus = null;
         ParkingCardResponse.InvoiceDetail invoiceDetail = null;
 
-        var invoice = invoiceRepository.findFirstByParkingCardIdOrderByIdDesc(card.getId());
-        if (invoice != null) {
-            invStatus = invoice.getStatus().name();
+        List<Invoice> allInvoices = invoiceRepository.findByParkingCardId(card.getId());
 
-            invoiceDetail = ParkingCardResponse.InvoiceDetail.builder()
-                    .id(invoice.getId())
-                    .amount(invoice.getAmount())
-                    .status(invoice.getStatus().name())
-                    .paymentMethod(invoice.getPaymentMethod())
-                    .transactionId(invoice.getTransactionId())
-                    .paidAt(invoice.getPaidAt())
-                    .build();
+        if (allInvoices != null && !allInvoices.isEmpty()) {
+            //Tìm PENDING/PAID
+            var validInvoice = allInvoices.stream()
+                    .filter(i -> i.getStatus() == InvoiceStatus.PAID || i.getStatus() == InvoiceStatus.PENDING)
+                    .max(Comparator.comparing(Invoice::getCreatedAt))
+                    .orElse(null);
+
+            //Nếu không lấy CANCELLED
+            var displayInvoice = validInvoice != null ? validInvoice :
+                    allInvoices.stream()
+                            .max(Comparator.comparing(Invoice::getCreatedAt))
+                            .orElse(null);
+
+            if (displayInvoice != null) {
+                invStatus = displayInvoice.getStatus().name();
+                invoiceDetail = ParkingCardResponse.InvoiceDetail.builder()
+                        .id(displayInvoice.getId())
+                        .amount(displayInvoice.getAmount())
+                        .status(displayInvoice.getStatus().name())
+                        .paymentMethod(displayInvoice.getPaymentMethod())
+                        .transactionId(displayInvoice.getTransactionId())
+                        .paidAt(displayInvoice.getPaidAt())
+                        .build();
+            }
         }
 
-        //Tìm ảnh xe
         List<String> vehicleImages = parkingImageRepository.findByParkingCardId(card.getId())
                 .stream()
                 .map(ParkingImage::getImageUrl)
@@ -236,6 +267,8 @@ public class ParkingCardServiceImpl implements ParkingCardService {
                 .rejectedReason(card.getRejectedReason())
                 .issueDate(card.getIssueDate())
                 .expiryDate(card.getExpiryDate())
+                .createdAt(card.getCreatedAt())
+                .updatedAt(card.getUpdatedAt())
                 .user(userResponse)
                 .packageInfo(packageInfo)
                 .invoiceStatus(invStatus)

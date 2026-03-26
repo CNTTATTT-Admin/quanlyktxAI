@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.time.LocalDateTime;
 
 public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     
@@ -19,6 +20,8 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     void deleteByUserId(Long userId);
 
     Invoice findFirstByParkingCardIdOrderByIdDesc(Long parkingCardId);
+
+    List<Invoice> findByParkingCardId(Long parkingCardId);
 
     @Query("SELECT i FROM Invoice i WHERE i.parkingCard.parkingPackage.rentaler.id = :rentalerId " +
            "AND (:keyword IS NULL OR :keyword = '' " +
@@ -30,5 +33,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
             Pageable pageable);
 
     @Query("SELECT i FROM Invoice i WHERE i.parkingCard.parkingPackage.rentaler.id = :rentalerId AND i.status = :status")
-    List<Invoice> findPaidInvoicesByRentaler(@Param("rentalerId") Long rentalerId, @Param("status") InvoiceStatus status);       
+    List<Invoice> findPaidInvoicesByRentaler(@Param("rentalerId") Long rentalerId, @Param("status") InvoiceStatus status);    
+
+    List<Invoice> findByStatusAndCreatedAtBefore(InvoiceStatus status, LocalDateTime time);   
 }

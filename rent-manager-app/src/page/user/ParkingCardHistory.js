@@ -3,7 +3,8 @@ import SidebarNav from "./SidebarNav";
 import {
     getParkingCardsForUser,
     updateParkingCardStatus,
-    createVNPayUrl
+    createVNPayUrl,
+    createRenewalInvoiceApi
 } from "../../services/fetch/ApiUtils";
 import Pagination from "./Pagnation";
 import { toast } from "react-toastify";
@@ -66,12 +67,10 @@ function ParkingCardHistory(props) {
             toast.error("Không tìm thấy thông tin hóa đơn!");
             return;
         }
-
-        // Gọi API lấy link VNPAY
         createVNPayUrl(invoiceId)
             .then((res) => {
                 if (res && res.url) {
-                    // Bay thẳng sang trang thanh toán của VNPAY
+                    //Sang VNPAY
                     window.location.href = res.url;
                 }
             })
@@ -79,6 +78,20 @@ function ParkingCardHistory(props) {
                 toast.error((err && err.message) || "Không thể tạo link thanh toán!");
             });
     };
+
+    const handleRenewCard = (parkingCardId) => {
+        if (window.confirm("Hệ thống sẽ tạo một hóa đơn gia hạn mới cho thẻ xe này. Bạn có muốn tiếp tục?")) {
+            createRenewalInvoiceApi(parkingCardId) 
+                .then((newInvoice) => {
+                    toast.success("Tạo hóa đơn gia hạn thành công! Chuyển hướng thanh toán...");
+                    handlePayment(newInvoice.id); 
+                })
+                .catch((error) => {
+                    toast.error((error && error.message) || "Không thể tạo hóa đơn gia hạn!");
+                });
+        }
+    };
+
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     const renderStatusBadge = (status) => {
@@ -157,6 +170,8 @@ function ParkingCardHistory(props) {
                                                     <th>Biển số xe</th>
                                                     <th>Thông tin xe</th>
                                                     <th>Gói cước</th>
+                                                    <th>Ngày tạo</th>
+                                                    <th>Ngày cập nhật</th>
                                                     <th>Trạng thái thẻ</th>
                                                     <th>Lý do từ chối</th>
                                                     <th>Hành động</th>
@@ -165,7 +180,7 @@ function ParkingCardHistory(props) {
                                             <tbody>
                                                 {tableData.length === 0 ? (
                                                     <tr>
-                                                        <td colSpan="6" className="text-center py-4 text-muted">
+                                                        <td colSpan="8" className="text-center py-4 text-muted">
                                                             Bạn chưa có lịch sử đăng ký thẻ xe nào.
                                                         </td>
                                                     </tr>
@@ -183,9 +198,22 @@ function ParkingCardHistory(props) {
                                                                         <div>{item.packageInfo.name}</div>
                                                                         <small className="text-success fw-bold">
                                                                             {item.packageInfo.price?.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                                                                        </small><br />
+                                                                        <small className="text-primary fw-bold">
+                                                                            Hạn: {item.expiryDate ? new Date(item.expiryDate).toLocaleDateString("vi-VN") : "Chưa kích hoạt"}
                                                                         </small>
                                                                     </>
                                                                 ) : "N/A"}
+                                                            </td>
+                                                            <td>
+                                                                <small className="text-muted">
+                                                                    {item.createdAt ? new Date(item.createdAt).toLocaleString("vi-VN") : "-"}
+                                                                </small>
+                                                            </td>
+                                                            <td>
+                                                                <small className="text-muted fw-bold">
+                                                                    {item.updatedAt ? new Date(item.updatedAt).toLocaleString("vi-VN") : "-"}
+                                                                </small>
                                                             </td>
                                                             <td>
                                                                 {renderStatusBadge(item.status)}
@@ -209,6 +237,15 @@ function ParkingCardHistory(props) {
                                                                         onClick={() => handleCancel(item.id, item.status)}
                                                                     >
                                                                         {item.status === "ACTIVE" ? "Hủy thẻ xe" : "Hủy yêu cầu"}
+                                                                    </button>
+                                                                )}
+
+                                                                {(item.status === "ACTIVE" || item.status === "EXPIRED") && (
+                                                                    <button
+                                                                        className="btn btn-sm btn-primary shadow-sm mb-1"
+                                                                        onClick={() => handleRenewCard(item.id)}
+                                                                    >
+                                                                        Gia hạn thẻ
                                                                     </button>
                                                                 )}
 

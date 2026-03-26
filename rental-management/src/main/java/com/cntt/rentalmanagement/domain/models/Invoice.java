@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
@@ -21,23 +23,35 @@ public class Invoice {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(nullable = false)
     private BigDecimal amount;
+
+    @Column(name = "paid_at")
     private LocalDateTime paidAt;
+
+    @Column(name = "payment_method")
     private String paymentMethod;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private InvoiceStatus status;
     
+    @Column(name = "transaction_id")
     private String transactionId;
 
     @ManyToOne
-    @JoinColumn(name = "parking_card_id")
+    @JoinColumn(name = "parking_card_id", nullable = false)
     private ParkingCard parkingCard;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 }

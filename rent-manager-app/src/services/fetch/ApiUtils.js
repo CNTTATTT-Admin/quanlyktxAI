@@ -1212,6 +1212,17 @@ export function updateInvoiceStatus(id, status, paymentMethod = "") {
   });
 }
 
+export function createRenewalInvoiceApi(cardId) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url: API_BASE_URL + "/invoices/renew/parking-card/" + cardId,
+    method: "POST",
+  });
+}
+
 // USERS
 export function registerParkingCard(formData) {
   if (!localStorage.getItem(ACCESS_TOKEN)) {
