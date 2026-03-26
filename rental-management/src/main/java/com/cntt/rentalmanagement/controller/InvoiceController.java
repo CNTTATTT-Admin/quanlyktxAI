@@ -33,9 +33,10 @@ public class InvoiceController {
     @PutMapping("/{id}/status")
     public ResponseEntity<?> updateInvoiceStatus(
             @PathVariable Long id,
-            @RequestParam String status) {
-        
+            @RequestParam String status,
+            @RequestParam(required = false) String paymentMethod
+            ) {
         InvoiceStatus invoiceStatus = InvoiceStatus.valueOf(status.toUpperCase());
-        return ResponseEntity.ok(invoiceService.updateInvoiceStatus(id, invoiceStatus));
+        return ResponseEntity.ok(invoiceService.updateInvoiceStatus(id, invoiceStatus, paymentMethod));
     }
 }

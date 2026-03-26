@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import SidebarNav from "./SidebarNav";
 import {
     getParkingCardsForUser,
-    updateParkingCardStatus
+    updateParkingCardStatus,
+    createVNPayUrl
 } from "../../services/fetch/ApiUtils";
 import Pagination from "./Pagnation";
 import { toast } from "react-toastify";
@@ -15,6 +16,7 @@ function ParkingCardHistory(props) {
 
     const [tableData, setTableData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
+    const [searchQuery, setSearchQuery] = useState("");
     const [itemsPerPage] = useState(10);
     const [totalItems, setTotalItems] = useState(0);
     const [showInvoiceModal, setShowInvoiceModal] = useState(false);
@@ -24,10 +26,10 @@ function ParkingCardHistory(props) {
         if (authenticated) {
             fetchData();
         }
-    }, [currentPage, authenticated]);
+    }, [currentPage, searchQuery, authenticated]);
 
     const fetchData = () => {
-        getParkingCardsForUser(currentPage, itemsPerPage)
+        getParkingCardsForUser(currentPage, itemsPerPage, searchQuery)
             .then((response) => {
                 setTableData(response.content || []);
                 setTotalItems(response.totalElements || 0);
@@ -59,19 +61,24 @@ function ParkingCardHistory(props) {
         }
     };
 
-    const handlePayment = (id) => {
-        if (window.confirm("Xác nhận thanh toán hóa đơn thẻ xe? (Mô phỏng thanh toán thành công)")) {
-            updateParkingCardStatus(id, { status: "ACTIVE" })
-                .then((res) => {
-                    toast.success("Thanh toán thành công! Thẻ xe đã được kích hoạt.");
-                    fetchData();
-                })
-                .catch((err) => {
-                    toast.error((err && err.message) || "Thanh toán thất bại!");
-                });
+    const handlePayment = (invoiceId) => {
+        if (!invoiceId) {
+            toast.error("Không tìm thấy thông tin hóa đơn!");
+            return;
         }
-    };
 
+        // Gọi API lấy link VNPAY
+        createVNPayUrl(invoiceId)
+            .then((res) => {
+                if (res && res.url) {
+                    // Bay thẳng sang trang thanh toán của VNPAY
+                    window.location.href = res.url;
+                }
+            })
+            .catch((err) => {
+                toast.error((err && err.message) || "Không thể tạo link thanh toán!");
+            });
+    };
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     const renderStatusBadge = (status) => {
@@ -126,6 +133,23 @@ function ParkingCardHistory(props) {
                                     </h6>
                                 </div>
                                 <div className="card-body">
+                                    <div className="row mb-3">
+                                        <div className="col-sm-12 col-md-6"></div>
+                                        <div className="col-sm-12 col-md-6 text-end">
+                                            <label className="d-flex align-items-center justify-content-end">
+                                                <span className="me-2 text-muted fw-bold">Tìm biển số / Gói cước:</span>
+                                                <input
+                                                    type="search"
+                                                    className="form-control form-control-sm w-auto shadow-sm"
+                                                    value={searchQuery}
+                                                    onChange={(e) => {
+                                                        setSearchQuery(e.target.value);
+                                                        setCurrentPage(1);
+                                                    }}
+                                                />
+                                            </label>
+                                        </div>
+                                    </div>
                                     <div className="table-responsive">
                                         <table className="table table-striped table-hover align-middle">
                                             <thead className="table-light">
@@ -191,7 +215,7 @@ function ParkingCardHistory(props) {
                                                                 {item.status === "APPROVED_WAITING_PAYMENT" && (
                                                                     <button
                                                                         className="btn btn-sm btn-success shadow-sm"
-                                                                        onClick={() => handlePayment(item.id)}
+                                                                        onClick={() => handlePayment(item.invoice?.id)}
                                                                     >
                                                                         <i className="align-middle me-1" data-feather="credit-card"></i>
                                                                         Thanh toán ngay

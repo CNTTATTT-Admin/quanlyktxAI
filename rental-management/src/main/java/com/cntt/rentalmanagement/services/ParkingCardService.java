@@ -9,7 +9,7 @@ import org.springframework.data.domain.Page;
 public interface ParkingCardService {
     Page<ParkingCardResponse> getAllParkingCardsForRentaler(Long rentalerId, Integer pageNo, Integer pageSize, String keyword);
     
-    Page<ParkingCardResponse> getParkingCardsForUser(Long userId, Integer pageNo, Integer pageSize);
+    Page<ParkingCardResponse> getParkingCardsForUser(Long userId, Integer pageNo, Integer pageSize, String keyword);
     
     MessageResponse updateParkingCardStatus(Long id, ParkingCardStatusRequest request);
 

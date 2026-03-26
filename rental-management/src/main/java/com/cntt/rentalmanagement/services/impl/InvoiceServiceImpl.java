@@ -36,7 +36,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     @Transactional
-    public MessageResponse updateInvoiceStatus(Long id, InvoiceStatus status) {
+    public MessageResponse updateInvoiceStatus(Long id, InvoiceStatus status, String paymentMethod) {
         Invoice invoice = invoiceRepository.findById(id)
                 .orElseThrow(() -> new BadRequestException("Hóa đơn không tồn tại"));
 
@@ -44,20 +44,19 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         if (status == InvoiceStatus.PAID) {
             invoice.setPaidAt(LocalDateTime.now());
-            if (invoice.getPaymentMethod() == null) {
+            if (paymentMethod != null && !paymentMethod.trim().isEmpty()) {
+                invoice.setPaymentMethod(paymentMethod);
+            } else if (invoice.getPaymentMethod() == null) {
                 invoice.setPaymentMethod("Tiền mặt");
-            }
-            
+            } 
             if (invoice.getParkingCard() != null) {
                 var card = invoice.getParkingCard();
                 card.setStatus(ParkingCardStatus.ACTIVE);
-                
                 if (card.getIssueDate() == null) {
                     card.setIssueDate(LocalDateTime.now());
                 }
                 parkingCardRepository.save(card);
-            }
-            
+            }   
         } else if (status == InvoiceStatus.CANCELLED || status == InvoiceStatus.FAILED) {
             invoice.setPaidAt(null);
             

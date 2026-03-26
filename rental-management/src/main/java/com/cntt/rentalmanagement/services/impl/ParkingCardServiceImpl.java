@@ -33,6 +33,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 import java.time.LocalDateTime;
 
 @Service
@@ -57,11 +59,11 @@ public class ParkingCardServiceImpl implements ParkingCardService {
     }
 
     @Override
-    public Page<ParkingCardResponse> getParkingCardsForUser(Long userId, Integer pageNo, Integer pageSize) {
+    public Page<ParkingCardResponse> getParkingCardsForUser(Long userId, Integer pageNo, Integer pageSize, String keyword) {
         int page = pageNo == 0 ? pageNo : pageNo - 1;
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("id").descending());
         
-        Page<ParkingCard> cards = parkingCardRepository.findByUserId(userId, pageable);
+        Page<ParkingCard> cards = parkingCardRepository.findByUserIdAndKeyword(userId, keyword, pageable);
         return cards.map(this::mapToResponse);
     }
 
@@ -134,10 +136,10 @@ public class ParkingCardServiceImpl implements ParkingCardService {
         ParkingPackage parkingPackage = parkingPackageRepository.findById(request.getPackageId())
                 .orElseThrow(() -> new BadRequestException("Gói gửi xe không tồn tại"));
 
-        List<com.cntt.rentalmanagement.domain.enums.ParkingCardStatus> activeStatuses = java.util.Arrays.asList(
-            com.cntt.rentalmanagement.domain.enums.ParkingCardStatus.PENDING,
-            com.cntt.rentalmanagement.domain.enums.ParkingCardStatus.APPROVED_WAITING_PAYMENT,
-            com.cntt.rentalmanagement.domain.enums.ParkingCardStatus.ACTIVE
+        List<ParkingCardStatus> activeStatuses = Arrays.asList(
+            ParkingCardStatus.PENDING,
+            ParkingCardStatus.APPROVED_WAITING_PAYMENT,
+            ParkingCardStatus.ACTIVE
         );
 
         if (parkingCardRepository.existsByLicensePlateAndStatusIn(request.getLicensePlate(), activeStatuses)) {
@@ -217,6 +219,12 @@ public class ParkingCardServiceImpl implements ParkingCardService {
                     .build();
         }
 
+        //Tìm ảnh xe
+        List<String> vehicleImages = parkingImageRepository.findByParkingCardId(card.getId())
+                .stream()
+                .map(ParkingImage::getImageUrl)
+                .collect(Collectors.toList());
+
         return ParkingCardResponse.builder()
                 .id(card.getId())
                 .licensePlate(card.getLicensePlate())
@@ -232,6 +240,7 @@ public class ParkingCardServiceImpl implements ParkingCardService {
                 .packageInfo(packageInfo)
                 .invoiceStatus(invStatus)
                 .invoice(invoiceDetail)
+                .vehicleImages(vehicleImages)
                 .build();
     }
 }

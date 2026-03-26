@@ -73,6 +73,7 @@ import MaintenanceUserPage from "./page/user/MaintenanceUserPage";
 import ElectricAndWaterUserPage from "./page/user/ElectricAndWaterUserPage";
 import RegisterParkingCard from "./page/user/RegisterParkingCard";
 import ParkingCardHistory from "./page/user/ParkingCardHistory";
+import VNPayReturn from "./page/user/VNPayReturn";
 import LeaveRequestManagement from "./page/rentaler/LeaveRequestManagement";
 import CheckoutRequestManagement from "./page/rentaler/CheckoutRequestManagement";
 import CheckInOutManagement from "./page/rentaler/CheckInOutManagement";
@@ -471,6 +472,7 @@ function App() {
                 />
               }
             />
+            <Route path="/vnpay-return" element={<VNPayReturn />} />
           </Route>
 
           {/* ADMIN ROUTES */}

@@ -51,12 +51,13 @@ public class ParkingCardController {
     public ResponseEntity<?> getParkingCardsForUser(
             @RequestHeader("Authorization") String token,
             @RequestParam Integer pageNo,
-            @RequestParam Integer pageSize) {
+            @RequestParam Integer pageSize,
+            @RequestParam(required = false, defaultValue = "") String keyword) {
         
         token = token.substring(7);
         Long userId = tokenProvider.getUserIdFromToken(token);
         
-        return ResponseEntity.ok(parkingCardService.getParkingCardsForUser(userId, pageNo, pageSize));
+        return ResponseEntity.ok(parkingCardService.getParkingCardsForUser(userId, pageNo, pageSize, keyword));
     }
 
 }

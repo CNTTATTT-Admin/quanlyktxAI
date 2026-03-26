@@ -283,12 +283,12 @@ export function getParkingPackagesByRentaler(rentalerId) {
   });
 }
 
-export function getParkingCardsForUser(pageNo, pageSize) {
+export function getParkingCardsForUser(pageNo, pageSize, keyword = "") {
   if (!localStorage.getItem(ACCESS_TOKEN)) {
     return Promise.reject("No access token set.");
   }
   return request({
-    url: API_BASE_URL + "/parking-cards/user?pageNo=" + pageNo + "&pageSize=" + pageSize,
+    url: API_BASE_URL + "/parking-cards/user?pageNo=" + pageNo + "&pageSize=" + pageSize + "&keyword=" + keyword,
     method: "GET",
   });
 }
@@ -1197,13 +1197,17 @@ export function getAllInvoices(pageNo, pageSize, keyword) {
   });
 }
 
-export function updateInvoiceStatus(id, status) {
+export function updateInvoiceStatus(id, status, paymentMethod = "") {
   if (!localStorage.getItem(ACCESS_TOKEN)) {
     return Promise.reject("No access token set.");
   }
+  let url = API_BASE_URL + "/invoices/" + id + "/status?status=" + status;
+  if (paymentMethod) {
+      url += "&paymentMethod=" + paymentMethod;
+  }
   // data ở params
   return request({
-    url: API_BASE_URL + "/invoices/" + id + "/status?status=" + status,
+    url: url,
     method: "PUT",
   });
 }
@@ -1237,5 +1241,16 @@ export function updatePolicy(policy) {
     url: API_BASE_URL + "/policy",
     method: "PUT",
     body: JSON.stringify(policy),
+  });
+}
+
+//VN PAY
+export function createVNPayUrl(invoiceId) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+  return request({
+    url: API_BASE_URL + "/payment/create-vnpay-url?invoiceId=" + invoiceId,
+    method: "GET",
   });
 }
