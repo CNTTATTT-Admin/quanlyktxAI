@@ -187,7 +187,7 @@ const UserProfile = (props) => {
                       <label className="form-label">Tải Hình Ảnh</label>
                       <input
                         className="form-control"
-                        accept=".png, .jpeg"
+                        accept=".png, .jpeg, .jpg, image/jpeg, image/png"
                         type="file"
                         onChange={onFileChange}
                       />

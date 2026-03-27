@@ -1,6 +1,7 @@
 package com.cntt.rentalmanagement.domain.payload.response;
 
 import com.cntt.rentalmanagement.domain.enums.VehicleType;
+import com.cntt.rentalmanagement.domain.enums.ParkingPackageStatus;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,4 +17,5 @@ public class ParkingPackageResponse {
     private Integer durationMonths;
     private BigDecimal price;
     private VehicleType vehicleType;
+    private ParkingPackageStatus status;
 }

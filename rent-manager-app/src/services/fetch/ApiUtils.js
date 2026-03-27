@@ -1179,6 +1179,48 @@ export function updateParkingCardStatus(id, data) {
   });
 }
 
+export function getAllParkingPackages(pageNo, pageSize, keyword) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url:
+      API_BASE_URL +
+      "/parking-packages/rentaler?pageNo=" +
+      pageNo +
+      "&pageSize=" +
+      pageSize +
+      "&keyword=" +
+      (keyword || ""),
+    method: "GET",
+  });
+}
+
+export function createParkingPackage(data) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url: API_BASE_URL + "/parking-packages",
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function updateParkingPackage(id, data) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url: API_BASE_URL + "/parking-packages/" + id,
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
 export function getAllInvoices(pageNo, pageSize, keyword) {
   if (!localStorage.getItem(ACCESS_TOKEN)) {
     return Promise.reject("No access token set.");

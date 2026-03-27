@@ -124,7 +124,7 @@ const ProfileRentaler = (props) => {
                             </div>
                             <div className="mb-3">
                                 <label className="form-label">Tải Hình Ảnh</label>
-                                <input className="form-control" accept=".png, .jpeg" type="file" onChange={onFileChange} />
+                                <input className="form-control" accept=".png, .jpeg, .jpg, image/jpeg, image/png" type="file" onChange={onFileChange} />
                             </div>
                             <div className="mb-3">
                                 <label className="form-label" htmlFor="inputAddress">Liện hệ Zalo </label>

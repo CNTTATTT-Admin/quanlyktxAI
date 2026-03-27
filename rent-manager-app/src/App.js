@@ -78,6 +78,7 @@ import LeaveRequestManagement from "./page/rentaler/LeaveRequestManagement";
 import CheckoutRequestManagement from "./page/rentaler/CheckoutRequestManagement";
 import CheckInOutManagement from "./page/rentaler/CheckInOutManagement";
 import ParkingCardManagement from "./page/rentaler/ParkingCardManagement";
+import ParkingPackageManagement from "./page/rentaler/ParkingPackageManagement";
 import InvoiceManagement from "./page/rentaler/InvoiceManagement";
 import BannerManagement from "./page/admin/BannerManagement";
 import BannerForm from "./page/admin/BannerForm";
@@ -782,6 +783,17 @@ function App() {
               path="parking-card-management"
               element={
                 <ParkingCardManagement
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              }
+            />
+            <Route
+              path="parking-package-management"
+              element={
+                <ParkingPackageManagement
                   authenticated={authenticated}
                   currentUser={currentUser}
                   role={role}

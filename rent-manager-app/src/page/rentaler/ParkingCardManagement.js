@@ -133,7 +133,7 @@ const ParkingCardManagement = (props) => {
                                     Duyệt đăng ký gửi xe và theo dõi tình trạng thu phí.
                                 </h6>
                             </div>
-                            <button className="btn btn-primary" onClick={() => history("/rentaler/parking-packages")}>
+                            <button className="btn btn-primary" onClick={() => history("/rentaler/parking-package-management")}>
                                 Quản lý Gói cước (Menu)
                             </button>
                         </div>
