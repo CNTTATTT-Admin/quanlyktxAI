@@ -55,9 +55,14 @@ public class ContractServiceImpl extends BaseService implements ContractService 
         // Link student by phone/ID if exists (Preferably by a provided identifier from frontend)
         User student = userRepository.findByPhone(phone).orElseThrow(() -> new BadRequestException("Người dùng với số điện thoại này không tồn tại trong hệ thống"));
         
+        //Exception nếu viết nhầm số phòng cho user
+        if (student.getAllocatedRoom() != null && !student.getAllocatedRoom().getId().equals(roomId)) {
+            throw new BadRequestException("Người dùng này đang được xếp ở một phòng khác (" + student.getAllocatedRoom().getTitle() + ").");
+        }
+
         // Validation: Check if student already has an active contract or is in a room
-        if (contractRepository.existsByStudent(student) || student.getAllocatedRoom() != null) {
-            throw new BadRequestException("Người dùng này đã có một hợp đồng đang hoạt động hoặc đã được xếp phòng.");
+        if (contractRepository.existsByStudentAndDeadlineContractAfter(student, LocalDateTime.now())) {
+            throw new BadRequestException("Người dùng này đã có một hợp đồng đang hoạt động.");
         }
 
         Contract contract = new Contract(name, file, nameRentHome, deadline, getUsername(), getUsername(), room);
