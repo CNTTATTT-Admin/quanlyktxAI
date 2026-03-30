@@ -28,4 +28,9 @@ public interface ContractRepository extends JpaRepository<Contract, Long>, Contr
     @Transactional
     @Query("DELETE FROM Contract c WHERE c.student.id = :userId")
     void deleteByStudentId(@Param("userId") Long userId);
+
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM contract WHERE room_id = :roomId", nativeQuery = true)
+    void deleteByRoomId(Long roomId);
 }

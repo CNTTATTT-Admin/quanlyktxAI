@@ -36,4 +36,9 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     List<Invoice> findPaidInvoicesByRentaler(@Param("rentalerId") Long rentalerId, @Param("status") InvoiceStatus status);    
 
     List<Invoice> findByStatusAndCreatedAtBefore(InvoiceStatus status, LocalDateTime time);   
+
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM invoices WHERE parking_card_id = :cardId", nativeQuery = true)
+    void deleteByParkingCardId(Long cardId);
 }

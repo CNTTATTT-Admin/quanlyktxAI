@@ -17,6 +17,9 @@ public interface ParkingCardRepository extends JpaRepository<ParkingCard, Long> 
 
     Page<ParkingCard> findByUserId(Long userId, Pageable pageable);
 
+    @Query(value = "SELECT c.* FROM parking_cards c INNER JOIN parking_packages p ON c.package_id = p.id WHERE p.rentaler_id = :rentalerId", nativeQuery = true)
+    List<ParkingCard> findAllByPackageRentalerId(Long rentalerId);
+
     @Query("SELECT p FROM ParkingCard p WHERE p.user.id = :userId AND " +
        "(:keyword IS NULL OR :keyword = '' OR " +
        "p.licensePlate LIKE %:keyword% OR " +
