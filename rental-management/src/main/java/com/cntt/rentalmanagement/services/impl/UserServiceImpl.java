@@ -83,35 +83,67 @@ public class UserServiceImpl extends BaseService implements UserService{
 		}
 	}
 	
+	//lấy tin nhắn cũ
+	// @Override
+	// public List<MessageDTO> getMessageUser() {
+	// 	try {
+	// 		User user = userRepository.findById(getUserId()).get();
+	// 		List<MessageDTO> result = new ArrayList<>();
+	// 		for (Message message : messageRepository.findBySender(user)) {
+	// 			if (message.getReceiver().getId() != message.getSender().getId()) {
+	// 				String lastMessage = message.getContent().get(message.getContent().size() - 1).getContent();
+	// 				if (message.getContent().get(message.getContent().size() - 1).getSendBy()) {
+	// 					if (getUserId() == message.getReceiver().getId())
+	// 						lastMessage = "Bạn: " + lastMessage;
+	// 				} else {
+	// 					if (getUserId() == message.getSender().getId())
+	// 						lastMessage = "Bạn: " + lastMessage;
+	// 				}
+	// 				result.add(new MessageDTO(message.getReceiver().getId(), message.getReceiver().getName(),
+	// 						message.getReceiver().getImageUrl(), lastMessage));
+	// 			}
+	// 		}
+	// 		for (Message message : messageRepository.findByReceiver(user)) {
+	// 			if (message.getReceiver().getId() != message.getSender().getId()) {
+	// 				String lastMessage = message.getContent().get(message.getContent().size() - 1).getContent();
+	// 				if (message.getContent().get(message.getContent().size() - 1).getSendBy()) {
+	// 					if (getUserId() == message.getReceiver().getId())
+	// 						lastMessage = "Bạn: " + lastMessage;
+	// 				} else {
+	// 					if (getUserId() == message.getSender().getId())
+	// 						lastMessage = "Bạn: " + lastMessage;
+	// 				}
+	// 				result.add(new MessageDTO(message.getSender().getId(), message.getSender().getName(),
+	// 						message.getSender().getImageUrl(), lastMessage));
+	// 			}
+	// 		}
+
+	// 		return result;
+	// 	} catch (Exception e) {
+	// 		return null;
+	// 	}
+	// }
+
+	//lấy tin nhắn mới
 	@Override
 	public List<MessageDTO> getMessageUser() {
 		try {
 			User user = userRepository.findById(getUserId()).get();
 			List<MessageDTO> result = new ArrayList<>();
+
+			//quét tin nhắn mình sender
 			for (Message message : messageRepository.findBySender(user)) {
-				if (message.getReceiver().getId() != message.getSender().getId()) {
-					String lastMessage = message.getContent().get(message.getContent().size() - 1).getContent();
-					if (message.getContent().get(message.getContent().size() - 1).getSendBy()) {
-						if (getUserId() == message.getReceiver().getId())
-							lastMessage = "Bạn: " + lastMessage;
-					} else {
-						if (getUserId() == message.getSender().getId())
-							lastMessage = "Bạn: " + lastMessage;
-					}
+				if (!message.getReceiver().getId().equals(message.getSender().getId())) {
+					String lastMessage = getLastMessageText(message, getUserId());
 					result.add(new MessageDTO(message.getReceiver().getId(), message.getReceiver().getName(),
 							message.getReceiver().getImageUrl(), lastMessage));
 				}
 			}
+
+			//quét tin nhắn mình receiver
 			for (Message message : messageRepository.findByReceiver(user)) {
-				if (message.getReceiver().getId() != message.getSender().getId()) {
-					String lastMessage = message.getContent().get(message.getContent().size() - 1).getContent();
-					if (message.getContent().get(message.getContent().size() - 1).getSendBy()) {
-						if (getUserId() == message.getReceiver().getId())
-							lastMessage = "Bạn: " + lastMessage;
-					} else {
-						if (getUserId() == message.getSender().getId())
-							lastMessage = "Bạn: " + lastMessage;
-					}
+				if (!message.getReceiver().getId().equals(message.getSender().getId())) {
+					String lastMessage = getLastMessageText(message, getUserId());
 					result.add(new MessageDTO(message.getSender().getId(), message.getSender().getName(),
 							message.getSender().getImageUrl(), lastMessage));
 				}
@@ -119,9 +151,34 @@ public class UserServiceImpl extends BaseService implements UserService{
 
 			return result;
 		} catch (Exception e) {
-			return null;
+			e.printStackTrace(); //console 4 debug
+			return new ArrayList<>(); //KHÔNG ĐƯỢC QUÊN: KHÔNG ĐỂ NULL
 		}
 	}
+
+	//lấy last msg
+	private String getLastMessageText(Message message, Long currentUserId) {
+		if (message.getContent() == null || message.getContent().isEmpty()) {
+			return "Chưa có tin nhắn";
+		}
+		MessageChat lastChat = message.getContent().get(message.getContent().size() - 1);
+		String text = lastChat.getContent();
+
+		//xác định người gửi cuối
+		if (lastChat.getSendBy() != null) {
+			if (lastChat.getSendBy()) { // Nếu người có ID lớn hơn gửi
+				if (currentUserId.equals(message.getReceiver().getId())) {
+					text = "Bạn: " + text;
+				}
+			} else { // Nếu người có ID nhỏ hơn gửi
+				if (currentUserId.equals(message.getSender().getId())) {
+					text = "Bạn: " + text;
+				}
+			}
+		}
+		return text;
+	}
+
 	@Override
 	public List<User> findMessageUser(String userName) {
 		List<User> result = new ArrayList<>();

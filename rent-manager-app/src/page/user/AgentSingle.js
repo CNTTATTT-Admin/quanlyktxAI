@@ -7,14 +7,15 @@ import {
   checkFollow,
   followAgents,
   getAccountById,
-  getAllAccountRentalerForCustomer,
   getAllrRoomByUserId,
 } from "../../services/fetch/ApiUtils";
-import { Link, useParams } from "react-router-dom";
+// BƯỚC 1: Import thêm useNavigate
+import { Link, useParams, useNavigate } from "react-router-dom"; 
 import { API_BASE_URL } from "../../constants/Connect";
 
 const AgentSingle = (props) => {
   const { id } = useParams();
+  const navigate = useNavigate(); // Khởi tạo điều hướng
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(6);
   const [totalItems, setTotalItems] = useState(0);
@@ -88,6 +89,21 @@ const AgentSingle = (props) => {
       });
   };
 
+  // BƯỚC 3: HÀM XỬ LÝ CHUYỂN HƯỚNG SANG TRANG NHẮN TIN
+  const handleStartChat = () => {
+    if (!props.authenticated || !props.currentUser) {
+      toast.warning("Vui lòng đăng nhập để nhắn tin với Chủ trọ!");
+      navigate("/login"); 
+      return;
+    }
+
+    navigate("/message", {
+      state: {
+        targetRentaler: { id: parseInt(id), name: rentaler.name }
+      }
+    });
+  };
+
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
@@ -137,7 +153,7 @@ const AgentSingle = (props) => {
 
         <section className="agent-single">
           <div className="container">
-            {/* THÔNG TIN CHỦ NHÀ (Được thiết kế lại thành Card hiện đại) */}
+            {/* THÔNG TIN CHỦ NHÀ */}
             <div className="bg-white p-4 rounded-4 shadow-sm border border-light mb-5">
               <div className="row align-items-center g-4">
                 <div className="col-md-5 col-lg-4 text-center">
@@ -180,22 +196,35 @@ const AgentSingle = (props) => {
                       </li>
                     </ul>
 
+                    {/* BƯỚC 4: RÁP NÚT NHẮN TIN VÀO GIAO DIỆN */}
                     <div className="d-flex align-items-center justify-content-between mt-4">
-                      {/* Nút Follow */}
-                      {props.currentUser?.id !== parseInt(id) && (
-                        <button
-                          type="button"
-                          onClick={() => handleFollowAgents()}
-                          className={`btn ${isFollowing ? "btn-success" : "btn-outline-success"} rounded-pill px-4 fw-bold shadow-sm`}
-                          disabled={isFollowing}
-                        >
-                          {isFollowing ? (
-                            <><i className="bi bi-check2-circle me-1"></i> Đã theo dõi</>
-                          ) : (
-                            <><i className="bi bi-person-plus-fill me-1"></i> Theo dõi</>
-                          )}
-                        </button>
-                      )}
+                      
+                      <div className="d-flex gap-2">
+                        {props.currentUser?.id !== parseInt(id) && (
+                          <button
+                            type="button"
+                            onClick={() => handleFollowAgents()}
+                            className={`btn ${isFollowing ? "btn-success" : "btn-outline-success"} rounded-pill px-4 fw-bold shadow-sm`}
+                            disabled={isFollowing}
+                          >
+                            {isFollowing ? (
+                              <><i className="bi bi-check2-circle me-1"></i> Đã theo dõi</>
+                            ) : (
+                              <><i className="bi bi-person-plus-fill me-1"></i> Theo dõi</>
+                            )}
+                          </button>
+                        )}
+
+                        {props.currentUser?.id !== parseInt(id) && (
+                          <button
+                            type="button"
+                            onClick={handleStartChat}
+                            className="btn btn-primary rounded-pill px-4 fw-bold shadow-sm"
+                          >
+                            <i className="bi bi-chat-text-fill me-1"></i> Nhắn tin
+                          </button>
+                        )}
+                      </div>
 
                       {/* Mạng xã hội */}
                       <div className="d-flex gap-2">
@@ -216,7 +245,6 @@ const AgentSingle = (props) => {
               </div>
             </div>
 
-            {/* DANH SÁCH PHÒNG CỦA CHỦ NHÀ */}
             <div className="row mb-4">
               <div className="col-md-12">
                 <div className="title-box-d">
@@ -229,7 +257,6 @@ const AgentSingle = (props) => {
               {tableData.length > 0 ? (
                 tableData.map((room) => (
                   <div className="col-md-4" key={room.id}>
-                    {/* Bọc thêm class rounded-4 và overflow-hidden để bo góc mềm mại, GIỮ NGUYÊN CSS CŨ BÊN TRONG */}
                     <div className="card-box-a card-shadow rounded-4 overflow-hidden h-100 border-0">
                       <div className="img-box-a">
                         {room.roomMedia && room.roomMedia[0] ? (
@@ -329,7 +356,6 @@ const AgentSingle = (props) => {
               )}
             </div>
 
-            {/* PHÂN TRANG */}
             {totalItems > itemsPerPage && (
               <div className="row mt-4">
                 <div className="col-sm-12 d-flex justify-content-center">

@@ -4,6 +4,7 @@ import { useUserContext } from "../context/UserContext";
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import '../style.css'
+import { toast } from "react-toastify";
 
 const Input = () => {
   const [text, setText] = useState("");
@@ -18,6 +19,7 @@ const Input = () => {
   const [stompClient, setStompClient] = useState(null);
   const [currentId, setCurrentId] = useState(null);
 
+  //test
   useEffect(() => {
     if (selectedUser) {
       console.log("Old currentId: ")
@@ -34,24 +36,20 @@ const Input = () => {
   useEffect(() => {
     console.log("New currentId after setCurrentId: ");
     console.log(currentId);
-
-    // Thực hiện các hành động khác liên quan đến currentId ở đây
   }, [currentId]);
 
   useEffect(() => {
-    // Tạo kết nối WebSocket tới server
+    //kết nối websocket
     const socket = new SockJS("http://localhost:8080/ws");
     const stompClient = Stomp.over(socket);
 
-    // Kết nối tới WebSocket server
     stompClient.connect({}, () => {
       console.log("Connected to WebSocket");
       setStompClient(stompClient);
 
-      // Đăng ký để lắng nghe sự kiện từ địa chỉ đích tương ứng
-      const destination = `/topic/messages`; // Thay userId bằng giá trị tương ứng
+      //chọn địa chỉ nghe event
+      const destination = `/topic/messages`;
       stompClient.subscribe(destination, (message) => {
-        // Xử lý message (nếu cần)
         if (selectedUser) {
           const selectedUserId = selectedUser.sender.id;
           const newId = userId == selectedUserId ? selectedUser.receiver.id : selectedUserId;
@@ -76,11 +74,15 @@ const Input = () => {
       });
     });
 
-    // Đóng kết nối khi component bị hủy
+    //tránh bị đóng kết nối trước khi kịp mount lại
     return () => {
-      stompClient.disconnect();
+      if (stompClient && stompClient.connected) {
+        stompClient.disconnect(() => {
+           console.log("Disconnected WebSocket");
+        });
+      }
     };
-  }, [userId, currentId]); // Đảm bảo thay đổi userId thì useEffect sẽ chạy lại
+  }, [userId, currentId]);
 
 
   const fetchMessageData = async (sendId) => {
@@ -104,6 +106,11 @@ const Input = () => {
   };
 
   const handleSend = async () => {
+    if (!currentId) {
+        toast.error("Chưa chọn người nhận tin nhắn!");
+        return; 
+    }
+
     const sendMessageData = {
       id: 1,
       content: text,
@@ -113,10 +120,10 @@ const Input = () => {
     };
 
     const destination = `/app/user/message-chat/${userId}/${currentId}`;
-    // Gửi tin nhắn tới địa chỉ đích
+    //gửi msg tới đích
     stompClient.send(destination, {}, JSON.stringify(sendMessageData));
     setText("")
-    //fetchMessageData();
+    fetchMessageData(currentId);
   };
 
 
