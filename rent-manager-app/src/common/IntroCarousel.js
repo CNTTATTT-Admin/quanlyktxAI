@@ -24,133 +24,98 @@ const IntroCarosel = () => {
   }
 
   return (
-    <>
-      <div className="intro intro-carousel swiper position-relative">
-        <Swiper
-          spaceBetween={0}
-          centeredSlides={true}
-          autoplay={{
-            delay: 5000,
-            disableOnInteraction: false,
-          }}
-          pagination={{
-            clickable: true,
-          }}
-          navigation={true}
-          modules={[Autoplay, Pagination, Navigation]}
-          className="swiper-wrapper"
-        >
-          {banners.map((banner) => (
-            <SwiperSlide
-              key={banner.id}
-              className="carousel-item-b swiper-slide"
+    <div className="intro intro-carousel swiper position-relative">
+      <Swiper
+        spaceBetween={0}
+        centeredSlides={true}
+        autoplay={{
+          delay: 5000,
+          disableOnInteraction: false,
+        }}
+        pagination={{
+          clickable: true,
+        }}
+        navigation={true}
+        modules={[Autoplay, Pagination, Navigation]}
+        className="swiper-wrapper"
+      >
+        {banners.map((banner) => (
+          <SwiperSlide
+            key={banner.id}
+            className="carousel-item-b swiper-slide"
+          >
+            <div 
+              className="position-relative w-100 overflow-hidden"
+              style={{ height: "65vh", minHeight: "500px" }}
             >
-              <div className="relative w-full h-[500px] overflow-hidden">
-                {/* Ảnh nền */}
-                <img
-                  src={
-                    banner.imageUrl
-                      ? API_BASE_URL + "/document/" + banner.imageUrl
-                      : "assets/img/slide-1.jpg"
-                  }
-                  className="absolute w-full h-full object-cover"
-                  style={{
-                    objectFit: "cover",
-                    width: "100%",
-                    height: "100%",
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                  }}
-                  alt="Banner"
-                />
+              <img
+                src={
+                  banner.imageUrl
+                    ? API_BASE_URL + "/document/" + banner.imageUrl
+                    : "assets/img/slide-1.jpg"
+                }
+                className="position-absolute w-100 h-100"
+                style={{
+                  objectFit: "cover",
+                  top: 0,
+                  left: 0,
+                }}
+                alt="Banner"
+              />
 
-                {/* Lớp phủ chuẩn (sử dụng style nội tuyến để mô phỏng Tailwind trong CSS thuần nếu dự án ko build Tailwind chuẩn,
-                     nhưng cũng đính class Tailwind theo yêu cầu) */}
-                <div
-                  className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent z-10"
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    background:
-                      "linear-gradient(to right, rgba(0,0,0,0.6) 0%, transparent 100%)",
-                    zIndex: 10,
-                    width: "100%",
-                    height: "100%",
-                    top: 0,
-                    left: 0,
-                  }}
-                ></div>
+              <div
+                className="position-absolute w-100 h-100"
+                style={{
+                  background: "linear-gradient(to right, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 100%)",
+                  top: 0,
+                  left: 0,
+                  zIndex: 1,
+                }}
+              ></div>
 
-                {/* Nội dung */}
-                <div
-                  className="absolute inset-0 z-20 flex flex-col justify-center text-left px-4"
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    zIndex: 20,
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    padding: "0 10%",
-                    color: "white",
-                  }}
-                >
-                  <div className="container mx-auto">
-                    <p
-                      className="intro-title-top mb-2"
-                      style={{
-                        fontSize: "1.5rem",
-                        fontWeight: "bold",
-                        textShadow: "1px 1px 3px rgba(0,0,0,0.5)",
-                        maxWidth: "500px",
-                        color: "#ddd",
-                      }}
-                    >
-                      {banner.subtitle}
-                    </p>
-                    <h1
-                      className="intro-title"
-                      style={{
-                        fontSize: "3rem",
-                        fontWeight: "bolder",
-                        color: "white",
-                        textShadow: "2px 2px 4px rgba(0,0,0,0.6)",
-                        maxWidth: "600px",
-                      }}
-                    >
-                      {banner.title}
-                    </h1>
-                    <p className="intro-subtitle intro-price mt-2">
-                      <a
-                        href={banner.url || "/rental-home"}
-                        className="btn btn-primary"
+              <div
+                className="position-absolute w-100 h-100 d-flex flex-column justify-content-center"
+                style={{ zIndex: 2, top: 0, left: 0 }}
+              >
+                <div className="container">
+                  <div className="row">
+                    <div className="col-md-8 col-lg-6 text-start">
+                      <p
+                        className="text-uppercase fw-bold mb-3"
                         style={{
-                          backgroundColor: "#2eca6a",
-                          border: "none",
-                          padding: "12px 30px",
                           fontSize: "1.2rem",
-                          color: "white",
-                          textDecoration: "none",
-                          borderRadius: "50px",
-                          fontWeight: "bold",
+                          color: "#e0e0e0",
+                          letterSpacing: "2px",
+                          textShadow: "1px 1px 3px rgba(0,0,0,0.8)",
                         }}
                       >
-                        <span>{banner.buttonText}</span>
+                        {banner.subtitle}
+                      </p>
+                      <h1
+                        className="display-4 fw-bolder text-white mb-4"
+                        style={{
+                          textShadow: "2px 2px 5px rgba(0,0,0,0.8)",
+                          lineHeight: "1.2",
+                        }}
+                      >
+                        {banner.title}
+                      </h1>
+                      <a
+                        href={banner.url || "/rental-home"}
+                        className="btn btn-success btn-lg px-4 py-2 rounded-pill shadow"
+                        style={{ backgroundColor: "#2eca6a", borderColor: "#2eca6a", fontWeight: "600" }}
+                      >
+                        {banner.buttonText || "Xem thêm"}
                       </a>
-                    </p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </SwiperSlide>
-          ))}
-        </Swiper>
-      </div>
-      <div className="swiper-pagination"></div>
-    </>
+            </div>
+          </SwiperSlide>
+        ))}
+      </Swiper>
+    </div>
   );
 };
 

@@ -31,6 +31,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Comparator;
+import java.util.Set;
+import java.util.HashSet;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -45,31 +47,73 @@ public class StatisticalServiceImpl extends BaseService implements StatisticalSe
     private final MaintenanceRepository maintenanceRepository;
     private final InvoiceRepository invoiceRepository;
 
+    //thống kê mới
     @Override
     public TotalNumberRequest getNumberOfRentalerForStatistical() {
         User user = userRepository.findById(getUserId()).orElseThrow(() -> new BadRequestException("Tài khoản không tồn tại"));
-        int total = 0;
+        int totalRevenue = 0;
+        
+        //lọc người thuê duy nhất, tránh đếm trùng
+        Set<Long> allTimeTenantIds = new HashSet<>();
+
         for (Contract contract : contractRepository.getAllContract(getUserId())) {
             Room room = contract.getRoom();
+            
+            if (contract.getStudent() != null) {
+                allTimeTenantIds.add(contract.getStudent().getId());
+            }
+
             Duration duration = Duration.between(contract.getCreatedAt(), contract.getDeadlineContract());
             long months = duration.toMinutes() / (60 * 24 * 30);
-            
             BigDecimal monthlyTotal = room.getPrice()
                 .add(room.getSplitWaterCost())
                 .add(room.getSplitElectricCost())
                 .add(room.getSplitInternetCost());
                 
-            total += months * monthlyTotal.intValue();
+            totalRevenue += months * monthlyTotal.intValue();
         }
 
+        //đếm số người hiện tại
+        List<Room> myRooms = roomRepository.findByUser(user);
+        int currentTenants = myRooms.stream()
+                .mapToInt(room -> room.getResidents() != null ? room.getResidents().size() : 0)
+                .sum();
 
         TotalNumberRequest totalNumberRequest = new TotalNumberRequest();
         totalNumberRequest.setNumberOfRoom((int) roomRepository.countAllByUser(user));
         totalNumberRequest.setNumberOfEmptyRoom((int) roomRepository.countAllByStatusAndUser(RoomStatus.AVAILABLE,user));
-        totalNumberRequest.setNumberOfPeople((int) contractRepository.sumNumOfPeople());
-        totalNumberRequest.setRevenue(BigDecimal.valueOf(total));
+        totalNumberRequest.setNumberOfPeople(currentTenants); 
+        totalNumberRequest.setNumberOfAllTimePeople(allTimeTenantIds.size());
+        totalNumberRequest.setRevenue(BigDecimal.valueOf(totalRevenue));
         return totalNumberRequest;
     }
+
+    //thống kê cũ
+    // @Override
+    // public TotalNumberRequest getNumberOfRentalerForStatistical() {
+    //     User user = userRepository.findById(getUserId()).orElseThrow(() -> new BadRequestException("Tài khoản không tồn tại"));
+    //     int total = 0;
+    //     for (Contract contract : contractRepository.getAllContract(getUserId())) {
+    //         Room room = contract.getRoom();
+    //         Duration duration = Duration.between(contract.getCreatedAt(), contract.getDeadlineContract());
+    //         long months = duration.toMinutes() / (60 * 24 * 30);
+            
+    //         BigDecimal monthlyTotal = room.getPrice()
+    //             .add(room.getSplitWaterCost())
+    //             .add(room.getSplitElectricCost())
+    //             .add(room.getSplitInternetCost());
+                
+    //         total += months * monthlyTotal.intValue();
+    //     }
+
+
+    //     TotalNumberRequest totalNumberRequest = new TotalNumberRequest();
+    //     totalNumberRequest.setNumberOfRoom((int) roomRepository.countAllByUser(user));
+    //     totalNumberRequest.setNumberOfEmptyRoom((int) roomRepository.countAllByStatusAndUser(RoomStatus.AVAILABLE,user));
+    //     totalNumberRequest.setNumberOfPeople((int) contractRepository.sumNumOfPeople());
+    //     totalNumberRequest.setRevenue(BigDecimal.valueOf(total));
+    //     return totalNumberRequest;
+    // }
 
     @Override
     public TotalNumberResponse getStatisticalNumberOfAdmin() {

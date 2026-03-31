@@ -23,7 +23,7 @@ class RentailHomeDetail extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      rooms: null, // State to store fetched rooms data
+      rooms: null,
       showCommentForm: false,
       content: "",
       rate: 5,
@@ -33,14 +33,14 @@ class RentailHomeDetail extends Component {
       description: "",
       title: "",
       nameOfRentaler: "",
-      requestSent: false, // Đã gửi request đăng ký ở
-      requesting: false, // Đang trong quá trình gửi request
-      isSaved: false, // Trạng thái đã lưu bài đăng
+      requestSent: false,
+      requesting: false,
+      isSaved: false,
     };
   }
 
   componentDidMount() {
-    this.fetchRooms(); // Call the fetchRooms function when component mounts
+    this.fetchRooms();
     this.fetchComments();
     this.fetchRequestStatus();
     this.fetchSaveStatus();
@@ -88,7 +88,6 @@ class RentailHomeDetail extends Component {
     };
     sendEmailForContact(sendEmailRequest)
       .then((response) => {
-        console.log(response.message);
         toast.success(response.message);
         this.setState({
           title: "",
@@ -108,13 +107,10 @@ class RentailHomeDetail extends Component {
     try {
       const id = window.location.pathname.split("/").pop();
       const response = await axios.get(`${API_BASE_URL}/room/${id}`);
-      const data = response.data; // Assuming API returns rooms data
+      const data = response.data;
 
       this.setState({
         rooms: data,
-      });
-      console.log("Room data:", data);
-      this.setState({
         toEmail: data.user?.email,
       });
     } catch (error) {
@@ -126,10 +122,8 @@ class RentailHomeDetail extends Component {
     try {
       const id = window.location.pathname.split("/").pop();
       const response = await axios.get(`${API_BASE_URL}/room/${id}/comments`);
-      const comments = response.data; // Assuming API returns comments data
-
       this.setState({
-        comments: comments,
+        comments: response.data,
       });
     } catch (error) {
       console.error("Error fetching comments:", error);
@@ -146,10 +140,8 @@ class RentailHomeDetail extends Component {
     const { saveBlog, unsaveBlog } = require("../../services/fetch/ApiUtils");
 
     if (isSaved) {
-      // Unsave
       unsaveBlog(id)
         .then((response) => {
-          console.log("Unsave response:", response);
           toast.success(response.message);
           this.setState({ isSaved: false });
         })
@@ -160,7 +152,6 @@ class RentailHomeDetail extends Component {
           );
         });
     } else {
-      // Save
       const storeRequest = { roomId: id };
       saveBlog(storeRequest)
         .then((response) => {
@@ -185,10 +176,8 @@ class RentailHomeDetail extends Component {
       return;
     }
 
-    // Không cho phép gửi nhiều lần
     if (requestSent || requesting) return;
 
-    // User đã có phòng thì không được đăng ký
     if (currentUser && currentUser.allocatedRoomId != null) {
       toast.warning("Bạn đã có phòng, không thể đăng ký thêm.");
       return;
@@ -220,21 +209,18 @@ class RentailHomeDetail extends Component {
   handleSubmitComment = async (event) => {
     event.preventDefault();
     const { content, rate, rooms } = this.state;
-    const roomId = window.location.pathname.split("/").pop(); // Assuming room id is available
+    const roomId = window.location.pathname.split("/").pop();
 
-    // Construct the comment data
     const commentData = {
       content: content,
       rateRating: rate,
       room_id: roomId,
     };
 
-    // Replace with your JWT token retrieval logic from localStorage
     const accessToken = localStorage.getItem("accessToken");
 
     try {
       this.setState({ submittingComment: true });
-      // Make the API request to submit the comment
       const response = await axios.post(
         `${API_BASE_URL}/room/${roomId}/comments`,
         commentData,
@@ -245,23 +231,21 @@ class RentailHomeDetail extends Component {
         },
       );
 
-      // Handle success and reset the form
-      console.log("Comment submitted:", response.data);
       this.setState({
         content: "",
         rate: 5,
         submittingComment: false,
-        showCommentForm: false, // Hide the form after submitting
+        showCommentForm: false,
       });
       this.fetchComments();
     } catch (error) {
-      console.log(commentData);
       console.error("Error submitting comment:", error);
       this.setState({ submittingComment: false });
     }
   };
 
   render() {
+    console.log("Dữ liệu Current User hiện tại:", this.props.currentUser);
     const {
       rooms,
       comments,
@@ -278,690 +262,444 @@ class RentailHomeDetail extends Component {
           currentUser={this.props.currentUser}
           onLogout={this.props.onLogout}
         />
-        <main id="main">
-          <section class="intro-single">
-            <div class="container">
-              <div class="row">
-                <div class="col-md-12 col-lg-8">
-                  <div class="title-single-box">
-                    <h1 class="title-single">{rooms ? rooms.title : ""} </h1>
-                    <span class="color-text-a">
+        <main id="main" className="bg-light pb-5">
+          {/* HEADER CHI TIẾT */}
+          <section className="intro-single pt-5 mt-5 pb-4">
+            <div className="container mt-4">
+              <div className="row align-items-center">
+                <div className="col-md-12 col-lg-8">
+                  <div className="title-single-box">
+                    <h1 className="title-single fw-bold mb-2">
+                      {rooms ? rooms.title : ""}
+                    </h1>
+                    <span className="color-text-a text-muted fs-5">
+                      <i className="bi bi-geo-alt-fill text-success me-2"></i>
                       Khu vực: {rooms ? rooms.location?.cityName : ""}
-                    </span>{" "}
-                    &nbsp;&nbsp;
-                    <button
-                      type="button"
-                      onClick={() => this.handleSaveBlog(rooms?.id)}
-                      className={`btn ${this.state.isSaved ? "btn-success" : "btn-outline-success"} rounded-pill`}
-                    >
-                      {this.state.isSaved ? (
-                        <>
-                          <i className="bi bi-bookmark-fill"></i> Đã lưu
-                        </>
-                      ) : (
-                        "+ Lưu"
-                      )}
-                    </button>
-                    &nbsp;&nbsp;
-                    {rooms &&
-                    (rooms.currentOccupancy ?? 0) <
-                      (rooms.maxOccupancy ?? 1) ? (
-                      this.props.currentUser?.allocatedRoomId !=
-                      null ? null : this.state.requestSent ||
-                        this.state.requesting ? (
-                        <button
-                          type="button"
-                          class="btn btn-outline-warning rounded-pill"
-                          disabled
-                        >
-                          ⏳ Đang xử lý...
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => this.handleRequestRoom()}
-                          class="btn btn-outline-primary rounded-pill"
-                        >
-                          Đăng ký ở ({rooms.currentOccupancy ?? 0}/
-                          {rooms.maxOccupancy ?? 0})
-                        </button>
-                      )
-                    ) : (
+                    </span>
+                    <div className="mt-3 d-flex gap-2">
                       <button
                         type="button"
-                        class="btn btn-outline-secondary rounded-pill"
-                        disabled
+                        onClick={() => this.handleSaveBlog(rooms?.id)}
+                        className={`btn ${
+                          this.state.isSaved
+                            ? "btn-success"
+                            : "btn-outline-success"
+                        } rounded-pill px-4 fw-bold shadow-sm`}
                       >
-                        Phòng đã đầy ({rooms?.currentOccupancy ?? "?"}/
-                        {rooms?.maxOccupancy ?? "?"})
+                        {this.state.isSaved ? (
+                          <>
+                            <i className="bi bi-bookmark-fill me-1"></i> Đã lưu
+                          </>
+                        ) : (
+                          <>
+                            <i className="bi bi-bookmark me-1"></i> Lưu phòng
+                          </>
+                        )}
                       </button>
-                    )}
+
+                      {rooms && (rooms.currentOccupancy ?? 0) < (rooms.maxOccupancy ?? 1) ? (
+                        this.props.currentUser?.allocatedRoomId != null ? (
+                          // NẾU ĐÃ CÓ PHÒNG: Hiện nút xám thay vì trả về null
+                          <button
+                            type="button"
+                            className="btn btn-secondary rounded-pill px-4 fw-bold shadow-sm"
+                            disabled
+                          >
+                            <i className="bi bi-house-check-fill me-1"></i> Bạn đã có phòng
+                          </button>
+                        ) : this.state.requestSent || this.state.requesting ? (
+                          // NẾU ĐANG CHỜ DUYỆT YÊU CẦU
+                          <button
+                            type="button"
+                            className="btn btn-warning rounded-pill px-4 fw-bold shadow-sm text-white"
+                            disabled
+                          >
+                            <i className="bi bi-hourglass-split me-1"></i> Đang xử lý...
+                          </button>
+                        ) : (
+                          // NẾU ĐỦ ĐIỀU KIỆN ĐĂNG KÝ
+                          <button
+                            type="button"
+                            onClick={() => this.handleRequestRoom()}
+                            className="btn btn-primary rounded-pill px-4 fw-bold shadow-sm"
+                          >
+                            <i className="bi bi-person-plus-fill me-1"></i> Đăng ký ở (
+                            {rooms.currentOccupancy ?? 0}/{rooms.maxOccupancy ?? 0})
+                          </button>
+                        )
+                      ) : (
+                        // NẾU PHÒNG ĐÃ ĐẦY
+                        <button
+                          type="button"
+                          className="btn btn-secondary rounded-pill px-4 fw-bold shadow-sm"
+                          disabled
+                        >
+                          <i className="bi bi-slash-circle me-1"></i> Phòng đã đầy (
+                          {rooms?.currentOccupancy ?? "?"}/{rooms?.maxOccupancy ?? "?"})
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <div class="col-md-12 col-lg-4">
+                <div className="col-md-12 col-lg-4">
                   <nav
                     aria-label="breadcrumb"
-                    class="breadcrumb-box d-flex justify-content-lg-end"
+                    className="breadcrumb-box d-flex justify-content-lg-end"
                   >
-                    <ol class="breadcrumb">
-                      <li class="breadcrumb-item">
-                        <a href="/">Trang chủ</a>
+                    <ol className="breadcrumb mb-0">
+                      <li className="breadcrumb-item">
+                        <a href="/" className="text-decoration-none text-success">
+                          Trang chủ
+                        </a>
                       </li>
-                      <li class="breadcrumb-item">
+                      <li className="breadcrumb-item active text-muted">
                         {rooms ? rooms.category?.name : ""}
                       </li>
-                      {/* <li class="breadcrumb-item">
-                                                <a href="property-grid.html">Properties</a>
-                                            </li> */}
                     </ol>
                   </nav>
                 </div>
               </div>
             </div>
           </section>
-          <section class="property-single nav-arrow-b">
-            <div class="container">
-              <div class="row justify-content-center">
-                <div class="col-lg-8">
-                  <div id="property-single-carousel" class="swiper">
-                    <div>
-                      <Swiper
-                        autoHeight={true}
-                        navigation={true}
-                        modules={[Navigation]}
-                        className="swiper-wrapper"
-                      >
-                        {rooms &&
-                          rooms.roomMedia?.map((media) => (
-                            <SwiperSlide className="carousel-item-b swiper-slide">
-                              <img
-                                src={API_BASE_URL + "/document/" + media.files}
-                                alt=""
-                                style={{ width: "100%", height: "100%" }}
-                              />
-                            </SwiperSlide>
-                          ))}
-                      </Swiper>
-                    </div>
+
+          <section className="property-single nav-arrow-b">
+            <div className="container">
+              {/* SLIDER ẢNH (Bọc khung bo góc, giữ nguyên code ảnh bên trong) */}
+              <div className="row justify-content-center mb-5">
+                <div className="col-lg-10">
+                  <div className="rounded-4 overflow-hidden shadow-sm border border-2 border-white">
+                    <Swiper
+                      autoHeight={true}
+                      navigation={true}
+                      modules={[Navigation]}
+                      className="swiper-wrapper bg-dark"
+                    >
+                      {rooms &&
+                        rooms.roomMedia?.map((media, index) => (
+                          <SwiperSlide key={index} className="carousel-item-b swiper-slide">
+                            <img
+                              src={API_BASE_URL + "/document/" + media.files}
+                              alt=""
+                              style={{ width: "100%", height: "100%", objectFit: "contain", maxHeight: "600px" }}
+                            />
+                          </SwiperSlide>
+                        ))}
+                    </Swiper>
                   </div>
-                  <div class="property-single-carousel-pagination carousel-pagination"></div>
                 </div>
               </div>
 
-              <div class="row">
-                <div class="col-sm-12">
-                  <div class="row justify-content-between">
-                    <div class="col-md-5 col-lg-4">
-                      <div class="property-price d-flex justify-content-center foo">
-                        <div class="card-header-c d-flex">
-                          <div class="card-box-ico">
-                            <span class="bi bi-cash"></span>
-                          </div>
-                          <div class="card-title-c align-self-center">
-                            <h5 class="title-c">
-                              {rooms
-                                ? rooms.price?.toLocaleString("vi-VN", {
-                                    style: "currency",
-                                    currency: "VND",
-                                  })
-                                : ""}
-                            </h5>
-                          </div>
-                        </div>
+              {/* NỘI DUNG CHI TIẾT */}
+              <div className="row g-4">
+                {/* CỘT TRÁI: THÔNG TIN CƠ BẢN & GIÁ */}
+                <div className="col-lg-5">
+                  <div className="bg-white p-4 rounded-4 shadow-sm border border-light h-100">
+                    {/* Hộp Giá */}
+                    <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
+                      <div className="bg-success text-white rounded-circle d-flex justify-content-center align-items-center me-3 shadow-sm" style={{ width: "60px", height: "60px", fontSize: "24px" }}>
+                        <i className="bi bi-cash"></i>
                       </div>
-                      <div class="property-summary">
-                        <div class="row">
-                          <div class="col-sm-12">
-                            <div class="title-box-d section-t4">
-                              <h3 class="title-d">Thông tin chi tiết</h3>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="summary-list">
-                          <ul class="list">
-                            <li class="d-flex justify-content-between">
-                              <strong>
-                                <i class="bi bi-geo-alt"></i> Địa chỉ:
-                              </strong>
-                              <span class="text-end">
-                                {rooms && rooms?.address}
-                              </span>
-                            </li>
-                            <li class="d-flex justify-content-between">
-                              <strong>
-                                <i class="bi bi-tag"></i> Loại phòng:
-                              </strong>
-                              <span>{rooms && rooms.category?.name}</span>
-                            </li>
-                            <li class="d-flex justify-content-between">
-                              <strong>
-                                <i class="bi bi-info-circle"></i> Trạng thái:
-                              </strong>
-                              <span
-                                class={`badge ${
-                                  rooms?.status === "AVAILABLE"
-                                    ? "bg-success"
-                                    : rooms?.status === "PARTIALLY_FILLED"
-                                      ? "bg-warning"
-                                      : rooms?.status === "FULL"
-                                        ? "bg-danger"
-                                        : rooms?.status === "MAINTENANCE"
-                                          ? "bg-secondary"
-                                          : rooms?.status === "ROOM_RENT"
-                                            ? "bg-success"
-                                            : "bg-danger"
-                                }`}
-                              >
-                                {rooms?.status === "AVAILABLE" &&
-                                  "Trống (Khả dụng)"}
-                                {rooms?.status === "PARTIALLY_FILLED" &&
-                                  "Còn chỗ"}
-                                {rooms?.status === "FULL" && "Đã đủ người"}
-                                {rooms?.status === "MAINTENANCE" &&
-                                  "Đang bảo trì/vệ sinh"}
-                                {/* Fallback cho data cũ */}
-                                {rooms?.status === "ROOM_RENT" && "Khả dụng"}
-                                {rooms?.status === "HIRED" && "Đã đủ người"}
-                                {rooms?.status === "CHECKED_OUT" &&
-                                  "Đã trả phòng"}
-                              </span>
-                            </li>
-                            <li class="d-flex justify-content-between">
-                              <strong>
-                                <i class="bi bi-people"></i> Số người tối đa:
-                              </strong>
-                              <span>{rooms?.maxOccupancy} người</span>
-                            </li>
-                            <li class="d-flex justify-content-between">
-                              <strong>
-                                <i class="bi bi-layers"></i> Tầng:
-                              </strong>
-                              <span>Tầng {rooms?.floor}</span>
-                            </li>
-                            {/* <hr />
-                            <li class="d-flex justify-content-between">
-                              <strong>
-                                <i class="bi bi-droplet"></i> Tiền nước:
-                              </strong>
-                              <span>
-                                {rooms?.waterCost?.toLocaleString("vi-VN")}{" "}
-                                đ/khối
-                              </span>
-                            </li>
-                            <li class="d-flex justify-content-between">
-                              <strong>
-                                <i class="bi bi-lightning"></i> Điện công cộng:
-                              </strong>
-                              <span>
-                                {rooms?.publicElectricCost?.toLocaleString(
-                                  "vi-VN",
-                                )}{" "}
-                                đ/tháng
-                              </span>
-                            </li> */}
-                            <li class="d-flex justify-content-between">
-                              <strong>
-                                <i class="bi bi-wifi"></i> Tiền mạng:
-                              </strong>
-                              <span>
-                                {rooms?.internetCost?.toLocaleString("vi-VN")}{" "}
-                                đ/tháng
-                              </span>
-                            </li>
-                            <hr />
-                            {rooms &&
-                              rooms.assets?.map((item) => (
-                                <li class="d-flex justify-content-between">
-                                  <strong>
-                                    <i class="bi bi-check2-circle"></i>{" "}
-                                    {item?.name}:
-                                  </strong>
-                                  <span>{item.number}</span>
-                                </li>
-                              ))}
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-md-7 col-lg-7 section-md-t3">
-                      <div class="row">
-                        <div class="col-sm-12">
-                          <div class="title-box-d">
-                            <h3 class="title-d">Mô tả chi tiết</h3>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="property-description">
-                        <p
-                          class="description color-text-a"
-                          style={{ whiteSpace: "pre-line" }}
-                        >
-                          {rooms ? rooms.description : ""}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                {/* <div class="col-md-10 offset-md-1">
-                  <ul
-                    class="nav nav-pills-a nav-pills mb-3 section-t3"
-                    id="pills-tab"
-                    role="tablist"
-                  >
-                    <li class="nav-item">
-                      <a
-                        class="nav-link active"
-                        id="pills-video-tab"
-                        data-bs-toggle="pill"
-                        href="#pills-video"
-                        role="tab"
-                        aria-controls="pills-video"
-                        aria-selected="true"
-                      >
-                        Video
-                      </a>
-                    </li>
-                    <li class="nav-item">
-                      <a
-                        class="nav-link"
-                        id="pills-plans-tab"
-                        data-bs-toggle="pill"
-                        href="#pills-plans"
-                        role="tab"
-                        aria-controls="pills-plans"
-                        aria-selected="false"
-                      >
-                        Hạ Tầng
-                      </a>
-                    </li>
-                    <li class="nav-item">
-                      <a
-                        class="nav-link"
-                        id="pills-map-tab"
-                        data-bs-toggle="pill"
-                        href="#pills-map"
-                        role="tab"
-                        aria-controls="pills-map"
-                        aria-selected="false"
-                      >
-                        Bản Đồ
-                      </a>
-                    </li>
-                  </ul>
-                  <div class="tab-content" id="pills-tabContent">
-                    <div
-                      class="tab-pane fade show active"
-                      id="pills-video"
-                      role="tabpanel"
-                      aria-labelledby="pills-video-tab"
-                    >
-                      <iframe
-                        src="https://player.vimeo.com/video/73221098"
-                        width="100%"
-                        height="460"
-                        frameborder="0"
-                        webkitallowfullscreen
-                        mozallowfullscreen
-                        allowfullscreen
-                      ></iframe>
-                    </div>
-                    <div
-                      class="tab-pane fade"
-                      id="pills-plans"
-                      role="tabpanel"
-                      aria-labelledby="pills-plans-tab"
-                    >
-                      <img
-                        src="../../assets/img/plan2.jpg"
-                        alt=""
-                        class="img-fluid"
-                      />
-                    </div>
-                    <div
-                      class="tab-pane fade"
-                      id="pills-map"
-                      role="tabpanel"
-                      aria-labelledby="pills-map-tab"
-                    >
-                      <Map
-                        latitude={rooms?.latitude}
-                        longitude={rooms?.longitude}
-                      />
-                    </div>
-                  </div>
-                </div> */}
-                <div class="col-md-12">
-                  <div class="row section-t3">
-                    <div class="col-sm-12">
-                      <div class="title-box-d">
-                        <h3 class="title-d">
-                          Người đang ở ({rooms?.currentOccupancy ?? 0}/
-                          {rooms?.maxOccupancy ?? 0})
+                      <div>
+                        <span className="text-muted small text-uppercase fw-bold">Giá thuê</span>
+                        <h3 className="mb-0 fw-bolder text-success">
+                          {rooms
+                            ? rooms.price?.toLocaleString("vi-VN", {
+                                style: "currency",
+                                currency: "VND",
+                              })
+                            : ""}
                         </h3>
                       </div>
                     </div>
-                  </div>
-                  <div class="row mb-4">
-                    {rooms?.residents && rooms.residents.length > 0 ? (
-                      rooms.residents.map((resident, index) => (
-                        <div
-                          key={resident.id || index}
-                          class="col-md-4 col-lg-3 mb-3"
+
+                    <h4 className="fw-bold mb-3 fs-5">Thông tin chi tiết</h4>
+                    <ul className="list-unstyled mb-0">
+                      <li className="d-flex justify-content-between py-2 border-bottom">
+                        <span className="text-muted"><i className="bi bi-geo-alt text-success me-2"></i> Địa chỉ</span>
+                        <strong className="text-end" style={{ maxWidth: "60%" }}>{rooms && rooms?.address}</strong>
+                      </li>
+                      <li className="d-flex justify-content-between py-2 border-bottom">
+                        <span className="text-muted"><i className="bi bi-tag text-success me-2"></i> Loại phòng</span>
+                        <strong>{rooms && rooms.category?.name}</strong>
+                      </li>
+                      <li className="d-flex justify-content-between py-2 border-bottom">
+                        <span className="text-muted"><i className="bi bi-info-circle text-success me-2"></i> Trạng thái</span>
+                        <span
+                          className={`badge rounded-pill ${
+                            rooms?.status === "AVAILABLE"
+                              ? "bg-success"
+                              : rooms?.status === "PARTIALLY_FILLED"
+                                ? "bg-warning"
+                                : rooms?.status === "FULL"
+                                  ? "bg-danger"
+                                  : rooms?.status === "MAINTENANCE"
+                                    ? "bg-secondary"
+                                    : rooms?.status === "ROOM_RENT"
+                                      ? "bg-success"
+                                      : "bg-danger"
+                          }`}
                         >
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "12px",
-                              padding: "12px 16px",
-                              border: "1px solid #e0e0e0",
-                              borderRadius: "10px",
-                              background: "#f9f9f9",
-                            }}
-                          >
-                            <img
-                              src={
-                                resident?.imageUrl || "/assets/img/agent-1.jpg"
-                              }
-                              alt={resident.name}
-                              style={{
-                                width: "48px",
-                                height: "48px",
-                                borderRadius: "50%",
-                                objectFit: "cover",
-                                flexShrink: 0,
-                              }}
-                            />
-                            <div style={{ overflow: "hidden" }}>
-                              <div
-                                style={{
-                                  fontWeight: "600",
-                                  fontSize: "14px",
-                                  color: "#333",
-                                  whiteSpace: "nowrap",
-                                  overflow: "hidden",
-                                  textOverflow: "ellipsis",
-                                }}
-                              >
-                                {resident.name}
-                              </div>
-                              {resident.phone && (
-                                <div
-                                  style={{
-                                    fontSize: "12px",
-                                    color: "#666",
-                                    marginTop: "2px",
-                                  }}
-                                >
-                                  <i class="bi bi-telephone"></i>{" "}
-                                  {resident.phone}
-                                </div>
-                              )}
-                            </div>
-                          </div>
+                          {rooms?.status === "AVAILABLE" && "Trống (Khả dụng)"}
+                          {rooms?.status === "PARTIALLY_FILLED" && "Còn chỗ"}
+                          {rooms?.status === "FULL" && "Đã đủ người"}
+                          {rooms?.status === "MAINTENANCE" && "Đang bảo trì"}
+                          {rooms?.status === "ROOM_RENT" && "Khả dụng"}
+                          {rooms?.status === "HIRED" && "Đã đủ người"}
+                          {rooms?.status === "CHECKED_OUT" && "Đã trả phòng"}
+                        </span>
+                      </li>
+                      <li className="d-flex justify-content-between py-2 border-bottom">
+                        <span className="text-muted"><i className="bi bi-people text-success me-2"></i> Số người tối đa</span>
+                        <strong>{rooms?.maxOccupancy} người</strong>
+                      </li>
+                      <li className="d-flex justify-content-between py-2 border-bottom">
+                        <span className="text-muted"><i className="bi bi-layers text-success me-2"></i> Tầng</span>
+                        <strong>Tầng {rooms?.floor}</strong>
+                      </li>
+                      <li className="d-flex justify-content-between py-2 border-bottom">
+                        <span className="text-muted"><i className="bi bi-wifi text-success me-2"></i> Tiền mạng</span>
+                        <strong>{rooms?.internetCost?.toLocaleString("vi-VN")} đ/tháng</strong>
+                      </li>
+                      
+                      {/* Hiển thị tiện ích (Assets) */}
+                      {rooms && rooms.assets?.length > 0 && (
+                        <div className="mt-4">
+                          <h5 className="fw-bold fs-6 mb-3 text-uppercase text-muted">Tiện ích đi kèm</h5>
+                          {rooms.assets.map((item, index) => (
+                            <li key={index} className="d-flex justify-content-between py-1">
+                              <span className="text-muted"><i className="bi bi-check2-circle text-primary me-2"></i> {item?.name}</span>
+                              <strong>{item.number}</strong>
+                            </li>
+                          ))}
                         </div>
-                      ))
-                    ) : (
-                      <div class="col-12">
-                        <p class="color-text-a" style={{ fontStyle: "italic" }}>
-                          <i class="bi bi-info-circle"></i> Chưa có ai đang ở
-                          trong phòng này.
-                        </p>
-                      </div>
-                    )}
+                      )}
+                    </ul>
                   </div>
                 </div>
 
-                <div class="col-md-12">
-                  <div class="row section-t3">
-                    <div class="col-sm-12">
-                      <div class="title-box-d">
-                        <h3 class="title-d">Người cho thuê</h3>
-                      </div>
-                    </div>
+                {/* CỘT PHẢI: MÔ TẢ & NGƯỜI ĐANG Ở */}
+                <div className="col-lg-7">
+                  {/* Bảng Mô Tả */}
+                  <div className="bg-white p-4 rounded-4 shadow-sm border border-light mb-4">
+                    <h4 className="fw-bold mb-3 fs-5"><i className="bi bi-card-text text-success me-2"></i> Mô tả chi tiết</h4>
+                    <p className="description text-muted mb-0" style={{ whiteSpace: "pre-line", lineHeight: "1.8" }}>
+                      {rooms ? rooms.description : "Đang cập nhật mô tả..."}
+                    </p>
                   </div>
-                  <div class="row">
-                    <div class="col-md-6 col-lg-4">
-                      <img
-                        src={rooms ? rooms.user?.imageUrl : ""}
-                        alt=""
-                        class="img-fluid"
-                      />{" "}
-                    </div>
-                    <div class="col-md-6 col-lg-4">
-                      <div class="property-agent">
-                        <h4 class="title-agent">
-                          {rooms ? rooms.user?.name : ""}
-                        </h4>
-                        <p class="color-text-a">
-                          Phòng luôn chất lượng đảm bảo đúng sự thật và không
-                          các chi tiết khiến người dùng thất vọng khi đến xem và
-                          kiểm tra phòng. An ninh tuyệt đối.
-                        </p>
-                        <ul class="list-unstyled">
-                          <li class="d-flex justify-content-between">
-                            <strong>Số điện thoại:</strong>
-                            <span class="color-text-a">
-                              {rooms ? rooms.user?.phone : ""}
-                            </span>
-                          </li>
-                          <li class="d-flex justify-content-between">
-                            <strong>Địa chỉ:</strong>
-                            <span class="color-text-a">
-                              {rooms ? rooms.user?.address : ""}
-                            </span>
-                          </li>
-                          <li class="d-flex justify-content-between">
-                            <strong>Email: </strong>
-                            <span class="color-text-a">
-                              {" "}
-                              {rooms ? rooms.user?.email : ""}
-                            </span>
-                          </li>
-                        </ul>
-                        <div class="socials-a">
-                          <ul class="list-inline">
-                            {rooms && rooms.user?.facebookUrl ? (
-                              <li className="list-inline-item">
-                                <a
-                                  href={rooms ? rooms.user?.facebookUrl : ""}
-                                  className="link-one"
-                                  target="_blank"
-                                >
-                                  <i
-                                    className="bi bi-facebook"
-                                    aria-hidden="true"
-                                  ></i>
-                                </a>
-                              </li>
-                            ) : (
-                              <></>
-                            )}
-                            {rooms && rooms.user?.zaloUrl ? (
-                              <li className="list-inline-item">
-                                <a
-                                  href={rooms ? rooms.user?.zaloUrl : ""}
-                                  className="link-one"
-                                  target="_blank"
-                                >
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    x="0px"
-                                    y="0px"
-                                    width="18"
-                                    height="50"
-                                    viewBox="0 0 50 50"
-                                  >
-                                    <path d="M 9 4 C 6.2504839 4 4 6.2504839 4 9 L 4 41 C 4 43.749516 6.2504839 46 9 46 L 41 46 C 43.749516 46 46 43.749516 46 41 L 46 9 C 46 6.2504839 43.749516 4 41 4 L 9 4 z M 9 6 L 15.576172 6 C 12.118043 9.5981082 10 14.323627 10 19.5 C 10 24.861353 12.268148 29.748596 15.949219 33.388672 C 15.815412 33.261195 15.988635 33.48288 16.005859 33.875 C 16.023639 34.279773 15.962689 34.835916 15.798828 35.386719 C 15.471108 36.488324 14.785653 37.503741 13.683594 37.871094 A 1.0001 1.0001 0 0 0 13.804688 39.800781 C 16.564391 40.352722 18.51646 39.521812 19.955078 38.861328 C 21.393696 38.200845 22.171033 37.756375 23.625 38.34375 A 1.0001 1.0001 0 0 0 23.636719 38.347656 C 26.359037 39.41176 29.356235 40 32.5 40 C 36.69732 40 40.631169 38.95117 44 37.123047 L 44 41 C 44 42.668484 42.668484 44 41 44 L 9 44 C 7.3315161 44 6 42.668484 6 41 L 6 9 C 6 7.3315161 7.3315161 6 9 6 z M 18.496094 6 L 41 6 C 42.668484 6 44 7.3315161 44 9 L 44 34.804688 C 40.72689 36.812719 36.774644 38 32.5 38 C 29.610147 38 26.863646 37.459407 24.375 36.488281 C 22.261967 35.634656 20.540725 36.391201 19.121094 37.042969 C 18.352251 37.395952 17.593707 37.689389 16.736328 37.851562 C 17.160501 37.246758 17.523335 36.600775 17.714844 35.957031 C 17.941109 35.196459 18.033096 34.45168 18.003906 33.787109 C 17.974816 33.12484 17.916946 32.518297 17.357422 31.96875 L 17.355469 31.966797 C 14.016928 28.665356 12 24.298743 12 19.5 C 12 14.177406 14.48618 9.3876296 18.496094 6 z M 32.984375 14.986328 A 1.0001 1.0001 0 0 0 32 16 L 32 25 A 1.0001 1.0001 0 1 0 34 25 L 34 16 A 1.0001 1.0001 0 0 0 32.984375 14.986328 z M 18 16 A 1.0001 1.0001 0 1 0 18 18 L 21.197266 18 L 17.152344 24.470703 A 1.0001 1.0001 0 0 0 18 26 L 23 26 A 1.0001 1.0001 0 1 0 23 24 L 19.802734 24 L 23.847656 17.529297 A 1.0001 1.0001 0 0 0 23 16 L 18 16 z M 29.984375 18.986328 A 1.0001 1.0001 0 0 0 29.162109 19.443359 C 28.664523 19.170123 28.103459 19 27.5 19 C 25.578848 19 24 20.578848 24 22.5 C 24 24.421152 25.578848 26 27.5 26 C 28.10285 26 28.662926 25.829365 29.160156 25.556641 A 1.0001 1.0001 0 0 0 31 25 L 31 22.5 L 31 20 A 1.0001 1.0001 0 0 0 29.984375 18.986328 z M 38.5 19 C 36.578848 19 35 20.578848 35 22.5 C 35 24.421152 36.578848 26 38.5 26 C 40.421152 26 42 24.421152 42 22.5 C 42 20.578848 40.421152 19 38.5 19 z M 27.5 21 C 28.340272 21 29 21.659728 29 22.5 C 29 23.340272 28.340272 24 27.5 24 C 26.659728 24 26 23.340272 26 22.5 C 26 21.659728 26.659728 21 27.5 21 z M 38.5 21 C 39.340272 21 40 21.659728 40 22.5 C 40 23.340272 39.340272 24 38.5 24 C 37.659728 24 37 23.340272 37 22.5 C 37 21.659728 37.659728 21 38.5 21 z"></path>
-                                  </svg>
-                                </a>
-                              </li>
-                            ) : (
-                              <></>
-                            )}
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="col-md-12 col-lg-4">
-                      <div className="property-contact">
-                        <form className="form-a" onSubmit={this.handleSubmit}>
-                          <div className="row">
-                            <div className="col-md-12 mb-1">
-                              <div className="form-group">
-                                <input
-                                  type="text"
-                                  className="form-control form-control-lg form-control-a"
-                                  id="inputName"
-                                  placeholder="Tên *"
-                                  name="nameOfRentaler"
-                                  value={this.state.nameOfRentaler}
-                                  onChange={this.handleInputChange}
-                                  required
-                                />
+
+                  {/* Danh sách người đang ở */}
+                  <div className="bg-white p-4 rounded-4 shadow-sm border border-light">
+                    <h4 className="fw-bold mb-4 fs-5">
+                      <i className="bi bi-person-lines-fill text-success me-2"></i> Người đang ở 
+                      <span className="badge bg-light text-dark border ms-2">
+                        {rooms?.currentOccupancy ?? 0} / {rooms?.maxOccupancy ?? 0}
+                      </span>
+                    </h4>
+                    
+                    <div className="row g-3">
+                      {rooms?.residents && rooms.residents.length > 0 ? (
+                        rooms.residents.map((resident, index) => (
+                          <div key={resident.id || index} className="col-md-6">
+                            <div className="d-flex align-items-center p-3 border rounded-4 bg-light shadow-sm">
+                              <img
+                                src={resident?.imageUrl || "/assets/img/agent-1.jpg"}
+                                alt={resident.name}
+                                className="rounded-circle shadow-sm border border-2 border-white"
+                                style={{ width: "55px", height: "55px", objectFit: "cover", flexShrink: 0 }}
+                              />
+                              <div className="ms-3 overflow-hidden">
+                                <div className="fw-bold text-dark text-truncate" style={{ fontSize: "15px" }}>
+                                  {resident.name}
+                                </div>
+                                {resident.phone && (
+                                  <div className="text-muted mt-1" style={{ fontSize: "13px" }}>
+                                    <i className="bi bi-telephone-fill me-1"></i> {resident.phone}
+                                  </div>
+                                )}
                               </div>
-                            </div>
-                            <div className="col-md-12 mb-1">
-                              <div className="form-group">
-                                <input
-                                  type="email"
-                                  className="form-control form-control-lg form-control-a"
-                                  id="inputEmail1"
-                                  placeholder="Email *"
-                                  name="title"
-                                  value={this.state.title}
-                                  onChange={this.handleInputChange}
-                                  required
-                                />
-                              </div>
-                            </div>
-                            <div className="col-md-12 mb-1">
-                              <div className="form-group">
-                                <textarea
-                                  id="textMessage"
-                                  className="form-control"
-                                  placeholder="Bình luận *"
-                                  name="description"
-                                  value={this.state.description}
-                                  onChange={this.handleInputChange}
-                                  cols="45"
-                                  rows="8"
-                                  required
-                                ></textarea>
-                              </div>
-                            </div>
-                            <div className="col-md-12 mt-3">
-                              <button type="submit" className="btn btn-a">
-                                Gửi tin nhắn
-                              </button>
                             </div>
                           </div>
-                        </form>
-                      </div>
+                        ))
+                      ) : (
+                        <div className="col-12 text-center py-4 bg-light rounded-4 border border-dashed">
+                          <p className="text-muted mb-0 font-italic">
+                            <i className="bi bi-info-circle me-1"></i> Chưa có ai đang ở trong phòng này.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
-                <div class="col-md-12">
-                  <div class="row section-t3">
-                    <div class="col-sm-12">
-                      <div class="title-box-d">
-                        <h3 class="title-d">Bình luận và đánh giá</h3>
-                      </div>
+              </div>
+
+              {/* NGƯỜI CHO THUÊ & FORM LIÊN HỆ */}
+              <div className="row mt-5 g-4">
+                <div className="col-md-6">
+                  <div className="bg-white p-4 rounded-4 shadow-sm border border-light h-100">
+                    <h4 className="fw-bold mb-4 fs-5"><i className="bi bi-shield-check text-success me-2"></i> Thông tin quản lý</h4>
+                    <div className="d-flex flex-column align-items-center text-center mb-4">
+                      <img
+                        src={rooms?.user?.imageUrl || "/assets/img/agent-4.jpg"}
+                        alt="Quản lý"
+                        className="rounded-circle shadow border border-3 border-success mb-3"
+                        style={{ width: "120px", height: "120px", objectFit: "cover" }}
+                      />
+                      <h4 className="fw-bold mb-1">{rooms ? rooms.user?.name : "Đang tải..."}</h4>
+                      <span className="badge bg-success rounded-pill px-3 py-2">Chủ nhà / Quản lý KTX</span>
+                    </div>
+                    
+                    <ul className="list-unstyled bg-light p-3 rounded-4 border">
+                      <li className="d-flex align-items-center mb-3">
+                        <i className="bi bi-telephone-fill text-success fs-5 me-3"></i>
+                        <span className="text-muted fw-bold">{rooms ? rooms.user?.phone : "N/A"}</span>
+                      </li>
+                      <li className="d-flex align-items-center mb-3">
+                        <i className="bi bi-envelope-fill text-success fs-5 me-3"></i>
+                        <span className="text-muted">{rooms ? rooms.user?.email : "N/A"}</span>
+                      </li>
+                      <li className="d-flex align-items-start">
+                        <i className="bi bi-geo-alt-fill text-success fs-5 me-3 mt-1"></i>
+                        <span className="text-muted">{rooms ? rooms.user?.address : "N/A"}</span>
+                      </li>
+                    </ul>
+
+                    <div className="d-flex justify-content-center gap-3 mt-4">
+                      {rooms && rooms.user?.facebookUrl && (
+                        <a href={rooms.user.facebookUrl} className="btn btn-outline-primary rounded-circle" target="_blank" rel="noreferrer" style={{ width: '45px', height: '45px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <i className="bi bi-facebook fs-5"></i>
+                        </a>
+                      )}
+                      {rooms && rooms.user?.zaloUrl && (
+                        <a href={rooms.user.zaloUrl} className="btn btn-outline-info rounded-circle" target="_blank" rel="noreferrer" style={{ width: '45px', height: '45px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <i className="bi bi-chat-dots-fill fs-5"></i>
+                        </a>
+                      )}
                     </div>
                   </div>
-                  <div class="row">
-                    <div class="col-md-6 col-lg-4">
-                      <div class="property-agent">
-                        {/* <h4 class="title-agent">{rooms ? rooms.user.name : ""}</h4> */}
-                        <Comment.Group>
-                          {comments &&
-                            comments?.length &&
-                            comments?.map((comment) => (
-                              <Comment>
-                                <Comment.Content style={{ padding: "1rem" }}>
-                                  <Stack spacing={1}>
-                                    <Rating
-                                      name="half-rating"
-                                      defaultValue={comment.rateRating}
-                                      precision={0.5}
-                                      readOnly
-                                    />
+                </div>
+
+                <div className="col-md-6">
+                  <div className="bg-white p-4 rounded-4 shadow-sm border border-light h-100">
+                    <h4 className="fw-bold mb-4 fs-5"><i className="bi bi-envelope-paper text-success me-2"></i> Gửi tin nhắn</h4>
+                    <form onSubmit={this.handleSubmit}>
+                      <div className="mb-3">
+                        <input
+                          type="text"
+                          className="form-control form-control-lg bg-light border-0"
+                          placeholder="Tên của bạn *"
+                          name="nameOfRentaler"
+                          value={this.state.nameOfRentaler}
+                          onChange={this.handleInputChange}
+                          required
+                        />
+                      </div>
+                      <div className="mb-3">
+                        <input
+                          type="email"
+                          className="form-control form-control-lg bg-light border-0"
+                          placeholder="Email của bạn *"
+                          name="title"
+                          value={this.state.title}
+                          onChange={this.handleInputChange}
+                          required
+                        />
+                      </div>
+                      <div className="mb-4">
+                        <textarea
+                          className="form-control bg-light border-0"
+                          placeholder="Nội dung lời nhắn *"
+                          name="description"
+                          value={this.state.description}
+                          onChange={this.handleInputChange}
+                          rows="5"
+                          required
+                        ></textarea>
+                      </div>
+                      <button type="submit" className="btn btn-success btn-lg w-100 rounded-pill fw-bold shadow-sm">
+                        <i className="bi bi-send-fill me-2"></i> Gửi ngay
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+
+              {/* BÌNH LUẬN VÀ ĐÁNH GIÁ */}
+              <div className="row mt-5">
+                <div className="col-12">
+                  <div className="bg-white p-4 rounded-4 shadow-sm border border-light">
+                    <h4 className="fw-bold mb-4 fs-5"><i className="bi bi-chat-left-text text-success me-2"></i> Bình luận và đánh giá</h4>
+                    
+                    <div className="row">
+                      <div className="col-lg-8">
+                        {/* Danh sách bình luận */}
+                        <Comment.Group size="large" className="w-100 mb-4">
+                          {comments && comments.length > 0 ? (
+                            comments.map((comment, index) => (
+                              <Comment key={index} className="bg-light p-3 rounded-4 mb-3 border">
+                                {comment.user?.imageUrl ? (
+                                  <Comment.Avatar src={comment.user.imageUrl} className="rounded-circle shadow-sm" />
+                                ) : (
+                                  <Comment.Avatar src="/assets/img/agent-1.jpg" className="rounded-circle shadow-sm" />
+                                )}
+                                <Comment.Content className="ms-2">
+                                  <div className="d-flex justify-content-between align-items-center mb-1">
+                                    <Comment.Author as="span" className="fw-bold fs-6">{comment.user?.name}</Comment.Author>
+                                    <Comment.Metadata className="text-muted small">
+                                      {comment.createdAt}
+                                    </Comment.Metadata>
+                                  </div>
+                                  <Stack spacing={1} className="mb-2">
+                                    <Rating name="read-only" value={comment.rateRating} precision={0.5} readOnly size="small" />
                                   </Stack>
-                                  {comment.user?.imageUrl ? (
-                                    <Comment.Avatar
-                                      src={comment.user.imageUrl}
-                                      style={{ marginRight: "10px" }}
-                                    />
-                                  ) : (
-                                    <Comment.Avatar
-                                      src="../../assets/img/agent-1.jpg"
-                                      style={{ marginRight: "10px" }}
-                                    />
-                                  )}
-                                  <Comment.Author as="a">
-                                    {comment.user?.name}
-                                  </Comment.Author>
-                                  <Comment.Metadata>
-                                    <div>{comment.createdAt}</div>
-                                  </Comment.Metadata>
-                                  <Comment.Text>{comment.content}</Comment.Text>
+                                  <Comment.Text className="text-dark mt-2">{comment.content}</Comment.Text>
                                 </Comment.Content>
                               </Comment>
-                            ))}
+                            ))
+                          ) : (
+                            <p className="text-muted font-italic py-3">Chưa có đánh giá nào cho phòng này.</p>
+                          )}
                         </Comment.Group>
+
+                        {/* Form Bình Luận */}
                         {this.props.authenticated ? (
-                          <>
+                          <div className="border-top pt-4">
                             {showCommentForm ? (
-                              <Form onSubmit={this.handleSubmitComment}>
-                                <h1>Đánh giá chất lượng</h1>
-                                <Stack spacing={1}>
+                              <Form onSubmit={this.handleSubmitComment} className="bg-light p-4 rounded-4 border">
+                                <h5 className="fw-bold mb-3">Đánh giá chất lượng phòng</h5>
+                                <Stack spacing={1} className="mb-3">
                                   <Rating
                                     name="half-rating"
                                     value={rate}
                                     precision={0.5}
-                                    onChange={(event, newValue) =>
-                                      this.setState({ rate: newValue })
-                                    }
+                                    size="large"
+                                    onChange={(event, newValue) => this.setState({ rate: newValue })}
                                   />
                                 </Stack>
-                                <h1></h1>
                                 <Form.TextArea
-                                  label="Chất lượng nhà trọ"
-                                  placeholder="Để lại cảm nhận của bạn tại đây...."
+                                  placeholder="Vui lòng để lại trải nghiệm chân thực của bạn tại đây..."
                                   value={content}
-                                  onChange={(event) =>
-                                    this.setState({
-                                      content: event.target.value,
-                                    })
-                                  }
+                                  onChange={(event) => this.setState({ content: event.target.value })}
+                                  style={{ borderRadius: '12px', border: '1px solid #dee2e6' }}
                                 />
-                                <div className="col-md-12 mt-3">
-                                  <Button
-                                    type="submit"
-                                    className="btn btn-a"
-                                    disabled={submittingComment}
-                                  >
-                                    {submittingComment
-                                      ? "Đang gửi..."
-                                      : "Bình luận"}
+                                <div className="mt-3 d-flex gap-2">
+                                  <Button type="submit" className="ui button green rounded-pill px-4" disabled={submittingComment}>
+                                    {submittingComment ? "Đang gửi..." : "Gửi đánh giá"}
+                                  </Button>
+                                  <Button type="button" className="ui button basic rounded-pill" onClick={() => this.setState({ showCommentForm: false })}>
+                                    Hủy
                                   </Button>
                                 </div>
                               </Form>
                             ) : (
-                              <div class="col-md-12 mt-3">
-                                <button
-                                  onClick={() =>
-                                    this.setState({ showCommentForm: true })
-                                  }
-                                  class="btn btn-a"
-                                >
-                                  Thêm bình luận
-                                </button>
-                              </div>
+                              <button onClick={() => this.setState({ showCommentForm: true })} className="btn btn-outline-success rounded-pill px-4 fw-bold">
+                                <i className="bi bi-pencil-square me-2"></i> Viết đánh giá
+                              </button>
                             )}
-                          </>
+                          </div>
                         ) : (
-                          "Vui lòng đăng nhập bình luận và đánh giá"
+                          <div className="alert alert-warning rounded-4 border-0 shadow-sm d-inline-block">
+                            <i className="bi bi-exclamation-triangle-fill me-2"></i> Vui lòng <strong>đăng nhập</strong> để bình luận và đánh giá.
+                          </div>
                         )}
                       </div>
                     </div>

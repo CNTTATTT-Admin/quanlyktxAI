@@ -203,7 +203,8 @@ public class RoomServiceImpl extends BaseService implements RoomService {
                 .filter(room -> {
                     RoomStatus status = room.getStatus();
                     // Điều kiện 2: Trạng thái phòng phải là đang có khách thuê
-                    return status == RoomStatus.PARTIALLY_FILLED ||
+                    return status == RoomStatus.AVAILABLE ||
+                           status == RoomStatus.PARTIALLY_FILLED ||
                            status == RoomStatus.FULL ||
                            status == RoomStatus.HIRED ||
                            status == RoomStatus.ROOM_RENT;
@@ -313,6 +314,11 @@ public class RoomServiceImpl extends BaseService implements RoomService {
         if (student != null) {
             student.setAllocatedRoom(null);
             userRepository.save(student);
+
+            //xóa khỏi bộ nhớ đệm
+            if (room.getResidents() != null) {
+                room.getResidents().removeIf(r -> r.getId().equals(student.getId()));
+            }
         }
 
         contract.setDeadlineContract(LocalDateTime.now());
@@ -383,6 +389,11 @@ public class RoomServiceImpl extends BaseService implements RoomService {
 
         user.setAllocatedRoom(null);
         userRepository.save(user);
+
+        //xóa user khỏi bộ nhớ đệm của phòng
+        if (room.getResidents() != null) {
+            room.getResidents().removeIf(r -> r.getId().equals(residentId));
+        }
 
         // Cập nhật trạng thái phòng sau khi xóa cư dân
         updateRoomStatus(room);

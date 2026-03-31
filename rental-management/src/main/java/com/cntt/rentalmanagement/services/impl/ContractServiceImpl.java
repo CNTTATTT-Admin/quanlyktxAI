@@ -43,21 +43,20 @@ public class ContractServiceImpl extends BaseService implements ContractService 
             throw new BadRequestException("Phòng đã bị khóa");
         }
 
-        if (room.isFull()) {
+        User student = userRepository.findByPhone(phone).orElseThrow(() -> new BadRequestException("Người dùng với số điện thoại này không tồn tại trong hệ thống"));
+        boolean isAlreadyResident = student.getAllocatedRoom() != null && student.getAllocatedRoom().getId().equals(roomId);
+
+        if (!isAlreadyResident && room.isFull()) {
             throw new BadRequestException("Phòng đã hết chỗ (Sức chứa tối đa: " + room.getMaxOccupancy() + ")");
+        }
+        //kiểm tra lỗi nhầm phòng
+        if (student.getAllocatedRoom() != null && !student.getAllocatedRoom().getId().equals(roomId)) {
+            throw new BadRequestException("Người dùng này đang được xếp ở một phòng khác (" + student.getAllocatedRoom().getTitle() + ").");
         }
 
         String file = null;
         if (files != null && !files.isEmpty() && !files.get(0).isEmpty()) {
             file = "http://localhost:8080/document/" + fileStorageService.storeFile(files.get(0)).replace("photographer/files/", "");
-        }
-
-        // Link student by phone/ID if exists (Preferably by a provided identifier from frontend)
-        User student = userRepository.findByPhone(phone).orElseThrow(() -> new BadRequestException("Người dùng với số điện thoại này không tồn tại trong hệ thống"));
-        
-        //Exception nếu viết nhầm số phòng cho user
-        if (student.getAllocatedRoom() != null && !student.getAllocatedRoom().getId().equals(roomId)) {
-            throw new BadRequestException("Người dùng này đang được xếp ở một phòng khác (" + student.getAllocatedRoom().getTitle() + ").");
         }
 
         // Validation: Check if student already has an active contract or is in a room

@@ -59,13 +59,15 @@ const RentalHome = (props) => {
         onLogout={props.onLogout}
       />
       <main id="main">
-        <section className="intro-single">
-          <div className="container">
-            <div className="row">
+        <section className="intro-single pt-5 mt-5">
+          <div className="container mt-4">
+            <div className="row align-items-center">
               <div className="col-md-12 col-lg-8">
                 <div className="title-single-box">
-                  <h1 className="title-single">PHÒNG KÝ TÚC XÁ</h1>
-                  <span className="color-text-a">Cho thuê phòng ký túc xá</span>
+                  <h1 className="title-single fw-bold">PHÒNG KÝ TÚC XÁ</h1>
+                  <span className="color-text-a text-muted">
+                    Cho thuê phòng ký túc xá
+                  </span>
                 </div>
               </div>
               <div className="col-md-12 col-lg-4">
@@ -73,66 +75,74 @@ const RentalHome = (props) => {
                   aria-label="breadcrumb"
                   className="breadcrumb-box d-flex justify-content-lg-end"
                 >
-                  <ol className="breadcrumb">
+                  <ol className="breadcrumb mb-0">
                     <li className="breadcrumb-item">
-                      <a href="/">Trang chủ</a>
+                      <a href="/" className="text-decoration-none text-success">Trang chủ</a>
                     </li>
-                    <li
-                      className="breadcrumb-item active"
-                      aria-current="page"
-                    ></li>
+                    <li className="breadcrumb-item active" aria-current="page">
+                      Phòng Ký Túc Xá
+                    </li>
                   </ol>
                 </nav>
               </div>
             </div>
           </div>
         </section>
-        <section className="property-grid grid">
+
+        <section className="property-grid grid py-5 bg-light">
           <div className="container">
-            <div className="row" style={{ marginBottom: "30px" }}>
-              <div className="col-sm-3">
-                <input
-                  type="text"
-                  className="form-control"
-                  name="searchQuery"
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  id="inputAddress"
-                  placeholder="Tên phòng"
-                />
-              </div>
-              <div className="col-sm-3">
-                <input
-                  type="number"
-                  className="form-control"
-                  name="price"
-                  value={price}
-                  onChange={handlePriceChange}
-                  id="inputAddress"
-                  placeholder="Giá"
-                />
-              </div>
-              <div className="col-sm-3">
-                <select
-                  className="form-select"
-                  id="categoryId"
-                  name="categoryId"
-                  value={cateId}
-                  onChange={handleCategoryChange}
-                >
-                  <option value={0}>Chọn...</option>
-                  <option value={1}>Kí túc xá nam</option>
-                  <option value={2}>Kí túc xá nữ</option>
-                  <option value={3}>Kí túc xá dịch vụ</option>
-                </select>
+            <div className="row mb-5 justify-content-center">
+              <div className="col-lg-10">
+                <div className="bg-white p-4 rounded-4 shadow-sm border">
+                  <div className="row g-3">
+                    <div className="col-md-4">
+                      <label className="form-label text-muted fw-bold small">Tên phòng</label>
+                      <input
+                        type="text"
+                        className="form-control form-control-lg bg-light border-0"
+                        name="searchQuery"
+                        value={searchQuery}
+                        onChange={handleSearchChange}
+                        placeholder="Nhập tên phòng..."
+                      />
+                    </div>
+                    <div className="col-md-4">
+                      <label className="form-label text-muted fw-bold small">Mức giá tối đa</label>
+                      <input
+                        type="number"
+                        className="form-control form-control-lg bg-light border-0"
+                        name="price"
+                        value={price}
+                        onChange={handlePriceChange}
+                        placeholder="VD: 1500000"
+                      />
+                    </div>
+                    <div className="col-md-4">
+                      <label className="form-label text-muted fw-bold small">Loại phòng</label>
+                      <select
+                        className="form-select form-select-lg bg-light border-0"
+                        id="categoryId"
+                        name="categoryId"
+                        value={cateId}
+                        onChange={handleCategoryChange}
+                      >
+                        <option value={0}>Tất cả các loại...</option>
+                        <option value={1}>Kí túc xá nam</option>
+                        <option value={2}>Kí túc xá nữ</option>
+                        <option value={3}>Kí túc xá dịch vụ</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="row">
+
+            <div className="row g-4 mb-4">
               {rooms.map((room) => (
-                <div className="col-md-4">
-                  <div className="card-box-a card-shadow">
+                <div className="col-md-4" key={room.id}>
+                  <div className="card-box-a card-shadow rounded-4 overflow-hidden h-100 border-0">
                     <div className="img-box-a">
-                      {room.roomMedia[0] ? (
+                      {room.roomMedia && room.roomMedia[0] ? (
                         <img
                           src={
                             API_BASE_URL +
@@ -152,6 +162,7 @@ const RentalHome = (props) => {
                         />
                       )}
                     </div>
+                    
                     <div className="card-overlay">
                       <div className="card-overlay-a-content">
                         <div className="card-header-a">
@@ -179,7 +190,6 @@ const RentalHome = (props) => {
                                 room.status !== "FULL" &&
                                 room.status !== "MAINTENANCE" &&
                                 "Đã thuê | "}
-                              {/* Giá tiền */}
                               {room.price.toLocaleString("vi-VN", {
                                 style: "currency",
                                 currency: "VND",
@@ -199,19 +209,19 @@ const RentalHome = (props) => {
                             <li>
                               <h4 className="card-info-title">Vị trí</h4>
                               <span>
-                                {room.location.cityName}
+                                {room.location?.cityName}
                                 <sup></sup>
                               </span>
                             </li>
                             <li>
                               <h4 className="card-info-title">Loại</h4>
-                              <span>{room.category.name}</span>
+                              <span>{room.category?.name}</span>
                             </li>
                             <li>
                               <h4 className="card-info-title">
                                 Người cho thuê
                               </h4>
-                              <span>{room.user.name}</span>
+                              <span>{room.user?.name}</span>
                             </li>
                           </ul>
                         </div>
@@ -221,12 +231,15 @@ const RentalHome = (props) => {
                 </div>
               ))}
             </div>
-            <Pagination
-              itemsPerPage={itemsPerPage}
-              totalItems={totalItems}
-              currentPage={currentPage}
-              paginate={paginate}
-            />
+
+            <div className="d-flex justify-content-center mt-4">
+              <Pagination
+                itemsPerPage={itemsPerPage}
+                totalItems={totalItems}
+                currentPage={currentPage}
+                paginate={paginate}
+              />
+            </div>
           </div>
         </section>
       </main>
