@@ -44,6 +44,7 @@ const Contact = (props) => {
         );
       });
   };
+
   return (
     <>
       <Header
@@ -51,16 +52,16 @@ const Contact = (props) => {
         currentUser={props.currentUser}
         onLogout={props.onLogout}
       />
-      <main id="main">
-        <section className="intro-single">
-          <div className="container">
-            <div className="row">
+      <main id="main" className="bg-light pb-5">
+        {/* HEADER & BREADCRUMB */}
+        <section className="intro-single pt-5 mt-5 pb-4">
+          <div className="container mt-4">
+            <div className="row align-items-center">
               <div className="col-md-12 col-lg-8">
                 <div className="title-single-box">
-                  <h1 className="title-single">Liên hệ chúng tôi</h1>
-                  <span className="color-text-a">
-                    Nếu bạn có thắc mắc hãy liên tới chúng tôi. Chúng tôi sẽ sớm
-                    trả lời cho bạn.
+                  <h1 className="title-single fw-bold mb-2">Liên hệ chúng tôi</h1>
+                  <span className="color-text-a text-muted fs-6">
+                    Nếu bạn có thắc mắc hãy liên hệ tới chúng tôi. Chúng tôi sẽ sớm trả lời cho bạn.
                   </span>
                 </div>
               </div>
@@ -69,11 +70,11 @@ const Contact = (props) => {
                   aria-label="breadcrumb"
                   className="breadcrumb-box d-flex justify-content-lg-end"
                 >
-                  <ol className="breadcrumb">
+                  <ol className="breadcrumb mb-0">
                     <li className="breadcrumb-item">
-                      <Link to="/">Trang chủ</Link>
+                      <Link to="/" className="text-decoration-none text-success">Trang chủ</Link>
                     </li>
-                    <li className="breadcrumb-item active" aria-current="page">
+                    <li className="breadcrumb-item active text-muted" aria-current="page">
                       Liên hệ
                     </li>
                   </ol>
@@ -82,115 +83,153 @@ const Contact = (props) => {
             </div>
           </div>
         </section>
+
+        {/* NỘI DUNG LIÊN HỆ */}
         <section className="contact">
           <div className="container">
-            <div className="row">
+            {/* BẢN ĐỒ */}
+            <div className="row mb-5">
               <div className="col-sm-12">
-                <div className="contact-map box">
-                  <div id="map" className="contact-map">
+                <div className="contact-map box rounded-4 overflow-hidden shadow-sm border border-light bg-white p-2">
+                  <div id="map" className="contact-map rounded-3 overflow-hidden">
                     <iframe
-                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.1422937950147!2d-73.98731968482413!3d40.75889497932681!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25855c6480299%3A0x55194ec5a1ae072e!2sTimes+Square!5e0!3m2!1ses-419!2sve!4v1510329142834"
+                      src="https://maps.google.com/maps?q=Hanoi%20University%20of%20Civil%20Engineering&t=&z=15&ie=UTF8&iwloc=&output=embed"
                       width="100%"
                       height="450"
                       frameBorder="0"
                       style={{ border: "0" }}
                       allowFullScreen
+                      title="Google Map"
                     ></iframe>
                   </div>
                 </div>
               </div>
-              <div className="col-sm-12 section-t8">
-                <div className="row">
-                  <div className="col-md-7">
-                    <form onSubmit={handleSubmit}>
-                      <div className="row">
-                        <div className="col-md-6 mb-3">
-                          <div className="form-group">
-                            <input
-                              type="text"
-                              name="nameOfRentaler"
-                              value={nameOfRentaler}
-                              onChange={handleRentalerChange}
-                              className="form-control form-control-lg form-control-a"
-                              placeholder="Họ Và Tên"
-                              required
-                            />
-                          </div>
-                        </div>
-                        <div className="col-md-6 mb-3">
-                          <div className="form-group">
-                            <input
-                              name="toEmail"
-                              value={toEmail}
-                              onChange={handleToEmailChange}
-                              type="email"
-                              className="form-control form-control-lg form-control-a"
-                              placeholder="Email Của Bạn"
-                              required
-                            />
-                          </div>
-                        </div>
-                        <div className="col-md-12 mb-3">
-                          <div className="form-group">
-                            <input
-                              type="text"
-                              name="title"
-                              value={title}
-                              onChange={handleTitleChange}
-                              className="form-control form-control-lg form-control-a"
-                              placeholder="Tiêu đề"
-                              required
-                            />
-                          </div>
-                        </div>
-                        <div className="col-md-12">
-                          <div className="form-group">
-                            <textarea
-                              name="description"
-                              value={description}
-                              onChange={handleDescriptionChange}
-                              className="form-control"
-                              cols="45"
-                              rows="8"
-                              placeholder="Lời nhắn"
-                              required
-                            ></textarea>
-                          </div>
-                        </div>
-                        <div className="col-md-12">
-                          <button type="submit" className="btn btn-a">
-                            Gửi
-                          </button>
-                        </div>
+            </div>
+
+            {/* FORM & THÔNG TIN */}
+            <div className="row g-4">
+              {/* CỘT TRÁI: FORM GỬI TIN NHẮN */}
+              <div className="col-lg-7">
+                <div className="bg-white p-4 p-md-5 rounded-4 shadow-sm border border-light h-100">
+                  <h3 className="fw-bold mb-4 fs-4">
+                    <i className="bi bi-envelope-paper text-success me-2"></i> Gửi lời nhắn cho chúng tôi
+                  </h3>
+                  <form onSubmit={handleSubmit}>
+                    <div className="row g-3">
+                      <div className="col-md-6">
+                        <label className="form-label text-muted fw-bold small mb-1">Họ và Tên <span className="text-danger">*</span></label>
+                        <input
+                          type="text"
+                          name="nameOfRentaler"
+                          value={nameOfRentaler}
+                          onChange={handleRentalerChange}
+                          className="form-control form-control-lg bg-light border-0"
+                          placeholder="Nhập họ tên..."
+                          required
+                        />
                       </div>
-                    </form>
-                  </div>
-                  <div className="col-md-5 section-md-t3">
-                    <div className="icon-box section-b2">
-                      <div className="icon-box-icon">
-                        <span className="ion-ios-paper-plane"></span>
+                      <div className="col-md-6">
+                        <label className="form-label text-muted fw-bold small mb-1">Email <span className="text-danger">*</span></label>
+                        <input
+                          type="email"
+                          name="toEmail"
+                          value={toEmail}
+                          onChange={handleToEmailChange}
+                          className="form-control form-control-lg bg-light border-0"
+                          placeholder="Nhập email..."
+                          required
+                        />
                       </div>
-                      <div className="icon-box-content table-cell">
-                        <div className="icon-box-title">
-                          <h4 className="icon-title">Liên hệ</h4>
-                        </div>
-                        <div className="icon-box-content">
-                          <p className="mb-1">
-                            <span className="color-a">Địa chỉ:</span> 1234 Đường
-                            ABC, Thành phố XYZ
-                          </p>
-                          <p className="mb-1">
-                            <span className="color-a">Điện thoại:</span> +1 234
-                            5678
-                          </p>
-                          <p className="mb-1">
-                            <span className="color-a">Email:</span>{" "}
-                            info@example.com
-                          </p>
-                        </div>
+                      <div className="col-md-12">
+                        <label className="form-label text-muted fw-bold small mb-1">Tiêu đề <span className="text-danger">*</span></label>
+                        <input
+                          type="text"
+                          name="title"
+                          value={title}
+                          onChange={handleTitleChange}
+                          className="form-control form-control-lg bg-light border-0"
+                          placeholder="Vấn đề bạn cần hỗ trợ là gì?"
+                          required
+                        />
+                      </div>
+                      <div className="col-md-12">
+                        <label className="form-label text-muted fw-bold small mb-1">Nội dung <span className="text-danger">*</span></label>
+                        <textarea
+                          name="description"
+                          value={description}
+                          onChange={handleDescriptionChange}
+                          className="form-control bg-light border-0"
+                          cols="45"
+                          rows="6"
+                          placeholder="Chi tiết lời nhắn của bạn..."
+                          required
+                        ></textarea>
+                      </div>
+                      <div className="col-md-12 mt-4">
+                        <button type="submit" className="btn btn-success btn-lg px-5 rounded-pill fw-bold shadow-sm">
+                          <i className="bi bi-send-fill me-2"></i> Gửi tin nhắn
+                        </button>
                       </div>
                     </div>
+                  </form>
+                </div>
+              </div>
+
+              {/* CỘT PHẢI: THÔNG TIN LIÊN HỆ */}
+              <div className="col-lg-5">
+                <div className="bg-white p-4 p-md-5 rounded-4 shadow-sm border border-light h-100">
+                  <div className="d-flex align-items-center mb-4">
+                    <div className="bg-success text-white rounded-circle d-flex justify-content-center align-items-center me-3 shadow-sm" style={{ width: "60px", height: "60px", fontSize: "24px" }}>
+                      <i className="bi bi-headset"></i>
+                    </div>
+                    <div>
+                      <h3 className="fw-bold mb-0 fs-4">Thông tin liên hệ</h3>
+                      <span className="text-muted small">Ban quản lý sẵn sàng hỗ trợ bạn</span>
+                    </div>
                   </div>
+                  
+                  <div className="contact-info mt-4">
+                    <ul className="list-unstyled">
+                      <li className="d-flex mb-4">
+                        <i className="bi bi-geo-alt-fill text-success fs-4 me-3 mt-1"></i>
+                        <div>
+                          <strong className="d-block text-dark mb-1">Địa chỉ</strong>
+                          <span className="text-muted">1234 Đường ABC, Thành phố XYZ</span>
+                        </div>
+                      </li>
+                      <li className="d-flex mb-4">
+                        <i className="bi bi-telephone-fill text-success fs-4 me-3 mt-1"></i>
+                        <div>
+                          <strong className="d-block text-dark mb-1">Điện thoại</strong>
+                          <span className="text-muted">+1 234 5678</span>
+                        </div>
+                      </li>
+                      <li className="d-flex mb-4">
+                        <i className="bi bi-envelope-fill text-success fs-4 me-3 mt-1"></i>
+                        <div>
+                          <strong className="d-block text-dark mb-1">Email</strong>
+                          <span className="text-muted">info@example.com</span>
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* KẾT NỐI MẠNG XÃ HỘI */}
+                  <div className="mt-5 border-top pt-4">
+                    <strong className="d-block text-dark mb-3">Kết nối với chúng tôi:</strong>
+                    <div className="d-flex gap-2">
+                      <a href="#" className="btn btn-outline-success rounded-circle" style={{ width: "45px", height: "45px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <i className="bi bi-facebook fs-5"></i>
+                      </a>
+                      <a href="#" className="btn btn-outline-success rounded-circle" style={{ width: "45px", height: "45px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <i className="bi bi-youtube fs-5"></i>
+                      </a>
+                      <a href="#" className="btn btn-outline-success rounded-circle" style={{ width: "45px", height: "45px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <i className="bi bi-instagram fs-5"></i>
+                      </a>
+                    </div>
+                  </div>
+
                 </div>
               </div>
             </div>

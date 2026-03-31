@@ -19,6 +19,7 @@ import com.cntt.rentalmanagement.services.RoomService;
 import com.cntt.rentalmanagement.utils.MapperUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -182,12 +184,38 @@ public class RoomServiceImpl extends BaseService implements RoomService {
         return MessageResponse.builder().message("Cập nhật thông tin thành công").build();
     }
 
+    //HÀM CŨ CHƯA TỐI ƯU
+    // @Override
+    // public Page<RoomResponse> getRentOfHome() {
+    //     Pageable pageable = PageRequest.of(0,100);
+    //     return mapperUtils.convertToResponsePage(roomRepository.getAllRentOfHome( getUserId(), pageable), RoomResponse.class, pageable);
+    // }
+    
+
     @Override
     public Page<RoomResponse> getRentOfHome() {
-        Pageable pageable = PageRequest.of(0,100);
-        return mapperUtils.convertToResponsePage(roomRepository.getAllRentOfHome( getUserId(), pageable), RoomResponse.class, pageable);
+        // 1. Lấy toàn bộ phòng của Chủ trọ hiện tại (dùng hàm getUser() đã có sẵn bên dưới)
+        List<Room> allRooms = roomRepository.findByUser(getUser());
+
+        // 2. Dùng Java Stream để lọc ra đúng những phòng hợp lệ
+        List<RoomResponse> validRooms = allRooms.stream()
+                .filter(room -> Boolean.TRUE.equals(room.getIsApprove())) // Điều kiện 1: Bắt buộc phải được Admin duyệt
+                .filter(room -> {
+                    RoomStatus status = room.getStatus();
+                    // Điều kiện 2: Trạng thái phòng phải là đang có khách thuê
+                    return status == RoomStatus.AVAILABLE ||
+                           status == RoomStatus.PARTIALLY_FILLED ||
+                           status == RoomStatus.FULL ||
+                           status == RoomStatus.HIRED ||
+                           status == RoomStatus.ROOM_RENT;
+                })
+                .map(room -> mapperUtils.convertToResponse(room, RoomResponse.class))
+                .toList();
+
+        // 3. Đóng gói lại thành Page để trả về (đảm bảo không bị lỗi sai kiểu dữ liệu với Interface)
+        return new PageImpl<>(validRooms, PageRequest.of(0, 100), validRooms.size());
     }
-    
+
     @Override
     public List<CommentDTO> getAllCommentRoom(Long id){
     	Room room = roomRepository.findById(id).get();
@@ -253,6 +281,7 @@ public class RoomServiceImpl extends BaseService implements RoomService {
 
 
     @Override
+    @Transactional
     public MessageResponse checkoutRoom(Long id) {
         Room room = roomRepository.findById(id).orElseThrow(() -> new BadRequestException("Phòng không còn tồn tại"));
         // Đặt về MAINTENANCE khi giải tán cả phòng
@@ -264,6 +293,13 @@ public class RoomServiceImpl extends BaseService implements RoomService {
                 userRepository.save(resident);
             }
         }
+        //set contract hết hạn
+        List<Contract> activeContracts = contractRepository.findByRoomAndDeadlineContractAfter(room, LocalDateTime.now());
+        for (Contract contract : activeContracts) {
+            contract.setDeadlineContract(LocalDateTime.now());
+            contractRepository.save(contract);
+        }
+
         roomRepository.save(room);
         return MessageResponse.builder().message("Trả phòng và xuất hóa đơn thành công.").build();
     }
@@ -278,7 +314,15 @@ public class RoomServiceImpl extends BaseService implements RoomService {
         if (student != null) {
             student.setAllocatedRoom(null);
             userRepository.save(student);
+
+            //xóa khỏi bộ nhớ đệm
+            if (room.getResidents() != null) {
+                room.getResidents().removeIf(r -> r.getId().equals(student.getId()));
+            }
         }
+
+        contract.setDeadlineContract(LocalDateTime.now());
+        contractRepository.save(contract);
 
         updateRoomStatus(room);
 
@@ -345,6 +389,11 @@ public class RoomServiceImpl extends BaseService implements RoomService {
 
         user.setAllocatedRoom(null);
         userRepository.save(user);
+
+        //xóa user khỏi bộ nhớ đệm của phòng
+        if (room.getResidents() != null) {
+            room.getResidents().removeIf(r -> r.getId().equals(residentId));
+        }
 
         // Cập nhật trạng thái phòng sau khi xóa cư dân
         updateRoomStatus(room);

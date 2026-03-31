@@ -71,9 +71,15 @@ import CheckInOutHistory from "./page/user/CheckInOutHistory";
 import LeaveRequestForm from "./page/user/LeaveRequestForm";
 import MaintenanceUserPage from "./page/user/MaintenanceUserPage";
 import ElectricAndWaterUserPage from "./page/user/ElectricAndWaterUserPage";
+import RegisterParkingCard from "./page/user/RegisterParkingCard";
+import ParkingCardHistory from "./page/user/ParkingCardHistory";
+import VNPayReturn from "./page/user/VNPayReturn";
 import LeaveRequestManagement from "./page/rentaler/LeaveRequestManagement";
 import CheckoutRequestManagement from "./page/rentaler/CheckoutRequestManagement";
 import CheckInOutManagement from "./page/rentaler/CheckInOutManagement";
+import ParkingCardManagement from "./page/rentaler/ParkingCardManagement";
+import ParkingPackageManagement from "./page/rentaler/ParkingPackageManagement";
+import InvoiceManagement from "./page/rentaler/InvoiceManagement";
 import BannerManagement from "./page/admin/BannerManagement";
 import BannerForm from "./page/admin/BannerForm";
 import PolicyManagement from "./page/admin/PolicyManagement";
@@ -424,6 +430,26 @@ function App() {
               element={<CheckInOut currentUser={currentUser} />}
             />
             <Route
+              path="register-parking-card"
+              element={
+                <RegisterParkingCard 
+                  authenticated={authenticated} 
+                  currentUser={currentUser}
+                  onLogout={handleLogout} 
+                />
+              }
+            />
+            <Route
+              path="parking-card-history"
+              element={
+                <ParkingCardHistory
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  onLogout={handleLogout}
+                />
+              }
+            />
+            <Route
               path="face-registration"
               element={<FaceRegistration currentUser={currentUser} />}
             />
@@ -447,6 +473,7 @@ function App() {
                 />
               }
             />
+            <Route path="/vnpay-return" element={<VNPayReturn />} />
           </Route>
 
           {/* ADMIN ROUTES */}
@@ -745,6 +772,39 @@ function App() {
               path="request-management"
               element={
                 <RequierManagement
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              }
+            />
+            <Route
+              path="parking-card-management"
+              element={
+                <ParkingCardManagement
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              }
+            />
+            <Route
+              path="parking-package-management"
+              element={
+                <ParkingPackageManagement
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              }
+            />
+            <Route
+              path="invoice-management"
+              element={
+                <InvoiceManagement
                   authenticated={authenticated}
                   currentUser={currentUser}
                   role={role}

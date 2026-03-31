@@ -10,7 +10,6 @@ const UserLayout = ({ authenticated, currentUser, onLogout }) => {
       <main style={{ minHeight: '80vh' }}>
         <Outlet />
       </main>
-      <Footer />
     </>
   );
 };

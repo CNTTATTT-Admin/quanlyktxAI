@@ -80,4 +80,7 @@ app:
       - http://localhost:3000/oauth2/redirect
       - myandroidapp://oauth2/redirect
       - myiosapp://oauth2/redirect
-
+vnpay:
+  tmnCode: POB7PAZN
+  secretKey: 7NGM9P7AF2H6LA5OMN4F458X52ZMJBSL
+  returnUrl: http://localhost:3000/vnpay-return
