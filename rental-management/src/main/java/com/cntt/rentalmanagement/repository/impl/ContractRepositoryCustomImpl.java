@@ -84,7 +84,7 @@ public class ContractRepositoryCustomImpl implements ContractRepositoryCustom {
             params.put("phone", phone);
         }
 
-        String strSelectQuery = "SELECT c.* " + strQuery;
+        String strSelectQuery = "SELECT c.* " + strQuery + " ORDER BY c.id DESC";
 
         String strCountQuery = "SELECT COUNT(DISTINCT c.id)" + strQuery;
         return BaseRepository.getPagedNativeQuery(em,strSelectQuery, strCountQuery, params, pageable, Contract.class);

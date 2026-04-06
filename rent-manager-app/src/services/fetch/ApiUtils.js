@@ -320,6 +320,17 @@ export function followAgents(followRequest) {
   });
 }
 
+export function unfollowAgents(rentalerId) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url: API_BASE_URL + "/follow/" + rentalerId,
+    method: "DELETE", 
+  });
+}
+
 export function saveBlog(storeRequest) {
   if (!localStorage.getItem(ACCESS_TOKEN)) {
     return Promise.reject("No access token set.");

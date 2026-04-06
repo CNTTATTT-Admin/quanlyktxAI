@@ -66,6 +66,9 @@ public class AccountServiceImpl implements AccountService {
     private final CheckInOutLogRepository checkInOutLogRepository;
     private final MaintenanceRepository maintenanceRepository;
 
+    private final MessageRepository messageRepository; 
+    private final MessageChatRepository messageChatRepository;
+
     // --- Tiện ích & Email ---
     private final MapperUtils mapperUtils;
     private final JavaMailSender mailSender;
@@ -144,6 +147,9 @@ public void deleteMultipleAccounts(List<Long> ids) {
         }
 
         // --- GIAI ĐOẠN 1: DỌN DẸP LOGS & YÊU CẦU ---
+        messageChatRepository.deleteMessageChatByUserId(id); 
+        messageRepository.deleteMessageByUserId(id);
+
         checkInOutLogRepository.deleteByUserId(id);
         leaveRequestRepository.deleteByUserId(id);
         requestRepository.deleteByUserId(id);

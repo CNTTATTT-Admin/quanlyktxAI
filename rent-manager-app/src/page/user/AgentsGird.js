@@ -47,37 +47,38 @@ const AgentsGird = (props) => {
         currentUser={props.currentUser}
         onLogout={props.onLogout}
       />
-      <main id="main" className="bg-light pb-5">
-        <section className="intro-single pt-5 mt-5 pb-4">
-          <div className="container mt-4">
-            <div className="row align-items-center">
-              <div className="col-md-12 col-lg-8">
-                <div className="title-single-box">
-                  <h1 className="title-single fw-bold mb-2">NGƯỜI CHO THUÊ</h1>
-                  <span className="color-text-a text-muted fs-6">
-                    Danh sách chủ nhà và ban quản lý uy tín hàng đầu
-                  </span>
-                </div>
-              </div>
-              <div className="col-md-12 col-lg-4">
-                <nav
-                  aria-label="breadcrumb"
-                  className="breadcrumb-box d-flex justify-content-lg-end"
-                >
-                  <ol className="breadcrumb mb-0">
-                    <li className="breadcrumb-item">
-                      <Link to="/" className="text-decoration-none text-success">Trang chủ</Link>
-                    </li>
-                    <li className="breadcrumb-item active text-muted" aria-current="page">
-                      Người cho thuê
-                    </li>
-                  </ol>
-                </nav>
-              </div>
-            </div>
-          </div>
-        </section>
-
+      <main id="main" style={{ backgroundColor: "#F0FDF4", minHeight: "100vh" }} className="pt-5 mt-4 pb-5">
+        <section className="intro-single pt-5 pb-2">
+                  <div className="container mt-4">
+                    <div className="row align-items-center">
+        
+                      {/* Cột trái: Tiêu đề chi tiết */}
+                      <div className="col-md-12 col-lg-6">
+                        <div className="title-single-box">
+                          <h1 className="title-single fw-bold text-dark" style={{ fontSize: "2.2rem" }}>Người cho thuê</h1>
+                          <span className="text-muted fw-semibold mt-2 d-block">
+                            Danh sách chủ nhà và ban quản lý uy tín hàng đầu.
+                          </span>
+                        </div>
+                      </div>
+        
+                      {/* Cột phải: Breadcrumb nằm ngang */}
+                      <div className="col-md-12 col-lg-6 d-flex justify-content-lg-end mt-4 mt-lg-0">
+                        <nav aria-label="breadcrumb" className="breadcrumb-box bg-white px-4 py-2 rounded-pill shadow-sm border">
+                          <ol className="breadcrumb mb-0">
+                            <li className="breadcrumb-item">
+                              <Link to="/" className="text-decoration-none fw-semibold" style={{ color: "#10B981" }}>Trang chủ</Link>
+                            </li>
+                            <li className="breadcrumb-item active text-muted fw-semibold">
+                              Người cho thuê
+                            </li>
+                          </ol>
+                        </nav>
+                      </div>
+        
+                    </div>
+                  </div>
+                </section>
         <section className="agents-grid grid">
           <div className="container">
             <div className="row mb-5 justify-content-center">

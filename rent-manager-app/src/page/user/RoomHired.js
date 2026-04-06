@@ -99,6 +99,17 @@ function RoomHired(props) {
     return remainingMonths > 0 ? remainingMonths : 0;
   };
 
+  // Hàm helper format ngày tháng sang chuẩn Việt Nam
+  const formatDate = (dateInput) => {
+    if (!dateInput) return "Chưa cập nhật";
+    const date = new Date(dateInput);
+    return date.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
+
   if (!authenticated) {
     return (
       <Navigate
@@ -131,84 +142,70 @@ function RoomHired(props) {
 
           <div className="main">
             <br />
-            <div className="container-fluid p-0"></div>
-            <div className="card">
-              <div className="card-header">
-                <h5 className="card-title">Lịch sử thuê phòng</h5>
-                <h6 className="card-subtitle text-muted">
-                  {" "}
-                  Hiển thị lịch sử thuê phòng.
-                </h6>
-              </div>
-              <div className="card-body">
-                <div
-                  id="datatables-buttons_wrapper"
-                  className="dataTables_wrapper dt-bootstrap5 no-footer"
-                >
-                  <div className="row">
-                    <div className="col-sm-12 col-md-6">
-                      <div className="dt-buttons btn-group flex-wrap"></div>
-                    </div>
-                    <div className="col-sm-12 col-md-6">
-                      <div
-                        id="datatables-buttons_filter"
-                        className="dataTables_filter"
-                      ></div>
-                    </div>
-                  </div>
-                  <div className="row dt-row">
-                    <div className="col-sm-12">
-                      <table
-                        id="datatables-buttons"
-                        className="table table-striped dataTable no-footer dtr-inline"
-                        style={{ width: "100%" }}
-                        aria-describedby="datatables-buttons_info"
-                      >
-                        <thead>
+            <div className="container-fluid p-4">
+              {/* CARD ECOHOME */}
+              <div className="card eco-card">
+                <div className="card-header eco-card-header">
+                  <h4 className="card-title fw-bold text-dark mb-1"><i className="bi bi-clock-history text-emerald me-2"></i>Lịch sử thuê phòng</h4>
+                  <h6 className="card-subtitle text-muted mb-0">
+                    Hiển thị chi tiết hợp đồng và lịch sử thuê phòng của bạn.
+                  </h6>
+                </div>
+                
+                <div className="card-body p-0">
+                  <div className="table-responsive">
+                    <table className="table eco-table compact-table mb-0" style={{ width: "100%" }}>
+                      <thead>
+                        <tr>
+                          {/* Đã giảm minWidth để các cột sát nhau hơn */}
+                          <th style={{ minWidth: "140px", paddingLeft: "24px" }}>Tên Phòng</th>
+                          <th style={{ minWidth: "120px" }}>Người thuê</th>
+                          <th style={{ minWidth: "100px" }}>SĐT</th>
+                          <th style={{ minWidth: "100px" }}>Giá thuê</th>
+                          <th style={{ minWidth: "110px" }}>Ngày tạo</th>
+                          <th style={{ minWidth: "110px" }}>Hết hạn</th>
+                          <th style={{ minWidth: "80px", textAlign: "center" }}>Còn lại</th>
+                          <th style={{ minWidth: "150px" }}>Bạn cùng phòng</th>
+                          <th style={{ minWidth: "100px" }}>Trạng Thái</th>
+                          <th style={{ minWidth: "100px", paddingRight: "24px", textAlign: "center" }}>Hành động</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {tableData.length === 0 ? (
                           <tr>
-                            <th style={{ width: "224px" }}>Tên Phòng</th>
-                            <th style={{ width: "180px" }}>Người thuê</th>
-                            <th style={{ width: "180px" }}>Số điện thoại</th>
-                            <th style={{ width: "75px" }}>Giá</th>
-                            <th style={{ width: "100px" }}>Thời hạn</th>
-                            <th style={{ width: "200px" }}>Bạn cùng phòng</th>
-                            <th style={{ width: "142px" }}>Trạng Thái</th>
-                            <th style={{ width: "100px" }}>Hành động</th>
+                            <td colSpan="10" style={{ textAlign: "center", padding: "3rem" }}>
+                              <i className="bi bi-folder-x text-muted fs-1 mb-2 d-block opacity-50"></i>
+                              <span className="text-muted fw-semibold">Bạn chưa có lịch sử thuê phòng nào.</span>
+                            </td>
                           </tr>
-                        </thead>
-                        <tbody>
-                          {tableData.length === 0 ? (
-                            <tr>
-                              <td colSpan="7" style={{ textAlign: "center" }}>
-                                Bạn chưa có lịch sử thuê phòng nào.
-                              </td>
-                            </tr>
-                          ) : (
-                            tableData.map((item) => (
-                              <tr key={item.id} className="odd">
-                                <td>
+                        ) : (
+                          tableData.map((item, index) => {
+                            const isLatestContract = currentPage === 1 && index === 0;
+
+                            return (
+                              <tr key={item.id}>
+                                <td style={{ paddingLeft: "24px" }}>
                                   <a
                                     href={`/rental-home/` + item.room?.id}
                                     target="_blank"
                                     rel="noreferrer"
+                                    className="fw-bold text-emerald text-decoration-none"
                                   >
                                     {item.room?.title}
                                   </a>
                                 </td>
-                                <td>{item.nameOfRent}</td>
+                                <td><span className="fw-semibold text-dark">{item.nameOfRent}</span></td>
                                 <td>{item.phone}</td>
-                                <td>
+                                <td className="fw-bold text-danger">
                                   {item.room?.price &&
-                                    item.room.price.toLocaleString("vi-VN", {
-                                      style: "currency",
-                                      currency: "VND",
-                                    })}
+                                    item.room.price.toLocaleString("vi-VN")} đ
                                 </td>
-                                <td>
-                                  {calculateRemainingMonths(
-                                    item.deadlineContract,
-                                  )}{" "}
-                                  tháng
+                                <td>{formatDate(item.createdAt)}</td>
+                                <td>{formatDate(item.deadlineContract)}</td>
+                                <td className="text-center">
+                                  <span className="badge bg-light border border-info text-info rounded-pill fw-bold">
+                                    {calculateRemainingMonths(item.deadlineContract)} tháng
+                                  </span>
                                 </td>
                                 <td>
                                   {item.room?.residents &&
@@ -219,48 +216,55 @@ function RoomHired(props) {
                                         .map((r) => (
                                           <li
                                             key={r.id}
-                                            style={{ fontSize: "0.85rem" }}
+                                            style={{ fontSize: "0.8rem" }}
+                                            className="text-muted text-truncate"
                                           >
-                                            • {r.name} ({r.phone})
+                                            • {r.name}
                                           </li>
                                         ))}
                                     </ul>
                                   ) : (
-                                    <span className="text-muted">Chưa có</span>
+                                    <span className="text-muted fst-italic small">Chưa có</span>
                                   )}
                                 </td>
                                 <td>
                                   {item.room?.status === "FULL" || item.room?.status === "PARTIALLY_FILLED" || item.room?.status === "ROOM_RENT" ? (
-                                    <span style={{ color: "green" }}>Đang ở</span>
+                                    <span className="badge bg-emerald rounded-pill px-3 shadow-sm">Đang ở</span>
                                   ) : (
-                                    <span style={{ color: "red" }}>
-                                      {item.room?.status === "MAINTENANCE" || item.room?.status === "CHECKED_OUT" ? "Đã trả phòng" : "Hết hạn"}
+                                    <span className="badge bg-secondary rounded-pill px-3 shadow-sm">
+                                      {item.room?.status === "MAINTENANCE" || item.room?.status === "CHECKED_OUT" ? "Đã trả phòng" : "Đã rời"}
                                     </span>
                                   )}
                                 </td>
-                                <td>
-                                  {(item.room?.status === "FULL" || item.room?.status === "PARTIALLY_FILLED" || item.room?.status === "ROOM_RENT") && (
+                                <td className="text-center" style={{ paddingRight: "24px" }}>
+                                  {isLatestContract && (item.room?.status === "FULL" || item.room?.status === "PARTIALLY_FILLED" || item.room?.status === "ROOM_RENT") ? (
                                     <button
-                                      className="btn btn-sm btn-danger"
+                                      className="btn btn-sm btn-outline-danger rounded-pill fw-bold btn-modern"
                                       onClick={() => handleOpenModal(item.room?.id)}
                                     >
                                       Yêu cầu rời
                                     </button>
+                                  ) : (
+                                    <span className="text-muted small fst-italic">-</span>
                                   )}
                                 </td>
                               </tr>
-                            ))
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
+                            );
+                          })
+                        )}
+                      </tbody>
+                    </table>
                   </div>
-                  <Pagination
-                    itemsPerPage={itemsPerPage}
-                    totalItems={totalItems}
-                    currentPage={currentPage}
-                    paginate={paginate}
-                  />
+                  
+                  {/* Phân trang */}
+                  <div className="d-flex justify-content-center mt-4 pb-4">
+                    <Pagination
+                      itemsPerPage={itemsPerPage}
+                      totalItems={totalItems}
+                      currentPage={currentPage}
+                      paginate={paginate}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -268,51 +272,53 @@ function RoomHired(props) {
         </div>
       </main>
 
+      {/* Modal Yêu Cầu Rời Phòng (Giao diện Eco) */}
       {showModal && (
         <div
           className="modal show"
           tabIndex="-1"
-          style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }}
+          style={{ display: "block", backgroundColor: "rgba(0,0,0,0.4)", zIndex: 1050, backdropFilter: "blur(4px)" }}
         >
           <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Yêu cầu trả phòng</h5>
+            <div className="modal-content border-0 rounded-4 shadow-lg">
+              <div className="modal-header border-0 pb-0">
+                <h5 className="modal-title fw-bold text-dark fs-4">Yêu cầu trả phòng</h5>
                 <button
                   type="button"
-                  className="btn-close"
+                  className="btn-close shadow-none"
                   onClick={handleCloseModal}
                 ></button>
               </div>
-              <div className="modal-body">
+              <div className="modal-body p-4">
                 <form>
                   <div className="mb-3">
-                    <label className="form-label">Lý do rời phòng</label>
+                    <label className="form-label fw-bold text-muted small">Lý do rời phòng chi tiết <span className="text-danger">*</span></label>
                     <textarea
-                      className="form-control"
-                      rows={3}
+                      className="form-control bg-light border-0 p-3"
+                      rows={4}
                       value={reason}
                       onChange={(e) => setReason(e.target.value)}
-                      placeholder="Nhập lý do chi tiết..."
+                      placeholder="Ví dụ: Chuyển chỗ làm, Hết nhu cầu thuê..."
                       required
+                      style={{ resize: "none", borderRadius: "12px" }}
                     ></textarea>
                   </div>
                 </form>
               </div>
-              <div className="modal-footer">
+              <div className="modal-footer border-0 pt-0 justify-content-center gap-2 pb-4">
                 <button
                   type="button"
-                  className="btn btn-secondary"
+                  className="btn btn-light rounded-pill fw-bold px-4 btn-modern text-muted"
                   onClick={handleCloseModal}
                 >
-                  Đóng
+                  Hủy bỏ
                 </button>
                 <button
                   type="button"
-                  className="btn btn-danger"
+                  className="btn btn-danger rounded-pill fw-bold px-4 btn-modern shadow-sm"
                   onClick={submitLeaveRequest}
                 >
-                  Gửi yêu cầu
+                  <i className="bi bi-send-fill me-2"></i> Gửi yêu cầu
                 </button>
               </div>
             </div>

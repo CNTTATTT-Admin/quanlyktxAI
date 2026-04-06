@@ -66,4 +66,20 @@ public class FollowServiceImpl extends BaseService implements FollowService {
             return false;
         }
     }
+
+    @Override
+    public MessageResponse unfollowAgents(Long rentalerId) {
+        User customer = userRepository.findById(getUserId()).orElseThrow(() -> new BadRequestException("Tài khoản không tồn tại"));
+        User rentaler = userRepository.findById(rentalerId).orElseThrow(() -> new BadRequestException("Tài khoản không tồn tại"));
+
+        Optional<Follow> followOptional = followRepository.findByCustomerAndRentaler(customer, rentaler);
+        
+        if (followOptional.isPresent()) {
+            followRepository.delete(followOptional.get());
+            return MessageResponse.builder().message("Đã bỏ theo dõi thành công.").build();
+        } else {
+            throw new BadRequestException("Bạn chưa theo dõi người này.");
+        }
+    }
 }
+

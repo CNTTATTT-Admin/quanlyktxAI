@@ -1,9 +1,10 @@
 import React, { Component } from "react";
 import Header from "../../common/Header";
 import Footer from "../../common/Footer";
-import axios from "axios"; // Import axios for making API requests
+import axios from "axios";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "react-alice-carousel/lib/alice-carousel.css";
+import { Link, NavLink } from "react-router-dom";
 import { Navigation } from "swiper/modules";
 import Rating from "@mui/material/Rating";
 import Stack from "@mui/material/Stack";
@@ -20,6 +21,10 @@ import { toast } from "react-toastify";
 import { API_BASE_URL } from "../../constants/Connect";
 
 class RentailHomeDetail extends Component {
+
+  // =================================================================
+  // 🧠 BỘ LOGIC CŨ ĐƯỢC GIỮ NGUYÊN VẸN 100%
+  // =================================================================
   constructor(props) {
     super(props);
     this.state = {
@@ -98,7 +103,7 @@ class RentailHomeDetail extends Component {
       .catch((error) => {
         toast.error(
           (error && error.message) ||
-            "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
+          "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
         );
       });
   };
@@ -148,7 +153,7 @@ class RentailHomeDetail extends Component {
         .catch((error) => {
           toast.error(
             (error && error.message) ||
-              "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
+            "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
           );
         });
     } else {
@@ -161,7 +166,7 @@ class RentailHomeDetail extends Component {
         .catch((error) => {
           toast.error(
             (error && error.message) ||
-              "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
+            "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
           );
         });
     }
@@ -200,7 +205,7 @@ class RentailHomeDetail extends Component {
       .catch((error) => {
         toast.error(
           (error && error.message) ||
-            "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
+          "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
         );
         this.setState({ requesting: false });
       });
@@ -228,7 +233,7 @@ class RentailHomeDetail extends Component {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
-        },
+        }
       );
 
       this.setState({
@@ -244,8 +249,10 @@ class RentailHomeDetail extends Component {
     }
   };
 
+  // =================================================================
+  // 🎨 GIAO DIỆN TƯƠNG TÁC CAO (CÓ HOVER & CHUYỂN HƯỚNG TRANG)
+  // =================================================================
   render() {
-    console.log("Dữ liệu Current User hiện tại:", this.props.currentUser);
     const {
       rooms,
       comments,
@@ -257,336 +264,376 @@ class RentailHomeDetail extends Component {
 
     return (
       <>
+        <style>{`
+          .text-emerald { color: #10B981 !important; }
+          .bg-emerald { background-color: #10B981 !important; color: white !important; }
+          .border-emerald { border-color: #10B981 !important; }
+          
+          /* Hiệu ứng Nút bấm & Form */
+          .input-modern { border-radius: 8px; border: 1px solid #dee2e6; transition: all 0.3s ease; }
+          .input-modern:focus { box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2) !important; border-color: #10B981 !important; transform: translateY(-1px); }
+          .btn-modern { transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+          .btn-modern:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3) !important; }
+          
+          /* Hiệu ứng Slider Ảnh */
+          .img-overlay-gradient { background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 100%); transition: opacity 0.3s ease; }
+          .swiper-slide img { transition: transform 0.6s ease; }
+          .swiper-slide:hover img { transform: scale(1.02); }
+          
+          /* Hiệu ứng Tiện ích & Thẻ người ở */
+          .amenity-card { transition: all 0.2s ease; cursor: default; }
+          .amenity-card:hover { background-color: #e6fcf0 !important; border-color: #10B981 !important; transform: scale(1.03); }
+          .resident-card { transition: all 0.3s ease; }
+          .resident-card:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(16, 185, 129, 0.15) !important; border-color: #10B981 !important; }
+          
+          /* Hiệu ứng Thẻ link Chủ trọ */
+          .agent-link-card { display: flex; align-items: center; text-decoration: none; padding: 10px; margin-left: -10px; border-radius: 12px; transition: all 0.3s ease; }
+          .agent-link-card img { transition: all 0.3s ease; }
+          .agent-link-card h6 { transition: color 0.3s ease; }
+          .agent-link-card:hover { background-color: #f8f9fa; }
+          .agent-link-card:hover img { transform: scale(1.1); box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2) !important; }
+          .agent-link-card:hover h6 { color: #10B981 !important; }
+
+          .sticky-form { position: sticky; top: 100px; z-index: 100; }
+        `}</style>
+
         <Header
           authenticated={this.props.authenticated}
           currentUser={this.props.currentUser}
           onLogout={this.props.onLogout}
         />
-        <main id="main" className="bg-light pb-5">
-          {/* HEADER CHI TIẾT */}
-          <section className="intro-single pt-5 mt-5 pb-4">
+
+        <main id="main" style={{ backgroundColor: "#F0FDF4", minHeight: "100vh" }} className="pt-5 mt-4 pb-5">
+          <section className="intro-single pt-5 pb-2">
             <div className="container mt-4">
               <div className="row align-items-center">
-                <div className="col-md-12 col-lg-8">
-                  <div className="title-single-box">
-                    <h1 className="title-single fw-bold mb-2">
-                      {rooms ? rooms.title : ""}
-                    </h1>
-                    <span className="color-text-a text-muted fs-5">
-                      <i className="bi bi-geo-alt-fill text-success me-2"></i>
-                      Khu vực: {rooms ? rooms.location?.cityName : ""}
-                    </span>
-                    <div className="mt-3 d-flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => this.handleSaveBlog(rooms?.id)}
-                        className={`btn ${
-                          this.state.isSaved
-                            ? "btn-success"
-                            : "btn-outline-success"
-                        } rounded-pill px-4 fw-bold shadow-sm`}
-                      >
-                        {this.state.isSaved ? (
-                          <>
-                            <i className="bi bi-bookmark-fill me-1"></i> Đã lưu
-                          </>
-                        ) : (
-                          <>
-                            <i className="bi bi-bookmark me-1"></i> Lưu phòng
-                          </>
-                        )}
-                      </button>
 
-                      {rooms && (rooms.currentOccupancy ?? 0) < (rooms.maxOccupancy ?? 1) ? (
-                        this.props.currentUser?.allocatedRoomId != null ? (
-                          // NẾU ĐÃ CÓ PHÒNG: Hiện nút xám thay vì trả về null
-                          <button
-                            type="button"
-                            className="btn btn-secondary rounded-pill px-4 fw-bold shadow-sm"
-                            disabled
-                          >
-                            <i className="bi bi-house-check-fill me-1"></i> Bạn đã có phòng
-                          </button>
-                        ) : this.state.requestSent || this.state.requesting ? (
-                          // NẾU ĐANG CHỜ DUYỆT YÊU CẦU
-                          <button
-                            type="button"
-                            className="btn btn-warning rounded-pill px-4 fw-bold shadow-sm text-white"
-                            disabled
-                          >
-                            <i className="bi bi-hourglass-split me-1"></i> Đang xử lý...
-                          </button>
-                        ) : (
-                          // NẾU ĐỦ ĐIỀU KIỆN ĐĂNG KÝ
-                          <button
-                            type="button"
-                            onClick={() => this.handleRequestRoom()}
-                            className="btn btn-primary rounded-pill px-4 fw-bold shadow-sm"
-                          >
-                            <i className="bi bi-person-plus-fill me-1"></i> Đăng ký ở (
-                            {rooms.currentOccupancy ?? 0}/{rooms.maxOccupancy ?? 0})
-                          </button>
-                        )
-                      ) : (
-                        // NẾU PHÒNG ĐÃ ĐẦY
-                        <button
-                          type="button"
-                          className="btn btn-secondary rounded-pill px-4 fw-bold shadow-sm"
-                          disabled
-                        >
-                          <i className="bi bi-slash-circle me-1"></i> Phòng đã đầy (
-                          {rooms?.currentOccupancy ?? "?"}/{rooms?.maxOccupancy ?? "?"})
-                        </button>
-                      )}
-                    </div>
+                <div className="col-md-12 col-lg-6">
+                  <div className="title-single-box">
+                    <h1 className="title-single fw-bold text-dark" style={{ fontSize: "2.2rem" }}>{rooms?.title}</h1>
+                    <span className="text-muted fw-semibold mt-2 d-block">
+                      Thông tin đầy đủ về không gian sống của bạn.
+                    </span>
                   </div>
                 </div>
-                <div className="col-md-12 col-lg-4">
-                  <nav
-                    aria-label="breadcrumb"
-                    className="breadcrumb-box d-flex justify-content-lg-end"
-                  >
+
+                <div className="col-md-12 col-lg-6 d-flex justify-content-lg-end mt-4 mt-lg-0">
+                  <nav aria-label="breadcrumb" className="breadcrumb-box bg-white px-4 py-2 rounded-pill shadow-sm border">
                     <ol className="breadcrumb mb-0">
                       <li className="breadcrumb-item">
-                        <a href="/" className="text-decoration-none text-success">
-                          Trang chủ
-                        </a>
+                        <Link to="/" className="text-decoration-none fw-semibold" style={{ color: "#10B981" }}>Trang chủ</Link>
                       </li>
-                      <li className="breadcrumb-item active text-muted">
-                        {rooms ? rooms.category?.name : ""}
+                      <li className="breadcrumb-item active text-muted fw-semibold">
+                        <Link to="/rental-home" className="text-decoration-none text-success">Phòng Ký Túc Xá</Link>
+                      </li>
+                      <li className="breadcrumb-item active text-muted fw-semibold">
+                        Chi tiết
                       </li>
                     </ol>
                   </nav>
                 </div>
+
               </div>
             </div>
           </section>
+          <div className="container mt-4">
 
-          <section className="property-single nav-arrow-b">
-            <div className="container">
-              {/* SLIDER ẢNH (Bọc khung bo góc, giữ nguyên code ảnh bên trong) */}
-              <div className="row justify-content-center mb-5">
-                <div className="col-lg-10">
-                  <div className="rounded-4 overflow-hidden shadow-sm border border-2 border-white">
-                    <Swiper
-                      autoHeight={true}
-                      navigation={true}
-                      modules={[Navigation]}
-                      className="swiper-wrapper bg-dark"
-                    >
-                      {rooms &&
-                        rooms.roomMedia?.map((media, index) => (
-                          <SwiperSlide key={index} className="carousel-item-b swiper-slide">
-                            <img
-                              src={API_BASE_URL + "/document/" + media.files}
-                              alt=""
-                              style={{ width: "100%", height: "100%", objectFit: "contain", maxHeight: "600px" }}
-                            />
-                          </SwiperSlide>
-                        ))}
-                    </Swiper>
+            <div className="row g-4">
+              {/* ========================================== */}
+              {/* CỘT TRÁI (8/12) - THÔNG TIN CHÍNH           */}
+              {/* ========================================== */}
+              <div className="col-lg-8 d-flex flex-column gap-4">
+
+                {/* 1. KHỐI ẢNH */}
+                <div className="bg-white rounded-4 shadow-sm border-0 position-relative overflow-hidden">
+                  <Swiper
+                    autoHeight={true}
+                    navigation={true}
+                    modules={[Navigation]}
+                    className="swiper-wrapper"
+                    style={{ backgroundColor: "#f8f9fa", borderRadius: "16px" }}
+                  >
+                    {rooms && rooms.roomMedia && rooms.roomMedia.length > 0 ? (
+                      rooms.roomMedia.map((media, index) => (
+                        <SwiperSlide key={index} className="carousel-item-b swiper-slide" style={{overflow: 'hidden'}}>
+                          <img
+                            src={API_BASE_URL + "/document/" + media.files}
+                            alt=""
+                            style={{ width: "100%", height: "450px", objectFit: "cover", borderRadius: "16px" }}
+                          />
+                        </SwiperSlide>
+                      ))
+                    ) : (
+                      <SwiperSlide className="carousel-item-b swiper-slide" style={{overflow: 'hidden'}}>
+                        <img
+                          src="/assets/img/property-1.jpg"
+                          alt="Mặc định"
+                          className="card-img-top object-fit-cover"
+                          style={{ width: "100%", height: "450px", borderRadius: "16px" }}
+                        />
+                      </SwiperSlide>
+                    )}
+                  </Swiper>
+
+                  <div className="position-absolute bottom-0 start-0 w-100 p-4 img-overlay-gradient" style={{ zIndex: 10, borderBottomLeftRadius: "16px", borderBottomRightRadius: "16px", pointerEvents: "none" }}>
+                    <h2 className="text-white fw-bold mb-1" style={{ textShadow: "0 2px 4px rgba(0,0,0,0.5)" }}>
+                      {rooms ? rooms.title : "Đang tải..."}
+                    </h2>
+                    <span className="text-light fw-semibold" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>
+                      <i className="bi bi-geo-alt-fill text-emerald me-1"></i>
+                      {rooms ? rooms.location?.cityName : "Khu vực"}
+                    </span>
                   </div>
                 </div>
-              </div>
 
-              {/* NỘI DUNG CHI TIẾT */}
-              <div className="row g-4">
-                {/* CỘT TRÁI: THÔNG TIN CƠ BẢN & GIÁ */}
-                <div className="col-lg-5">
-                  <div className="bg-white p-4 rounded-4 shadow-sm border border-light h-100">
-                    {/* Hộp Giá */}
-                    <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
-                      <div className="bg-success text-white rounded-circle d-flex justify-content-center align-items-center me-3 shadow-sm" style={{ width: "60px", height: "60px", fontSize: "24px" }}>
-                        <i className="bi bi-cash"></i>
-                      </div>
-                      <div>
-                        <span className="text-muted small text-uppercase fw-bold">Giá thuê</span>
-                        <h3 className="mb-0 fw-bolder text-success">
-                          {rooms
-                            ? rooms.price?.toLocaleString("vi-VN", {
-                                style: "currency",
-                                currency: "VND",
-                              })
-                            : ""}
-                        </h3>
-                      </div>
+                {/* 2. KHỐI MÔ TẢ & THÔNG TIN CƠ BẢN */}
+                <div className="bg-white p-4 rounded-4 shadow-sm border-0">
+                  <div className="row g-4">
+                    <div className="col-md-7 border-end pe-md-4">
+                      <h5 className="fw-bold text-emerald mb-3">Mô tả chi tiết</h5>
+                      <p className="text-muted mb-0" style={{ whiteSpace: "pre-line", lineHeight: "1.8", fontSize: "0.95rem" }}>
+                        {rooms ? rooms.description : "Đang cập nhật mô tả..."}
+                      </p>
                     </div>
-
-                    <h4 className="fw-bold mb-3 fs-5">Thông tin chi tiết</h4>
-                    <ul className="list-unstyled mb-0">
-                      <li className="d-flex justify-content-between py-2 border-bottom">
-                        <span className="text-muted"><i className="bi bi-geo-alt text-success me-2"></i> Địa chỉ</span>
-                        <strong className="text-end" style={{ maxWidth: "60%" }}>{rooms && rooms?.address}</strong>
-                      </li>
-                      <li className="d-flex justify-content-between py-2 border-bottom">
-                        <span className="text-muted"><i className="bi bi-tag text-success me-2"></i> Loại phòng</span>
-                        <strong>{rooms && rooms.category?.name}</strong>
-                      </li>
-                      <li className="d-flex justify-content-between py-2 border-bottom">
-                        <span className="text-muted"><i className="bi bi-info-circle text-success me-2"></i> Trạng thái</span>
-                        <span
-                          className={`badge rounded-pill ${
-                            rooms?.status === "AVAILABLE"
-                              ? "bg-success"
-                              : rooms?.status === "PARTIALLY_FILLED"
-                                ? "bg-warning"
-                                : rooms?.status === "FULL"
-                                  ? "bg-danger"
-                                  : rooms?.status === "MAINTENANCE"
-                                    ? "bg-secondary"
-                                    : rooms?.status === "ROOM_RENT"
-                                      ? "bg-success"
-                                      : "bg-danger"
-                          }`}
-                        >
-                          {rooms?.status === "AVAILABLE" && "Trống (Khả dụng)"}
-                          {rooms?.status === "PARTIALLY_FILLED" && "Còn chỗ"}
-                          {rooms?.status === "FULL" && "Đã đủ người"}
-                          {rooms?.status === "MAINTENANCE" && "Đang bảo trì"}
-                          {rooms?.status === "ROOM_RENT" && "Khả dụng"}
-                          {rooms?.status === "HIRED" && "Đã đủ người"}
-                          {rooms?.status === "CHECKED_OUT" && "Đã trả phòng"}
-                        </span>
-                      </li>
-                      <li className="d-flex justify-content-between py-2 border-bottom">
-                        <span className="text-muted"><i className="bi bi-people text-success me-2"></i> Số người tối đa</span>
-                        <strong>{rooms?.maxOccupancy} người</strong>
-                      </li>
-                      <li className="d-flex justify-content-between py-2 border-bottom">
-                        <span className="text-muted"><i className="bi bi-layers text-success me-2"></i> Tầng</span>
-                        <strong>Tầng {rooms?.floor}</strong>
-                      </li>
-                      <li className="d-flex justify-content-between py-2 border-bottom">
-                        <span className="text-muted"><i className="bi bi-wifi text-success me-2"></i> Tiền mạng</span>
-                        <strong>{rooms?.internetCost?.toLocaleString("vi-VN")} đ/tháng</strong>
-                      </li>
-                      
-                      {/* Hiển thị tiện ích (Assets) */}
-                      {rooms && rooms.assets?.length > 0 && (
-                        <div className="mt-4">
-                          <h5 className="fw-bold fs-6 mb-3 text-uppercase text-muted">Tiện ích đi kèm</h5>
-                          {rooms.assets.map((item, index) => (
-                            <li key={index} className="d-flex justify-content-between py-1">
-                              <span className="text-muted"><i className="bi bi-check2-circle text-primary me-2"></i> {item?.name}</span>
-                              <strong>{item.number}</strong>
-                            </li>
-                          ))}
-                        </div>
-                      )}
-                    </ul>
+                    <div className="col-md-5 ps-md-4">
+                      <h5 className="fw-bold text-dark mb-3">Thông tin cơ bản</h5>
+                      <ul className="list-unstyled mb-0 d-flex flex-column gap-3">
+                        <li className="d-flex justify-content-between align-items-start text-muted small">
+                          <span className="text-nowrap me-3"><i className="bi bi-geo-alt-fill me-2 opacity-75"></i>Địa chỉ</span>
+                          <strong className="text-dark text-end">{rooms && rooms?.address}</strong>
+                        </li>
+                        <li className="d-flex justify-content-between text-muted small">
+                          <span><i className="bi bi-tags-fill me-2 opacity-75"></i>Loại phòng</span>
+                          <strong className="text-dark">{rooms && rooms.category?.name}</strong>
+                        </li>
+                        <li className="d-flex justify-content-between align-items-center text-muted small">
+                          <span><i className="bi bi-info-circle-fill me-2 opacity-75"></i>Trạng thái</span>
+                          <span
+                            className={`badge rounded-pill fw-semibold ${rooms?.status === "AVAILABLE" || rooms?.status === "ROOM_RENT"
+                                ? "bg-emerald"
+                                : rooms?.status === "PARTIALLY_FILLED"
+                                  ? "bg-warning text-dark"
+                                  : rooms?.status === "FULL" || rooms?.status === "HIRED"
+                                    ? "bg-danger"
+                                    : "bg-secondary"
+                              }`}
+                          >
+                            {rooms?.status === "AVAILABLE" && "Trống"}
+                            {rooms?.status === "PARTIALLY_FILLED" && "Còn chỗ"}
+                            {rooms?.status === "FULL" && "Đã đủ người"}
+                            {rooms?.status === "MAINTENANCE" && "Bảo trì"}
+                            {rooms?.status === "ROOM_RENT" && "Khả dụng"}
+                            {rooms?.status === "HIRED" && "Đã đủ người"}
+                            {rooms?.status === "CHECKED_OUT" && "Đã trả phòng"}
+                          </span>
+                        </li>
+                        <li className="d-flex justify-content-between text-muted small">
+                          <span><i className="bi bi-people-fill me-2 opacity-75"></i>Sức chứa</span>
+                          <strong className="text-dark">{rooms?.maxOccupancy} người</strong>
+                        </li>
+                        <li className="d-flex justify-content-between text-muted small">
+                          <span><i className="bi bi-layers-fill me-2 opacity-75"></i>Tầng</span>
+                          <strong className="text-dark">Tầng {rooms?.floor}</strong>
+                        </li>
+                        <li className="d-flex justify-content-between text-muted small">
+                          <span><i className="bi bi-wifi me-2 opacity-75"></i>Tiền mạng</span>
+                          <strong className="text-dark">{rooms?.internetCost?.toLocaleString("vi-VN")} đ/tháng</strong>
+                        </li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
 
-                {/* CỘT PHẢI: MÔ TẢ & NGƯỜI ĐANG Ở */}
-                <div className="col-lg-7">
-                  {/* Bảng Mô Tả */}
-                  <div className="bg-white p-4 rounded-4 shadow-sm border border-light mb-4">
-                    <h4 className="fw-bold mb-3 fs-5"><i className="bi bi-card-text text-success me-2"></i> Mô tả chi tiết</h4>
-                    <p className="description text-muted mb-0" style={{ whiteSpace: "pre-line", lineHeight: "1.8" }}>
-                      {rooms ? rooms.description : "Đang cập nhật mô tả..."}
-                    </p>
-                  </div>
-
-                  {/* Danh sách người đang ở */}
-                  <div className="bg-white p-4 rounded-4 shadow-sm border border-light">
-                    <h4 className="fw-bold mb-4 fs-5">
-                      <i className="bi bi-person-lines-fill text-success me-2"></i> Người đang ở 
-                      <span className="badge bg-light text-dark border ms-2">
-                        {rooms?.currentOccupancy ?? 0} / {rooms?.maxOccupancy ?? 0}
-                      </span>
-                    </h4>
-                    
+                {/* 3. KHỐI TIỆN NGHI CÓ SẴN (Thêm hover vào thẻ) */}
+                <div className="bg-white p-4 rounded-4 shadow-sm border-0">
+                  <h5 className="fw-bold text-emerald mb-3">Tiện nghi có sẵn</h5>
+                  {rooms && rooms.assets?.length > 0 ? (
                     <div className="row g-3">
-                      {rooms?.residents && rooms.residents.length > 0 ? (
-                        rooms.residents.map((resident, index) => (
-                          <div key={resident.id || index} className="col-md-6">
-                            <div className="d-flex align-items-center p-3 border rounded-4 bg-light shadow-sm">
-                              <img
-                                src={resident?.imageUrl || "/assets/img/agent-1.jpg"}
-                                alt={resident.name}
-                                className="rounded-circle shadow-sm border border-2 border-white"
-                                style={{ width: "55px", height: "55px", objectFit: "cover", flexShrink: 0 }}
-                              />
-                              <div className="ms-3 overflow-hidden">
-                                <div className="fw-bold text-dark text-truncate" style={{ fontSize: "15px" }}>
-                                  {resident.name}
-                                </div>
-                                {resident.phone && (
-                                  <div className="text-muted mt-1" style={{ fontSize: "13px" }}>
-                                    <i className="bi bi-telephone-fill me-1"></i> {resident.phone}
-                                  </div>
-                                )}
+                      {rooms.assets.map((item, index) => (
+                        <div key={index} className="col-md-4 col-6">
+                          <div className="amenity-card d-flex align-items-center text-muted bg-light p-2 rounded-3 border">
+                            <i className="bi bi-check-circle-fill text-emerald me-2"></i>
+                            <span className="small fw-semibold text-truncate">{item?.name} <span className="text-dark ms-1">({item.number})</span></span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted small mb-0 font-italic">Phòng trống chưa có nội thất.</p>
+                  )}
+                </div>
+
+                {/* 4. KHỐI NGƯỜI ĐANG Ở (Thêm hover vào thẻ người ở) */}
+                <div className="bg-white p-4 rounded-4 shadow-sm border-0">
+                  <h5 className="fw-bold mb-4 fs-5 text-dark d-flex align-items-center">
+                    <i className="bi bi-person-lines-fill text-emerald me-2"></i> Người đang ở
+                    <span className="badge bg-light text-dark border ms-3 rounded-pill fw-semibold">
+                      {rooms?.currentOccupancy ?? 0} / {rooms?.maxOccupancy ?? 0}
+                    </span>
+                  </h5>
+
+                  <div className="row g-3">
+                    {rooms?.residents && rooms.residents.length > 0 ? (
+                      rooms.residents.map((resident, index) => (
+                        <div key={resident.id || index} className="col-md-6">
+                          <div className="resident-card d-flex align-items-center p-3 border rounded-4 bg-light shadow-sm">
+                            <img
+                              src={resident?.imageUrl || "/assets/img/agent-1.jpg"}
+                              alt={resident.name}
+                              className="rounded-circle shadow-sm border border-2 border-white"
+                              style={{ width: "55px", height: "55px", objectFit: "cover", flexShrink: 0 }}
+                            />
+                            <div className="ms-3 overflow-hidden">
+                              <div className="fw-bold text-dark text-truncate" style={{ fontSize: "15px" }}>
+                                {resident.name}
                               </div>
+                              {resident.phone && (
+                                <div className="text-muted mt-1 fw-semibold" style={{ fontSize: "12px" }}>
+                                  <i className="bi bi-telephone-fill text-emerald me-1"></i> {resident.phone}
+                                </div>
+                              )}
                             </div>
                           </div>
-                        ))
-                      ) : (
-                        <div className="col-12 text-center py-4 bg-light rounded-4 border border-dashed">
-                          <p className="text-muted mb-0 font-italic">
-                            <i className="bi bi-info-circle me-1"></i> Chưa có ai đang ở trong phòng này.
-                          </p>
                         </div>
-                      )}
-                    </div>
+                      ))
+                    ) : (
+                      <div className="col-12 text-center py-4 bg-light rounded-4 border border-dashed">
+                        <div className="text-muted mb-0 font-italic">
+                          Chưa có ai đang ở trong phòng này.
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
+
+                {/* 5. KHỐI ĐÁNH GIÁ TỪ NGƯỜI DÙNG */}
+                <div className="bg-white p-4 rounded-4 shadow-sm border-0">
+                  <h5 className="fw-bold mb-4 fs-5 text-dark"><i className="bi bi-chat-left-text-fill text-emerald me-2"></i> Đánh giá từ người dùng</h5>
+
+                  <Comment.Group size="large" className="w-100 mb-4">
+                    {comments && comments.length > 0 ? (
+                      comments.map((comment, index) => (
+                        <Comment key={index} className="bg-light p-3 rounded-4 mb-3 border-0 shadow-sm resident-card">
+                          {comment.user?.imageUrl ? (
+                            <Comment.Avatar src={comment.user.imageUrl} className="rounded-circle shadow-sm" />
+                          ) : (
+                            <Comment.Avatar src="/assets/img/agent-1.jpg" className="rounded-circle shadow-sm" />
+                          )}
+                          <Comment.Content className="ms-3">
+                            <div className="d-flex justify-content-between align-items-center mb-1">
+                              <Comment.Author as="span" className="fw-bold fs-6 text-dark">{comment.user?.name}</Comment.Author>
+                              <Comment.Metadata className="text-muted small fw-semibold">
+                                <i className="bi bi-clock me-1"></i> {comment.createdAt}
+                              </Comment.Metadata>
+                            </div>
+                            <Stack spacing={1} className="mb-2">
+                              <Rating name="read-only" value={comment.rateRating} precision={0.5} readOnly size="small" />
+                            </Stack>
+                            <Comment.Text className="text-muted mt-2" style={{ lineHeight: "1.6" }}>{comment.content}</Comment.Text>
+                          </Comment.Content>
+                        </Comment>
+                      ))
+                    ) : (
+                      <div className="text-muted font-italic py-4 text-center bg-light rounded-4 border-dashed">
+                        Chưa có đánh giá nào cho phòng này.
+                      </div>
+                    )}
+                  </Comment.Group>
+
+                  {/* Form viết đánh giá */}
+                  {this.props.authenticated ? (
+                    <div className="border-top pt-4 mt-4">
+                      {showCommentForm ? (
+                        <Form onSubmit={this.handleSubmitComment} className="bg-light p-4 rounded-4 border-0 shadow-sm">
+                          <h6 className="fw-bold mb-3 text-dark">Viết đánh giá của bạn</h6>
+                          <Stack spacing={1} className="mb-3">
+                            <Rating
+                              name="half-rating"
+                              value={rate}
+                              precision={0.5}
+                              size="large"
+                              onChange={(event, newValue) => this.setState({ rate: newValue })}
+                            />
+                          </Stack>
+                          <Form.TextArea
+                            placeholder="Chia sẻ trải nghiệm chân thực của bạn tại đây..."
+                            value={content}
+                            onChange={(event) => this.setState({ content: event.target.value })}
+                            style={{ borderRadius: '12px', border: '1px solid #dee2e6', backgroundColor: '#ffffff', padding: "15px", transition: "all 0.3s" }}
+                            className="input-modern"
+                          />
+                          <div className="mt-3 d-flex gap-2">
+                            <Button type="submit" className="ui button rounded-pill px-4 text-white btn-modern" style={{ backgroundColor: "#10B981" }} disabled={submittingComment}>
+                              {submittingComment ? "Đang gửi..." : "Gửi đánh giá"}
+                            </Button>
+                            <Button type="button" className="ui button basic rounded-pill btn-modern" onClick={() => this.setState({ showCommentForm: false })}>
+                              Hủy
+                            </Button>
+                          </div>
+                        </Form>
+                      ) : (
+                        <button onClick={() => this.setState({ showCommentForm: true })} className="btn btn-outline-success rounded-pill px-4 py-2 fw-bold border-emerald text-emerald btn-modern">
+                          <i className="bi bi-pencil-square me-2"></i> Viết đánh giá
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="alert bg-light rounded-4 border shadow-sm d-inline-block px-4 py-3">
+                      <i className="bi bi-exclamation-triangle-fill text-warning fs-5 me-2 align-middle"></i>
+                      <span className="text-muted fw-semibold align-middle">Vui lòng <strong className="text-emerald">đăng nhập</strong> để bình luận.</span>
+                    </div>
+                  )}
+                </div>
+
               </div>
 
-              {/* NGƯỜI CHO THUÊ & FORM LIÊN HỆ */}
-              <div className="row mt-5 g-4">
-                <div className="col-md-6">
-                  <div className="bg-white p-4 rounded-4 shadow-sm border border-light h-100">
-                    <h4 className="fw-bold mb-4 fs-5"><i className="bi bi-shield-check text-success me-2"></i> Thông tin quản lý</h4>
-                    <div className="d-flex flex-column align-items-center text-center mb-4">
-                      <img
-                        src={rooms?.user?.imageUrl || "/assets/img/agent-4.jpg"}
-                        alt="Quản lý"
-                        className="rounded-circle shadow border border-3 border-success mb-3"
-                        style={{ width: "120px", height: "120px", objectFit: "cover" }}
-                      />
-                      <h4 className="fw-bold mb-1">{rooms ? rooms.user?.name : "Đang tải..."}</h4>
-                      <span className="badge bg-success rounded-pill px-3 py-2">Chủ nhà / Quản lý KTX</span>
-                    </div>
-                    
-                    <ul className="list-unstyled bg-light p-3 rounded-4 border">
-                      <li className="d-flex align-items-center mb-3">
-                        <i className="bi bi-telephone-fill text-success fs-5 me-3"></i>
-                        <span className="text-muted fw-bold">{rooms ? rooms.user?.phone : "N/A"}</span>
-                      </li>
-                      <li className="d-flex align-items-center mb-3">
-                        <i className="bi bi-envelope-fill text-success fs-5 me-3"></i>
-                        <span className="text-muted">{rooms ? rooms.user?.email : "N/A"}</span>
-                      </li>
-                      <li className="d-flex align-items-start">
-                        <i className="bi bi-geo-alt-fill text-success fs-5 me-3 mt-1"></i>
-                        <span className="text-muted">{rooms ? rooms.user?.address : "N/A"}</span>
-                      </li>
-                    </ul>
 
-                    <div className="d-flex justify-content-center gap-3 mt-4">
-                      {rooms && rooms.user?.facebookUrl && (
-                        <a href={rooms.user.facebookUrl} className="btn btn-outline-primary rounded-circle" target="_blank" rel="noreferrer" style={{ width: '45px', height: '45px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <i className="bi bi-facebook fs-5"></i>
-                        </a>
-                      )}
-                      {rooms && rooms.user?.zaloUrl && (
-                        <a href={rooms.user.zaloUrl} className="btn btn-outline-info rounded-circle" target="_blank" rel="noreferrer" style={{ width: '45px', height: '45px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <i className="bi bi-chat-dots-fill fs-5"></i>
-                        </a>
+              {/* ========================================== */}
+              {/* CỘT PHẢI (4/12) - THÔNG TIN GIÁ & LIÊN HỆ */}
+              {/* ========================================== */}
+              <div className="col-lg-4">
+                <div className="sticky-form d-flex flex-column gap-4">
+
+                  {/* THẺ GIÁ & FORM LIÊN HỆ */}
+                  <div className="bg-white p-4 rounded-4 shadow-sm border-0 text-center">
+                    <p className="text-muted small fw-bold text-uppercase mb-1">Giá thuê</p>
+                    <h2 className="fw-bolder mb-0" style={{ color: "#2563EB", fontSize: "2rem" }}>
+                      {rooms ? rooms.price?.toLocaleString("vi-VN") : "0"} đ
+                    </h2>
+                    <p className="text-muted small mb-4">/ tháng</p>
+
+                    <div className="d-flex gap-2 mb-4 border-bottom pb-4">
+                      <button
+                        type="button"
+                        onClick={() => this.handleSaveBlog(rooms?.id)}
+                        className={`btn btn-modern rounded-pill fw-semibold flex-grow-1 shadow-sm ${this.state.isSaved ? "bg-emerald" : "btn-light border"}`}
+                      >
+                        {this.state.isSaved ? <><i className="bi bi-bookmark-fill me-1"></i> Đã lưu</> : <><i className="bi bi-bookmark me-1"></i> Lưu phòng</>}
+                      </button>
+
+                      {rooms && (rooms.currentOccupancy ?? 0) < (rooms.maxOccupancy ?? 1) ? (
+                        this.props.currentUser?.allocatedRoomId != null ? (
+                          <button className="btn btn-secondary rounded-pill fw-semibold flex-grow-1 shadow-sm" disabled>Bạn đã có phòng.</button>
+                        ) : this.state.requestSent || this.state.requesting ? (
+                          <button className="btn btn-warning rounded-pill fw-semibold flex-grow-1 shadow-sm text-white" disabled>Đang xử lý...</button>
+                        ) : (
+                          <button onClick={() => this.handleRequestRoom()} className="btn btn-modern bg-emerald rounded-pill fw-semibold flex-grow-1 shadow-sm border-0 text-white">
+                            Đăng ký ở
+                          </button>
+                        )
+                      ) : (
+                        <button className="btn btn-secondary rounded-pill fw-semibold flex-grow-1 shadow-sm" disabled>Đã đầy</button>
                       )}
                     </div>
-                  </div>
-                </div>
 
-                <div className="col-md-6">
-                  <div className="bg-white p-4 rounded-4 shadow-sm border border-light h-100">
-                    <h4 className="fw-bold mb-4 fs-5"><i className="bi bi-envelope-paper text-success me-2"></i> Gửi tin nhắn</h4>
-                    <form onSubmit={this.handleSubmit}>
+                    <h5 className="fw-bold text-dark text-start mb-3">Gửi tin nhắn trực tiếp</h5>
+                    <form onSubmit={this.handleSubmit} className="text-start">
                       <div className="mb-3">
+                        <label className="form-label text-muted small fw-semibold mb-1">Họ và tên *</label>
                         <input
                           type="text"
-                          className="form-control form-control-lg bg-light border-0"
-                          placeholder="Tên của bạn *"
+                          className="form-control form-control-lg bg-light input-modern"
+                          placeholder="Tên của bạn"
                           name="nameOfRentaler"
                           value={this.state.nameOfRentaler}
                           onChange={this.handleInputChange}
@@ -594,10 +641,11 @@ class RentailHomeDetail extends Component {
                         />
                       </div>
                       <div className="mb-3">
+                        <label className="form-label text-muted small fw-semibold mb-1">Email liên hệ *</label>
                         <input
                           type="email"
-                          className="form-control form-control-lg bg-light border-0"
-                          placeholder="Email của bạn *"
+                          className="form-control form-control-lg bg-light input-modern"
+                          placeholder="Email của bạn"
                           name="title"
                           value={this.state.title}
                           onChange={this.handleInputChange}
@@ -605,109 +653,64 @@ class RentailHomeDetail extends Component {
                         />
                       </div>
                       <div className="mb-4">
+                        <label className="form-label text-muted small fw-semibold mb-1">Lời nhắn *</label>
                         <textarea
-                          className="form-control bg-light border-0"
-                          placeholder="Nội dung lời nhắn *"
+                          className="form-control bg-light input-modern p-3"
+                          placeholder="Ví dụ: Tôi muốn hỏi thêm về chi phí điện nước..."
                           name="description"
                           value={this.state.description}
                           onChange={this.handleInputChange}
-                          rows="5"
+                          rows="4"
                           required
                         ></textarea>
                       </div>
-                      <button type="submit" className="btn btn-success btn-lg w-100 rounded-pill fw-bold shadow-sm">
-                        <i className="bi bi-send-fill me-2"></i> Gửi ngay
+                      <button type="submit" className="btn btn-modern bg-emerald btn-lg w-100 rounded-3 fw-bold shadow-sm text-white" style={{ border: "none" }}>
+                        <i className="bi bi-send-fill me-2"></i> Gửi yêu cầu
                       </button>
                     </form>
                   </div>
-                </div>
-              </div>
 
-              {/* BÌNH LUẬN VÀ ĐÁNH GIÁ */}
-              <div className="row mt-5">
-                <div className="col-12">
-                  <div className="bg-white p-4 rounded-4 shadow-sm border border-light">
-                    <h4 className="fw-bold mb-4 fs-5"><i className="bi bi-chat-left-text text-success me-2"></i> Bình luận và đánh giá</h4>
+                  {/* THÔNG TIN CHỦ TRỌ (Gắn Link ẩn kèm Hover) */}
+                  <div className="bg-white p-4 rounded-4 shadow-sm border-0">
+                    <h5 className="fw-bold mb-3 fs-6 text-dark d-flex align-items-center border-bottom pb-3">
+                      <i className="bi bi-shield-check text-emerald fs-4 me-2"></i> Thông tin quản lý
+                    </h5>
                     
-                    <div className="row">
-                      <div className="col-lg-8">
-                        {/* Danh sách bình luận */}
-                        <Comment.Group size="large" className="w-100 mb-4">
-                          {comments && comments.length > 0 ? (
-                            comments.map((comment, index) => (
-                              <Comment key={index} className="bg-light p-3 rounded-4 mb-3 border">
-                                {comment.user?.imageUrl ? (
-                                  <Comment.Avatar src={comment.user.imageUrl} className="rounded-circle shadow-sm" />
-                                ) : (
-                                  <Comment.Avatar src="/assets/img/agent-1.jpg" className="rounded-circle shadow-sm" />
-                                )}
-                                <Comment.Content className="ms-2">
-                                  <div className="d-flex justify-content-between align-items-center mb-1">
-                                    <Comment.Author as="span" className="fw-bold fs-6">{comment.user?.name}</Comment.Author>
-                                    <Comment.Metadata className="text-muted small">
-                                      {comment.createdAt}
-                                    </Comment.Metadata>
-                                  </div>
-                                  <Stack spacing={1} className="mb-2">
-                                    <Rating name="read-only" value={comment.rateRating} precision={0.5} readOnly size="small" />
-                                  </Stack>
-                                  <Comment.Text className="text-dark mt-2">{comment.content}</Comment.Text>
-                                </Comment.Content>
-                              </Comment>
-                            ))
-                          ) : (
-                            <p className="text-muted font-italic py-3">Chưa có đánh giá nào cho phòng này.</p>
-                          )}
-                        </Comment.Group>
+                    {/* KHỐI LINK CLICK ĐƯỢC CHUYỂN SANG TRANG NGƯỜI CHO THUÊ */}
+                    <Link to={`/angent-single/${rooms?.user?.id || ''}`} className="agent-link-card mb-3">
+                      <img
+                        src={rooms?.user?.imageUrl || "/assets/img/agent-4.jpg"}
+                        alt="Quản lý"
+                        className="rounded-circle shadow-sm border border-2 border-emerald me-3 flex-shrink-0"
+                        style={{ width: "60px", height: "60px", objectFit: "cover" }}
+                      />
+                      <div>
+                        <h6 className="fw-bold mb-1 text-dark">{rooms ? rooms.user?.name : "Đang tải..."}</h6>
+                        <span className="badge bg-light text-emerald border rounded-pill">Chủ nhà / Quản lý</span>
+                      </div>
+                    </Link>
 
-                        {/* Form Bình Luận */}
-                        {this.props.authenticated ? (
-                          <div className="border-top pt-4">
-                            {showCommentForm ? (
-                              <Form onSubmit={this.handleSubmitComment} className="bg-light p-4 rounded-4 border">
-                                <h5 className="fw-bold mb-3">Đánh giá chất lượng phòng</h5>
-                                <Stack spacing={1} className="mb-3">
-                                  <Rating
-                                    name="half-rating"
-                                    value={rate}
-                                    precision={0.5}
-                                    size="large"
-                                    onChange={(event, newValue) => this.setState({ rate: newValue })}
-                                  />
-                                </Stack>
-                                <Form.TextArea
-                                  placeholder="Vui lòng để lại trải nghiệm chân thực của bạn tại đây..."
-                                  value={content}
-                                  onChange={(event) => this.setState({ content: event.target.value })}
-                                  style={{ borderRadius: '12px', border: '1px solid #dee2e6' }}
-                                />
-                                <div className="mt-3 d-flex gap-2">
-                                  <Button type="submit" className="ui button green rounded-pill px-4" disabled={submittingComment}>
-                                    {submittingComment ? "Đang gửi..." : "Gửi đánh giá"}
-                                  </Button>
-                                  <Button type="button" className="ui button basic rounded-pill" onClick={() => this.setState({ showCommentForm: false })}>
-                                    Hủy
-                                  </Button>
-                                </div>
-                              </Form>
-                            ) : (
-                              <button onClick={() => this.setState({ showCommentForm: true })} className="btn btn-outline-success rounded-pill px-4 fw-bold">
-                                <i className="bi bi-pencil-square me-2"></i> Viết đánh giá
-                              </button>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="alert alert-warning rounded-4 border-0 shadow-sm d-inline-block">
-                            <i className="bi bi-exclamation-triangle-fill me-2"></i> Vui lòng <strong>đăng nhập</strong> để bình luận và đánh giá.
-                          </div>
-                        )}
+                    <div className="d-flex flex-column gap-2 small px-2">
+                      <div className="d-flex align-items-center">
+                        <i className="bi bi-telephone-fill text-muted me-3 w-15px"></i>
+                        <span className="text-dark fw-bold">{rooms ? rooms.user?.phone : "N/A"}</span>
+                      </div>
+                      <div className="d-flex align-items-center">
+                        <i className="bi bi-envelope-fill text-muted me-3 w-15px"></i>
+                        <span className="text-muted text-truncate">{rooms ? rooms.user?.email : "N/A"}</span>
+                      </div>
+                      <div className="d-flex align-items-start mt-1">
+                        <i className="bi bi-geo-alt-fill text-muted me-3 mt-1 w-15px"></i>
+                        <span className="text-muted">{rooms ? rooms.user?.address : "N/A"}</span>
                       </div>
                     </div>
                   </div>
+
                 </div>
               </div>
+
             </div>
-          </section>
+          </div>
         </main>
         <Footer />
       </>

@@ -30,7 +30,7 @@ const RentalHome = (props) => {
       .catch((error) => {
         toast.error(
           (error && error.message) ||
-            "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
+          "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
         );
       });
   };
@@ -83,25 +83,42 @@ const RentalHome = (props) => {
         onLogout={props.onLogout}
       />
       <main id="main" style={{ backgroundColor: "#F0FDF4", minHeight: "100vh" }}>
-        
+
         <section className="intro-single pt-5 mt-5 pb-2">
           <div className="container mt-4">
             <div className="row align-items-center">
+              
+              {/* Cột trái: Tiêu đề */}
               <div className="col-md-12 col-lg-6">
                 <div className="title-single-box">
                   <h1 className="title-single fw-bold text-dark" style={{ fontSize: "2.2rem" }}>Tìm phòng trọ</h1>
                   <span className="text-muted fw-semibold mt-2 d-block">
-                    Lựa chọn không gian sống phù hợp với bạn
+                    Lựa chọn không gian sống phù hợp với bạn.
                   </span>
                 </div>
               </div>
+
+              {/* Cột phải: Breadcrumb (Được bọc trong col-lg-6 và căn phải) */}
+              <div className="col-md-12 col-lg-6 d-flex justify-content-lg-end mt-4 mt-lg-0">
+                <nav aria-label="breadcrumb" className="breadcrumb-box bg-white px-4 py-2 rounded-pill shadow-sm border">
+                  <ol className="breadcrumb mb-0">
+                    <li className="breadcrumb-item">
+                      <Link to="/" className="text-decoration-none fw-semibold" style={{ color: "#10B981" }}>Trang chủ</Link>
+                    </li>
+                    <li className="breadcrumb-item active text-muted fw-semibold" aria-current="page">
+                      Phòng Ký Túc Xá
+                    </li>
+                  </ol>
+                </nav>
+              </div>
+
             </div>
           </div>
         </section>
 
         <section className="property-grid grid py-4">
           <div className="container">
-            
+
             <div className="row mb-5 justify-content-center">
               <div className="col-lg-12">
                 <div className="bg-white p-4 rounded-4 shadow-sm border-0 filter-box">
@@ -154,23 +171,23 @@ const RentalHome = (props) => {
                 <div className="col-md-6 col-lg-4" key={room.id}>
                   <div className="card h-100 border-0 shadow-sm p-2 d-flex flex-column modern-card" style={{ borderRadius: "20px" }}>
                     <div className="position-relative img-hover-zoom">
-                      <span 
+                      <span
                         className="badge position-absolute top-0 start-0 m-3 px-3 py-2 rounded-3 shadow-sm"
                         style={{ backgroundColor: "#10B981", fontSize: "0.85rem", zIndex: 2 }}
                       >
-                         {room.status === "AVAILABLE" && "Mới"}
-                         {room.status === "PARTIALLY_FILLED" && "Còn chỗ"}
-                         {room.status === "FULL" && "Đã đầy"}
-                         {room.status === "MAINTENANCE" && "Bảo trì"}
-                         {["ROOM_RENT", "AVAILABLE", "PARTIALLY_FILLED", "CHECKED_OUT"].includes(room.status) === false &&
+                        {room.status === "AVAILABLE" && "Mới"}
+                        {room.status === "PARTIALLY_FILLED" && "Còn chỗ"}
+                        {room.status === "FULL" && "Đã đầy"}
+                        {room.status === "MAINTENANCE" && "Bảo trì"}
+                        {["ROOM_RENT", "AVAILABLE", "PARTIALLY_FILLED", "CHECKED_OUT"].includes(room.status) === false &&
                           room.status !== "FULL" && room.status !== "MAINTENANCE" && "Đã thuê"}
                       </span>
-                      
-                      <span 
+
+                      <span
                         className="badge bg-white text-dark position-absolute top-0 end-0 m-3 px-3 py-2 rounded-3 shadow-sm fw-bold"
                         style={{ zIndex: 2 }}
                       >
-                         <i className="bi bi-bounding-box me-1 text-muted"></i> 30 m²
+                        <i className="bi bi-bounding-box me-1 text-muted"></i> 30 m²
                       </span>
 
                       {room.roomMedia && room.roomMedia[0] ? (
@@ -189,46 +206,46 @@ const RentalHome = (props) => {
                         />
                       )}
                     </div>
-                    
+
                     <div className="card-body px-3 pt-3 pb-2 d-flex flex-column flex-grow-1">
-                      <h4 className="card-title fw-bold text-dark mb-1 text-truncate" title={room.title} style={{transition: "color 0.3s"}} onMouseOver={(e) => e.target.style.color = '#10B981'} onMouseOut={(e) => e.target.style.color = '#212529'}>
+                      <h4 className="card-title fw-bold text-dark mb-1 text-truncate" title={room.title} style={{ transition: "color 0.3s" }} onMouseOver={(e) => e.target.style.color = '#10B981'} onMouseOut={(e) => e.target.style.color = '#212529'}>
                         {room.title}
                       </h4>
-                      
+
                       <h5 className="fw-bold mb-2" style={{ color: "#10B981" }}>
                         {room.price.toLocaleString("vi-VN")} VNĐ <span className="text-muted fw-normal small">/ tháng</span>
                       </h5>
-                      
+
                       <p className="card-text text-muted small mb-3 text-truncate">
                         {room.description || "Thoáng mát, có ban công phơi đồ, vệ sinh khép kín..."}
                       </p>
 
                       <div className="d-flex flex-wrap gap-2 mb-4 mt-auto">
                         <div className="d-flex align-items-center bg-light border rounded-pill px-3 py-2 text-dark tag-hover" title="Vị trí">
-                          <i className="bi bi-geo-alt-fill me-2" style={{ color: "#10B981", fontSize: "1.1rem" }}></i> 
+                          <i className="bi bi-geo-alt-fill me-2" style={{ color: "#10B981", fontSize: "1.1rem" }}></i>
                           <span className="fw-bold" style={{ fontSize: "0.95rem" }}>{room.location?.cityName || "Chưa có"}</span>
                         </div>
-                        
+
                         <div className="d-flex align-items-center bg-light border rounded-pill px-3 py-2 text-dark tag-hover" title="Loại phòng">
-                          <i className="bi bi-tags-fill me-2" style={{ color: "#10B981", fontSize: "1.1rem" }}></i> 
+                          <i className="bi bi-tags-fill me-2" style={{ color: "#10B981", fontSize: "1.1rem" }}></i>
                           <span className="fw-bold" style={{ fontSize: "0.95rem" }}>{room.category?.name || "Chưa có"}</span>
                         </div>
-                        
+
                         <div className="d-flex align-items-center bg-light border rounded-pill px-3 py-2 text-dark tag-hover" title="Chủ trọ">
-                          <i className="bi bi-person-circle me-2" style={{ color: "#10B981", fontSize: "1.1rem" }}></i> 
+                          <i className="bi bi-person-circle me-2" style={{ color: "#10B981", fontSize: "1.1rem" }}></i>
                           <span className="fw-bold" style={{ fontSize: "0.95rem" }}>{room.user?.name || "Chưa có tên"}</span>
                         </div>
                       </div>
 
                       <div className="d-flex justify-content-between align-items-center border-top pt-3 mt-auto">
                         <div className="d-flex gap-3 text-muted icon-hover">
-                           <i className="bi bi-wifi fs-5" title="Có Wifi"></i>
-                           <i className="bi bi-snow fs-5" title="Có Điều hòa"></i>
-                           <i className="bi bi-shield-check fs-5" title="An ninh tốt"></i>
+                          <i className="bi bi-wifi fs-5" title="Có Wifi"></i>
+                          <i className="bi bi-snow fs-5" title="Có Điều hòa"></i>
+                          <i className="bi bi-shield-check fs-5" title="An ninh tốt"></i>
                         </div>
-                        <Link 
-                          to={`/rental-home/${room.id}`} 
-                          className="btn btn-success px-4 py-2 rounded-pill fw-semibold shadow-sm btn-modern" 
+                        <Link
+                          to={`/rental-home/${room.id}`}
+                          className="btn btn-success px-4 py-2 rounded-pill fw-semibold shadow-sm btn-modern"
                           style={{ backgroundColor: "#10B981", border: "none" }}
                         >
                           Xem chi tiết <i className="bi bi-arrow-right ms-1"></i>

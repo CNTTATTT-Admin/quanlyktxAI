@@ -40,7 +40,7 @@ const Contact = (props) => {
       .catch((error) => {
         toast.error(
           (error && error.message) ||
-            "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
+          "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
         );
       });
   };
@@ -52,34 +52,36 @@ const Contact = (props) => {
         currentUser={props.currentUser}
         onLogout={props.onLogout}
       />
-      <main id="main" className="bg-light pb-5">
+      <main id="main" style={{ backgroundColor: "#F0FDF4", minHeight: "100vh" }} className="pt-5 mt-4 pb-5">
         {/* HEADER & BREADCRUMB */}
-        <section className="intro-single pt-5 mt-5 pb-4">
+        <section className="intro-single pt-5 pb-2">
           <div className="container mt-4">
             <div className="row align-items-center">
-              <div className="col-md-12 col-lg-8">
+
+              {/* Cột trái: Tiêu đề chi tiết */}
+              <div className="col-md-12 col-lg-6">
                 <div className="title-single-box">
-                  <h1 className="title-single fw-bold mb-2">Liên hệ chúng tôi</h1>
-                  <span className="color-text-a text-muted fs-6">
+                  <h1 className="title-single fw-bold text-dark" style={{ fontSize: "2.2rem" }}>Liên hệ chúng tôi</h1>
+                  <span className="text-muted fw-semibold mt-2 d-block">
                     Nếu bạn có thắc mắc hãy liên hệ tới chúng tôi. Chúng tôi sẽ sớm trả lời cho bạn.
                   </span>
                 </div>
               </div>
-              <div className="col-md-12 col-lg-4">
-                <nav
-                  aria-label="breadcrumb"
-                  className="breadcrumb-box d-flex justify-content-lg-end"
-                >
+
+              {/* Cột phải: Breadcrumb nằm ngang */}
+              <div className="col-md-12 col-lg-6 d-flex justify-content-lg-end mt-4 mt-lg-0">
+                <nav aria-label="breadcrumb" className="breadcrumb-box bg-white px-4 py-2 rounded-pill shadow-sm border">
                   <ol className="breadcrumb mb-0">
                     <li className="breadcrumb-item">
-                      <Link to="/" className="text-decoration-none text-success">Trang chủ</Link>
+                      <Link to="/" className="text-decoration-none fw-semibold" style={{ color: "#10B981" }}>Trang chủ</Link>
                     </li>
-                    <li className="breadcrumb-item active text-muted" aria-current="page">
+                    <li className="breadcrumb-item active text-muted fw-semibold">
                       Liên hệ
                     </li>
                   </ol>
                 </nav>
               </div>
+
             </div>
           </div>
         </section>
@@ -187,7 +189,7 @@ const Contact = (props) => {
                       <span className="text-muted small">Ban quản lý sẵn sàng hỗ trợ bạn</span>
                     </div>
                   </div>
-                  
+
                   <div className="contact-info mt-4">
                     <ul className="list-unstyled">
                       <li className="d-flex mb-4">

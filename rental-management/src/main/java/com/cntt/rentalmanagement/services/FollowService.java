@@ -11,4 +11,6 @@ public interface FollowService {
     Page<FollowResponse> getAllFollowOfCustomer(Integer pageNo, Integer pageSize);
 
     Boolean isFollowing(Long rentalerId);
+
+    MessageResponse unfollowAgents(Long rentalerId);
 }
