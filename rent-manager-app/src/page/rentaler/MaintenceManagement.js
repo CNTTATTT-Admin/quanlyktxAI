@@ -146,7 +146,7 @@ function MaintenceManagement(props) {
         .modern-table-wrapper { background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); overflow: hidden; border: 1px solid #f1f5f9; }
         .eco-table { margin-bottom: 0; }
         .eco-table thead { background-color: #F8FAFC; border-bottom: 2px solid #E2E8F0; }
-        .eco-table th { color: #64748B; font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; padding: 16px 20px; border: none; }
+        .eco-table th { color: #1E293B; font-weight: 800; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; padding: 16px 20px; border: none; }
         .eco-table td { padding: 16px 20px; vertical-align: middle; border-bottom: 1px solid #F1F5F9; color: #475569; font-size: 0.95rem; }
         .eco-table tbody tr { transition: all 0.2s ease; }
         .eco-table tbody tr:hover { background-color: #F0FDF4; }
@@ -219,7 +219,7 @@ function MaintenceManagement(props) {
                     <tr key={item.id}>
                       <td className="ps-4">
                         <div className="fw-bold text-dark">{item.room.title}</div>
-                        <div className="text-muted small"><i className="bi bi-geo-alt-fill text-emerald me-1"></i>{item.room.address}</div>
+                        <div className="text-muted small"><i className="bi bi-geo-alt-fill text-emerald me-1"></i>{item.room.location.cityName}</div>
                       </td>
 
                       <td>
