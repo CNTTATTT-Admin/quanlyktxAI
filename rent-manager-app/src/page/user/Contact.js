@@ -126,7 +126,7 @@ const Contact = (props) => {
                           value={nameOfRentaler}
                           onChange={handleRentalerChange}
                           className="form-control form-control-lg bg-light border-0"
-                          placeholder="Nhập họ tên..."
+                          placeholder="Nhập họ tên người nhận..."
                           required
                         />
                       </div>
@@ -138,7 +138,7 @@ const Contact = (props) => {
                           value={toEmail}
                           onChange={handleToEmailChange}
                           className="form-control form-control-lg bg-light border-0"
-                          placeholder="Nhập email..."
+                          placeholder="Nhập email người nhận..."
                           required
                         />
                       </div>

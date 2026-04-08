@@ -1,4 +1,4 @@
-import { Navigate, useParams } from "react-router-dom";
+import { Navigate, useParams, useNavigate } from "react-router-dom";
 import Nav from "./Nav";
 import SidebarNav from "./SidebarNav";
 import { useEffect, useState } from "react";
@@ -11,6 +11,7 @@ import PlacesWithStandaloneSearchBox from "./map/StandaloneSearchBox";
 function EditRoom(props) {
   const { authenticated, role, currentUser, location, onLogout } = props;
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [roomData, setRoomData] = useState({
     title: "",
@@ -59,15 +60,6 @@ function EditRoom(props) {
       ),
     }));
   };
-  // const handleAssetChange = (event, index) => {
-  //     const { name, value } = event.target;
-  //     setRoomData(prevState => ({
-  //         ...prevState,
-  //         assets: (prevState.assets || []).map((asset, i) =>
-  //             i === index ? { ...asset, [name]: value } : asset
-  //         )
-  //     }));
-  // };
 
   const handleFileChange = (event) => {
     const files = Array.from(event.target.files);
@@ -81,6 +73,8 @@ function EditRoom(props) {
   };
 
   useEffect(() => {
+    if (!id || id === "undefined") return;
+
     getRoom(id)
       .then((response) => {
         const room = response;
@@ -182,7 +176,7 @@ function EditRoom(props) {
 
     console.log(roomData);
   };
-  console.log("roomData", roomData);
+
   if (!authenticated) {
     return (
       <Navigate
@@ -195,314 +189,284 @@ function EditRoom(props) {
   }
   return (
     <>
-      <div className="container-fluid p-0">
-        <div className="card">
-          <div className="card-header">
-            <h5 className="card-title">Cập nhật thông tin phòng KTX</h5>
-          </div>
-          <div className="card-body">
-            <form onSubmit={handleSubmit}>
-              <div className="row">
-                <div className="mb-3 col-md-6">
-                  <label className="form-label" htmlFor="title">
-                    Tiều đề phòng
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="title"
-                    name="title"
-                    value={roomData.title}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="mb-3 col-md-6">
-                  <label className="form-label" htmlFor="description">
-                    Mô tả
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="description"
-                    name="description"
-                    value={roomData.description}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
-              <div className="mb-3">
-                <label className="form-label" htmlFor="price">
-                  Giá
-                </label>
-                <input
-                  type="number"
-                  className="form-control"
-                  id="price"
-                  name="price"
-                  value={roomData.price}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="row">
-                <div className="mb-3 col-md-6">
-                  <label className="form-label" htmlFor="maxOccupancy">
-                    Số người tối đa
-                  </label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    id="maxOccupancy"
-                    name="maxOccupancy"
-                    value={roomData.maxOccupancy}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="mb-3 col-md-6">
-                  <label className="form-label" htmlFor="floor">
-                    Tầng
-                  </label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    id="floor"
-                    name="floor"
-                    value={roomData.floor}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
-              {/* <div className="mb-3">
-                                    <label className="form-label" htmlFor="waterCost">Tiền nước</label>
-                                    <input type="number" className="form-control" id="waterCost" name="waterCost" value={roomData.waterCost} onChange={handleInputChange} />
-                                </div> */}
-              {/* <div className="mb-3">
-                                    <label className="form-label" htmlFor="publicElectricCost">Tiền điện chung</label>
-                                    <input type="number" className="form-control" id="publicElectricCost" name="publicElectricCost" value={roomData.publicElectricCost} onChange={handleInputChange} />
-                                </div> */}
-              <div className="mb-3">
-                <label className="form-label" htmlFor="internetCost">
-                  Tiền mạng
-                </label>
-                <input
-                  type="number"
-                  className="form-control"
-                  id="internetCost"
-                  name="internetCost"
-                  value={roomData.internetCost}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="row">
-                <div className="mb-3 col-md-6">
-                  <label className="form-label" htmlFor="locationId">
-                    Khu vực
-                  </label>
-                  <select
-                    className="form-select"
-                    id="locationId"
-                    name="locationId"
-                    value={roomData.locationId}
-                    onChange={handleInputChange}
-                  >
-                    <option value={0}>Chọn...</option>
-                    <option value={1}>Hà Nội</option>
-                    <option value={2}>Tp.Hồ Chí Minh</option>
-                    <option value={3}>Đà Nẵng</option>
-                    <option value={4}>Hải Phòng</option>
-                    <option value={5}>Cần Thơ</option>
-                  </select>
-                </div>
-                <div className="mb-3 col-md-6">
-                  <label className="form-label" htmlFor="address">
-                    Địa Chỉ
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="address"
-                    name="address"
-                    value={roomData.address}
-                    onChange={handleInputChange}
-                  />
-                  {/* <PlacesWithStandaloneSearchBox latLong={setLatLong} /> */}
-                </div>
+      <style>{`
+        .eco-bg { background-color: #F8FAFC; min-height: 100vh; font-family: 'Inter', sans-serif; }
+        .text-emerald { color: #10B981 !important; }
+        .bg-emerald { background-color: #10B981 !important; color: white !important; }
+        .border-emerald { border-color: #10B981 !important; }
+        
+        .modern-card { border-radius: 16px; border: none; box-shadow: 0 4px 20px rgba(0,0,0,0.03); background: #fff; }
+        
+        .modern-input { border-radius: 8px; border: 1px solid #E2E8F0; padding: 10px 15px; font-size: 0.95rem; background-color: #F8FAFC; transition: all 0.3s; }
+        .modern-input:focus { border-color: #10B981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); background-color: #fff; outline: none; }
+        .modern-label { font-weight: 600; color: #475569; font-size: 0.85rem; margin-bottom: 6px; }
 
-                <div className="mb-3 col-md-6">
-                  <label className="form-label" htmlFor="categoryId">
-                    Danh mục
-                  </label>
-                  <select
-                    className="form-select"
-                    id="categoryId"
-                    name="categoryId"
-                    value={roomData.categoryId}
-                    onChange={handleInputChange}
-                  >
-                    <option value={0}>Chọn...</option>
-                    <option value={1}>Kí túc xá nam</option>
-                    <option value={2}>Kí túc xá nữ</option>
-                    <option value={3}>Kí túc xá dịch vụ</option>
-                  </select>
-                </div>
-              </div>
-              <div className="row">
-                <div className="mb-3">
-                  <label className="form-label">Tải Hình Ảnh</label>
-                  <br />
-                  {roomData.roomMedia?.map((media, index) => (
-                    <img
-                      key={index}
-                      src={API_BASE_URL + "/document/" + media.files}
-                      style={{
-                        width: "10%",
-                        marginLeft: "10px",
-                        border: "1px solid #ddd",
-                        borderRadius: "4px",
-                      }}
-                    />
-                  ))}
-                  {selectedImages.length > 0 && (
-                    <div className="mt-2">
-                      <label className="form-label">
-                        Hình ảnh mới chọn:
-                      </label>
-                      <br />
-                      {selectedImages.map((image, index) => (
-                        <img
-                          key={index}
-                          src={image}
-                          style={{
-                            width: "10%",
-                            marginLeft: "10px",
-                            border: "1px solid #007bff",
-                            borderRadius: "4px",
-                          }}
-                        />
-                      ))}
-                    </div>
-                  )}
-                  <input
-                    className="form-control"
-                    type="file"
-                    name="files"
-                    multiple
-                    onChange={handleFileChange}
-                  />
-                </div>
-              </div>
-              <div className="card-header">
-                <h5 className="card-title">Tài sản của phòng</h5>
-              </div>
-              <br />
-              {roomData.assets?.map((asset, index) => (
-                <div key={index} className="row">
-                  <div className="mb-3 col-md-6">
-                    <label
-                      className="form-label"
-                      htmlFor={`assetName${index}`}
-                    >
-                      Tên tài sản {index + 1}
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id={`assetName${index}`}
-                      name="name"
-                      value={asset.name}
-                      onChange={(event) => handleAssetChange(event, index)}
-                    />
-                  </div>
-                  <div className="mb-3 col-md-4">
-                    <label
-                      className="form-label"
-                      htmlFor={`assetNumber${index}`}
-                    >
-                      Số lượng
-                    </label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      id={`assetNumber${index}`}
-                      name="number"
-                      value={asset.number}
-                      onChange={(event) => handleAssetChange(event, index)}
-                    />
-                  </div>
-                  <div className="col-md-2">
-                    <button
-                      type="button"
-                      style={{ marginTop: "34px" }}
-                      className="btn btn-danger"
-                      onClick={() => handleRemoveAsset(index)}
-                    >
-                      Xóa tài sản
-                    </button>
-                  </div>
-                </div>
-              ))}
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() =>
-                  setRoomData((prevState) => ({
-                    ...prevState,
-                    assets: [...prevState.assets, { name: "", number: "" }],
-                  }))
-                }
-              >
-                Thêm tài sản
-              </button>
-              <br />
-              <br />
-              <button type="submit" className="btn btn-primary">
-                Submit
-              </button>
-            </form>
+        .btn-modern { border-radius: 8px; font-weight: 600; padding: 10px 20px; transition: all 0.3s; }
+        .btn-modern:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
+        
+        .image-preview-wrapper { width: 100%; height: 250px; border-radius: 12px; overflow: hidden; margin-bottom: 20px; border: 1px solid #E2E8F0; }
+        .image-preview-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
+        .gallery-item { width: 100%; height: 100px; border-radius: 8px; object-fit: cover; border: 1px solid #E2E8F0; }
+        
+        .resident-item { border: 1px solid #E2E8F0; border-radius: 12px; padding: 12px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; transition: all 0.3s; }
+        .resident-item:hover { border-color: #10B981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.05); }
 
-            <br />
-            <hr />
-            <div className="card-header">
-              <h5 className="card-title">Danh sách người đang ở</h5>
+        .asset-row { background: #fff; border: 1px solid #E2E8F0; border-radius: 8px; padding: 10px; margin-bottom: 10px; display: flex; gap: 10px; align-items: center; }
+      `}</style>
+
+      <div className="container-fluid p-4 eco-bg">
+        
+        {/* TIÊU ĐỀ VÀ NÚT QUAY LẠI */}
+        <div className="row mb-4">
+          <div className="col-12 d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+              <h2 className="fw-bolder text-dark mb-1">Chỉnh sửa phòng</h2>
+              <p className="text-muted mb-0">Cập nhật thông tin chi tiết của phòng KTX.</p>
             </div>
-            <div className="table-responsive">
-              <table className="table table-hover my-0">
-                <thead>
-                  <tr>
-                    <th>Tên</th>
-                    <th>Email</th>
-                    <th>Số điện thoại</th>
-                    <th>Hành động</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {roomData.residents?.map((resident, index) => (
-                    <tr key={index}>
-                      <td>{resident.name}</td>
-                      <td>{resident.email}</td>
-                      <td>{resident.phone}</td>
-                      <td>
-                        <button
-                          className="btn btn-danger btn-sm"
-                          onClick={() => handleRemoveResident(resident.id)}
-                        >
-                          Xóa khỏi phòng
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                  {(!roomData.residents ||
-                    roomData.residents.length === 0) && (
-                    <tr>
-                      <td colSpan="4" className="text-center">
-                        Chưa có người ở
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+            <button 
+              className="btn btn-light bg-white border shadow-sm btn-modern text-secondary" 
+              onClick={() => navigate('/rentaler/room-management')}
+            >
+              <i className="bi bi-arrow-left me-2"></i> Quay lại
+            </button>
           </div>
         </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className="row g-4">
+            
+            <div className="col-12 col-xl-5 col-lg-6 d-flex flex-column gap-4">
+              
+              {/* KHỐI 1: THÔNG TIN PHÒNG */}
+              <div className="modern-card p-4">
+                <h5 className="fw-bold text-emerald mb-4 d-flex align-items-center">
+                  <i className="bi bi-info-circle-fill me-2 fs-5"></i> Thông tin phòng
+                </h5>
+
+                {/* Ảnh cover (Lấy ảnh đầu tiên hoặc ảnh mặc định) */}
+                <div className="image-preview-wrapper">
+                  <img 
+                    src={roomData.roomMedia && roomData.roomMedia[0] ? `${API_BASE_URL}/document/${roomData.roomMedia[0].files}` : "/assets/img/property-1.jpg"} 
+                    alt="Cover" 
+                  />
+                </div>
+
+                <div className="row g-3">
+                  {/* Giá thuê & Sức chứa */}
+                  <div className="col-md-6">
+                    <label className="modern-label">Giá thuê (VNĐ)</label>
+                    <input type="number" className="modern-input w-100" name="price" value={roomData.price} onChange={handleInputChange} />
+                  </div>
+                  <div className="col-md-6">
+                    <label className="modern-label">Sức chứa (Người)</label>
+                    <input type="number" className="modern-input w-100" name="maxOccupancy" value={roomData.maxOccupancy} onChange={handleInputChange} />
+                  </div>
+
+                  {/* Tầng & Tiền mạng */}
+                  <div className="col-md-6">
+                    <label className="modern-label">Tầng</label>
+                    <input type="number" className="modern-input w-100" name="floor" value={roomData.floor} onChange={handleInputChange} />
+                  </div>
+                  <div className="col-md-6">
+                    <label className="modern-label">Dịch vụ / Tiền mạng</label>
+                    <input type="number" className="modern-input w-100" name="internetCost" value={roomData.internetCost} onChange={handleInputChange} />
+                  </div>
+
+                  {/* Tiêu đề & Địa chỉ */}
+                  <div className="col-12">
+                    <label className="modern-label">Tiêu đề phòng</label>
+                    <input type="text" className="modern-input w-100" name="title" value={roomData.title} onChange={handleInputChange} />
+                  </div>
+                  <div className="col-12">
+                    <label className="modern-label">Địa chỉ chi tiết</label>
+                    <input type="text" className="modern-input w-100" name="address" value={roomData.address} onChange={handleInputChange} />
+                  </div>
+
+                  {/* Khu vực & Danh mục */}
+                  <div className="col-md-6">
+                    <label className="modern-label">Khu vực</label>
+                    <select className="modern-input w-100" name="locationId" value={roomData.locationId} onChange={handleInputChange}>
+                      <option value={0}>Chọn...</option>
+                      <option value={1}>Hà Nội</option>
+                      <option value={2}>Tp.Hồ Chí Minh</option>
+                      <option value={3}>Đà Nẵng</option>
+                      <option value={4}>Hải Phòng</option>
+                      <option value={5}>Cần Thơ</option>
+                    </select>
+                  </div>
+                  <div className="col-md-6">
+                    <label className="modern-label">Danh mục</label>
+                    <select className="modern-input w-100" name="categoryId" value={roomData.categoryId} onChange={handleInputChange}>
+                      <option value={0}>Chọn...</option>
+                      <option value={1}>Kí túc xá nam</option>
+                      <option value={2}>Kí túc xá nữ</option>
+                      <option value={3}>Kí túc xá dịch vụ</option>
+                    </select>
+                  </div>
+
+                  {/* Mô tả */}
+                  <div className="col-12">
+                    <label className="modern-label">Mô tả thêm</label>
+                    <textarea className="modern-input w-100" name="description" value={roomData.description} onChange={handleInputChange} rows="3"></textarea>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-top">
+                  <button type="submit" className="btn bg-emerald text-white btn-modern w-100 fs-5">
+                    Lưu thay đổi
+                  </button>
+                </div>
+              </div>
+
+              {/* KHỐI 2: THÀNH VIÊN */}
+              <div className="modern-card p-4">
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                  <h5 className="fw-bold text-emerald mb-0 d-flex align-items-center">
+                    <i className="bi bi-people-fill me-2 fs-5"></i> Thành viên
+                  </h5>
+                  <span className="badge bg-danger rounded-pill px-3 py-2 fs-6">
+                    {roomData.residents?.length || 0}/{roomData.maxOccupancy}
+                  </span>
+                </div>
+
+                <div className="resident-list">
+                  {roomData.residents?.map((resident, index) => (
+                    <div key={index} className="resident-item bg-white">
+                      <div className="d-flex align-items-center">
+                        <div className="bg-light rounded-circle d-flex align-items-center justify-content-center border" style={{ width: '40px', height: '40px' }}>
+                          <i className="bi bi-person text-emerald fs-4"></i>
+                        </div>
+                        <div className="ms-3">
+                          <h6 className="fw-bold text-dark mb-0">{resident.name}</h6>
+                          <small className="text-muted">{resident.phone}</small>
+                        </div>
+                      </div>
+                      <div className="d-flex gap-2">
+                        <button type="button" className="btn btn-light btn-sm text-danger border shadow-sm" onClick={() => handleRemoveResident(resident.id)} title="Xóa khỏi phòng">
+                          <i className="bi bi-trash3"></i>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {(!roomData.residents || roomData.residents.length === 0) && (
+                    <div className="text-center py-4 bg-light rounded-3 border border-dashed">
+                      <span className="text-muted font-italic">Chưa có người ở</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+            </div>
+
+            <div className="col-12 col-xl-7 col-lg-6 d-flex flex-column gap-4">
+              
+              {/* KHỐI 3: THƯ VIỆN ẢNH */}
+              <div className="modern-card p-4">
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                  <h5 className="fw-bold text-emerald mb-0 d-flex align-items-center">
+                    <i className="bi bi-images me-2 fs-5"></i> Thư viện ảnh
+                  </h5>
+                  
+                  {/* Nút thêm ảnh (ẩn input file mặc định) */}
+                  <div>
+                    <label htmlFor="file-upload" className="btn btn-outline-success btn-sm rounded-pill fw-bold px-3 py-2 cursor-pointer mb-0">
+                      <i className="bi bi-plus-lg me-1"></i> Chỉnh sửa ảnh
+                    </label>
+                    <input id="file-upload" type="file" name="files" multiple onChange={handleFileChange} className="d-none" />
+                  </div>
+                </div>
+
+                <div className="gallery-grid">
+                  {/* Ảnh cũ từ Database */}
+                  {roomData.roomMedia?.map((media, index) => (
+                    <img key={`old-${index}`} src={`${API_BASE_URL}/document/${media.files}`} alt="room" className="gallery-item shadow-sm" />
+                  ))}
+                  
+                  {/* Ảnh mới vừa chọn */}
+                  {selectedImages.map((image, index) => (
+                    <div key={`new-${index}`} className="position-relative">
+                      <img src={image} alt="new-upload" className="gallery-item shadow-sm border-success" />
+                      <span className="badge bg-success position-absolute top-0 end-0 m-1" style={{fontSize: "0.6rem"}}>Mới</span>
+                    </div>
+                  ))}
+                </div>
+
+                {(!roomData.roomMedia?.length && selectedImages.length === 0) && (
+                  <div className="text-center py-5 bg-light rounded-3 border border-dashed">
+                    <span className="text-muted font-italic">Chưa có ảnh nào</span>
+                  </div>
+                )}
+              </div>
+
+              {/* KHỐI 4: NỘI THẤT & ĐỒ DÙNG */}
+              <div className="modern-card p-4 flex-grow-1">
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                  <h5 className="fw-bold text-emerald mb-0 d-flex align-items-center">
+                    <i className="bi bi-box-seam-fill me-2 fs-5"></i> Nội thất & Đồ dùng
+                  </h5>
+                  <button 
+                    type="button" 
+                    className="btn btn-outline-success btn-sm rounded-pill fw-bold px-3 py-2"
+                    onClick={() => setRoomData((prevState) => ({ ...prevState, assets: [...prevState.assets, { name: "", number: "" }] }))}
+                  >
+                    <i className="bi bi-plus-lg me-1"></i> Thêm đồ dùng
+                  </button>
+                </div>
+
+                <div className="assets-container">
+                  {/* Tiêu đề cột */}
+                  <div className="row px-2 mb-2 d-none d-md-flex">
+                    <div className="col-md-7"><small className="text-muted fw-bold text-uppercase">Tên đồ dùng</small></div>
+                    <div className="col-md-3"><small className="text-muted fw-bold text-uppercase">Số lượng</small></div>
+                    <div className="col-md-2 text-center"><small className="text-muted fw-bold text-uppercase">Xóa</small></div>
+                  </div>
+
+                  {/* Danh sách nhập liệu */}
+                  {roomData.assets?.map((asset, index) => (
+                    <div key={index} className="asset-row shadow-sm">
+                      <div className="col-12 col-md-7">
+                        <input
+                          type="text"
+                          className="modern-input w-100 py-2 border-0 bg-light"
+                          placeholder="Nhập tên nội thất..."
+                          name="name"
+                          value={asset.name}
+                          onChange={(event) => handleAssetChange(event, index)}
+                        />
+                      </div>
+                      <div className="col-8 col-md-3 mt-2 mt-md-0">
+                        <input
+                          type="number"
+                          className="modern-input w-100 py-2 border-0 bg-light text-center"
+                          placeholder="SL"
+                          name="number"
+                          value={asset.number}
+                          onChange={(event) => handleAssetChange(event, index)}
+                        />
+                      </div>
+                      <div className="col-4 col-md-2 mt-2 mt-md-0 text-end text-md-center">
+                        <button type="button" className="btn btn-light text-danger border shadow-sm px-3 py-2 rounded-3" onClick={() => handleRemoveAsset(index)}>
+                          <i className="bi bi-trash3-fill"></i>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {(!roomData.assets || roomData.assets.length === 0) && (
+                    <div className="text-center py-4 bg-light rounded-3 border border-dashed mt-3">
+                      <span className="text-muted font-italic">Chưa có nội thất nào được kê khai</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </form>
       </div>
     </>
   );

@@ -76,6 +76,10 @@ public class ContractServiceImpl extends BaseService implements ContractService 
 
         contractRepository.save(contract);
 
+        if (room.getResidents() != null && !room.getResidents().contains(student)) {
+            room.getResidents().add(student);
+        }
+
         // Update room status:
         int currentOccupancy = room.getResidents() != null ? room.getResidents().size() : 0;
         if (room.isFull()) {

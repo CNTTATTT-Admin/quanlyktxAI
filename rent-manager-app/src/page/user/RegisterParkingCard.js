@@ -160,9 +160,6 @@ function RegisterParkingCard(props) {
         <div className="wrapper">
           <nav id="sidebar" className="sidebar js-sidebar">
             <div className="sidebar-content js-simplebar">
-              <span className="sidebar-brand">
-                <span className="align-middle">RENTALER PRO</span>
-              </span>
               <SidebarNav />
             </div>
           </nav>
