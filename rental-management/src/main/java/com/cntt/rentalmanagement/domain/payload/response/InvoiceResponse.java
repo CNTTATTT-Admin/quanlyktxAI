@@ -18,6 +18,7 @@ public class InvoiceResponse {
     private String transactionId;
     private LocalDateTime paidAt;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     private UserInfo user;
     private ParkingCardInfo parkingCard;

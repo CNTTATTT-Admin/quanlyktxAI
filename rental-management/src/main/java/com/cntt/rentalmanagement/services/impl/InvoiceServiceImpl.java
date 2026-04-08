@@ -175,6 +175,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .transactionId(invoice.getTransactionId())
                 .paidAt(invoice.getPaidAt())
                 .createdAt(invoice.getCreatedAt()) 
+                .updatedAt(invoice.getUpdatedAt())
                 .user(userInfo)
                 .parkingCard(cardInfo)
                 .build();

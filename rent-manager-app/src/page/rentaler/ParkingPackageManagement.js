@@ -9,6 +9,9 @@ const ParkingPackageManagement = (props) => {
     const { authenticated, location } = props;
     const history = useNavigate();
 
+    // ==========================================
+    // 🧠 LOGIC & STATE GIỮ NGUYÊN 100%
+    // ==========================================
     const [packages, setPackages] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(10);
@@ -77,7 +80,7 @@ const ParkingPackageManagement = (props) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         const apiCall = isEditMode ? updateParkingPackage(formData.id, formData) : createParkingPackage(formData);
-        
+
         apiCall
             .then(() => {
                 toast.success(isEditMode ? "Cập nhật gói cước thành công!" : "Thêm mới gói cước thành công!");
@@ -103,156 +106,264 @@ const ParkingPackageManagement = (props) => {
         return <Navigate to={{ pathname: "/login-rentaler", state: { from: location } }} />;
     }
 
+    // ==========================================
+    // 🎨 GIAO DIỆN MỚI (ECOHOME STYLE)
+    // ==========================================
     return (
         <>
-            <div className="container-fluid p-0">
-                <div className="card shadow-sm">
-                    <div className="card-header d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 className="card-title mb-0">Quản lý Gói cước Gửi xe</h5>
-                            <h6 className="card-subtitle text-muted mt-1">Thiết lập giá và thời hạn cho các loại xe.</h6>
-                        </div>
-                        <div>
-                            <button className="btn btn-outline-secondary me-2 shadow-sm" onClick={() => history("/rentaler/parking-card-management")}>
-                                &larr; Quay lại Thẻ xe
-                            </button>
-                            <button className="btn btn-primary shadow-sm" onClick={openCreateModal}>
-                                <FiPlus className="me-1" /> Thêm Gói mới
-                            </button>
+            <style>{`
+                .eco-bg { background-color: #F8FAFC; min-height: 100vh; font-family: 'Inter', sans-serif; }
+                .text-emerald { color: #10B981 !important; }
+                .bg-emerald { background-color: #10B981 !important; color: white !important; }
+                
+                .modern-input { border-radius: 8px; padding: 10px 15px; border: 1px solid #e2e8f0; transition: all 0.3s; background-color: #fff; font-size: 0.95rem; }
+                .modern-input:focus { outline: none; border-color: #10B981; box-shadow: 0 0 0 4px rgba(16,185,129,0.1); }
+                .modern-label { font-weight: 600; color: #475569; font-size: 0.85rem; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+                
+                .modern-input-search { border-radius: 50px; padding: 10px 20px; border: 1px solid #e2e8f0; transition: all 0.3s; background-color: #fff; font-size: 0.95rem; }
+                .modern-input-search:focus { outline: none; border-color: #10B981; box-shadow: 0 0 0 4px rgba(16,185,129,0.1); }
+
+                .btn-modern { transition: all 0.3s ease; border-radius: 50px; font-weight: 600; font-size: 0.9rem; padding: 8px 20px; }
+                .btn-modern:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
+                
+                .modern-table-wrapper { background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; overflow-x: auto; }
+                .eco-table { margin-bottom: 0; width: 100%; min-width: 900px; }
+                .eco-table thead { background-color: #F8FAFC; border-bottom: 2px solid #E2E8F0; }
+                .eco-table th { color: #1E293B; font-weight: 800; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; padding: 16px 20px; border: none; white-space: nowrap; vertical-align: middle; }
+                .eco-table td { padding: 16px 20px; vertical-align: middle; border-bottom: 1px solid #F1F5F9; color: #475569; font-size: 0.95rem; white-space: nowrap; }
+                .eco-table tbody tr { transition: all 0.2s ease; }
+                .eco-table tbody tr:hover { background-color: #F0FDF4; }
+
+                .btn-action-table { transition: all 0.2s; font-size: 0.85rem; padding: 6px 12px; border-radius: 8px; }
+                .btn-action-table:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+                
+                .modal-eco .modal-content { border-radius: 20px; border: none; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+                .modern-input:disabled, .modern-input[readonly] { background-color: #F1F5F9; color: #64748B; cursor: not-allowed; border-color: #E2E8F0; }
+            `}</style>
+
+            <div className="container-fluid p-4 eco-bg">
+
+                {/* Header */}
+                <div className="row mb-4 align-items-center">
+                    <div className="col-md-7 mb-3 mb-md-0">
+                        <h2 className="fw-bolder text-dark mb-1">Quản lý Gói cước Gửi xe</h2>
+                        <p className="text-muted mb-0">Thiết lập giá, thời hạn và trạng thái mở bán cho các loại xe.</p>
+                    </div>
+                    <div className="col-md-5 text-md-end d-flex justify-content-md-end flex-wrap gap-2">
+                        <button
+                            className="btn btn-light bg-white border text-secondary btn-modern shadow-sm"
+                            onClick={() => history("/rentaler/parking-card-management")}
+                        >
+                            <i className="bi bi-arrow-left me-2"></i> Quay lại Thẻ xe
+                        </button>
+                        <button
+                            className="btn bg-emerald text-white btn-modern shadow-sm"
+                            onClick={openCreateModal}
+                        >
+                            <FiPlus className="me-1 fs-5 mb-1" /> Thêm Gói mới
+                        </button>
+                    </div>
+                </div>
+
+                {/* Tìm kiếm */}
+                <div className="row mb-4">
+                    <div className="col-md-6 col-lg-5 col-xl-4">
+                        <div className="position-relative shadow-sm rounded-pill">
+                            <input
+                                type="search"
+                                className="form-control modern-input-search w-100 pe-5"
+                                placeholder="Tìm tên gói cước..."
+                                value={searchQuery}
+                                onChange={handleSearch}
+                            />
+                            <i className="bi bi-search position-absolute top-50 end-0 translate-middle-y me-4 text-muted" style={{ fontSize: "1.1rem" }}></i>
                         </div>
                     </div>
-                    
-                    <div className="card-body">
-                        <div className="row mb-3">
-                            <div className="col-sm-12 col-md-6"></div>
-                            <div className="col-sm-12 col-md-6 text-end">
-                                <label className="d-flex align-items-center justify-content-end">
-                                    <span className="me-2 text-muted fw-bold">Tìm kiếm:</span>
-                                    <input
-                                        type="search"
-                                        className="form-control form-control-sm w-auto shadow-sm"
-                                        value={searchQuery}
-                                        onChange={handleSearch}
-                                        placeholder="Tên gói cước..."
-                                    />
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div className="table-responsive">
-                            <table className="table table-striped table-hover align-middle">
-                                <thead className="table-light">
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Tên gói</th>
-                                        <th>Loại xe</th>
-                                        <th>Thời hạn</th>
-                                        <th>Giá tiền</th>
-                                        <th>Trạng thái</th>
-                                        <th className="text-center">Hành động</th>
+                </div>
+
+                {/* Bảng Dữ Liệu */}
+                <div className="modern-table-wrapper mb-4">
+                    <table className="table table-hover eco-table">
+                        <thead>
+                            <tr>
+                                <th className="ps-4">ID</th>
+                                <th>Tên gói cước</th>
+                                <th>Loại phương tiện</th>
+                                <th>Thời hạn</th>
+                                <th>Giá tiền</th>
+                                <th className="text-center">Trạng thái</th>
+                                <th className="text-center pe-4">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {packages.length === 0 ? (
+                                <tr>
+                                    <td colSpan="7" className="text-center py-5">
+                                        <div className="text-muted">
+                                            <i className="bi bi-tags fs-1 d-block mb-3 opacity-50" style={{ fontSize: "2.5rem" }}></i>
+                                            <span style={{ fontSize: "1rem" }}>Chưa có gói cước nào được tạo.</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : (
+                                packages.map((pkg) => (
+                                    <tr key={pkg.id}>
+                                        <td className="ps-4 text-muted fw-bold font-monospace">#{pkg.id}</td>
+                                        <td className="fw-bolder text-dark fs-6">{pkg.name}</td>
+                                        <td>
+                                            {pkg.vehicleType === "CAR"
+                                                ? <span className="badge bg-dark rounded-pill px-3 py-2 shadow-sm"><i className="bi bi-car-front-fill me-1"></i> Ô tô</span>
+                                                : <span className="badge bg-secondary rounded-pill px-3 py-2 shadow-sm"><i className="bi bi-bicycle me-1"></i> Xe máy</span>
+                                            }
+                                        </td>
+                                        <td className="fw-medium">
+                                            <i className="bi bi-calendar3 text-emerald me-2"></i>
+                                            <span className="fw-bold fs-6">{pkg.durationMonths}</span> tháng
+                                        </td>
+                                        <td className="text-danger fw-bolder fs-6">
+                                            {pkg.price?.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                                        </td>
+                                        <td className="text-center">
+                                            {pkg.status === "ACTIVE"
+                                                ? <span className="badge bg-success text-white rounded-pill px-3 py-2 shadow-sm"><i className="bi bi-check-circle-fill me-1"></i> Đang bán</span>
+                                                : <span className="badge bg-danger text-white rounded-pill px-3 py-2 shadow-sm"><i className="bi bi-x-circle-fill me-1"></i> Ngưng bán</span>}
+                                        </td>
+                                        <td className="text-center pe-4">
+                                            <div className="d-flex justify-content-center gap-2">
+                                                <button
+                                                    className="btn btn-outline-primary bg-white shadow-sm btn-action-table fw-semibold d-flex align-items-center"
+                                                    onClick={() => openEditModal(pkg)}
+                                                    title="Chỉnh sửa"
+                                                >
+                                                    <FiEdit className="me-1" /> Sửa
+                                                </button>
+                                                <button
+                                                    className={`btn shadow-sm btn-action-table fw-semibold d-flex align-items-center ${pkg.status === "ACTIVE" ? "btn-outline-danger bg-white" : "btn-success text-white"}`}
+                                                    onClick={() => toggleStatus(pkg)}
+                                                    title={pkg.status === "ACTIVE" ? "Ngưng bán" : "Mở bán lại"}
+                                                >
+                                                    {pkg.status === "ACTIVE" ? <FiToggleLeft className="me-1 fs-5" /> : <FiToggleRight className="me-1 fs-5" />}
+                                                    <span>{pkg.status === "ACTIVE" ? "Khóa" : "Mở bán"}</span>
+                                                </button>
+                                            </div>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    {packages.length === 0 ? (
-                                        <tr><td colSpan="7" className="text-center py-4 text-muted">Chưa có gói cước nào được tạo.</td></tr>
-                                    ) : (
-                                        packages.map((pkg) => (
-                                            <tr key={pkg.id}>
-                                                <td className="text-muted fw-bold">#{pkg.id}</td>
-                                                <td className="fw-bold text-primary">{pkg.name}</td>
-                                                <td>
-                                                    {pkg.vehicleType === "CAR" 
-                                                        ? <span className="badge bg-dark"><i className="fas fa-car"></i> Ô tô</span>
-                                                        : <span className="badge bg-secondary"><i className="fas fa-motorcycle"></i> Xe máy</span>
-                                                    }
-                                                </td>
-                                                <td><strong>{pkg.durationMonths}</strong> tháng</td>
-                                                <td className="text-danger fw-bold">
-                                                    {pkg.price?.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
-                                                </td>
-                                                <td>
-                                                    {pkg.status === "ACTIVE" 
-                                                        ? <span className="badge bg-success">Đang bán</span> 
-                                                        : <span className="badge bg-danger">Ngưng bán</span>}
-                                                </td>
-                                                <td className="text-center">
-                                                    <button 
-                                                        className="btn btn-sm btn-outline-primary me-2 shadow-sm" 
-                                                        onClick={() => openEditModal(pkg)}
-                                                        title="Chỉnh sửa"
-                                                    >
-                                                        <FiEdit /> Sửa
-                                                    </button>
-                                                    <button 
-                                                        className={`btn btn-sm shadow-sm ${pkg.status === "ACTIVE" ? "btn-outline-danger" : "btn-outline-success"}`}
-                                                        onClick={() => toggleStatus(pkg)}
-                                                        title={pkg.status === "ACTIVE" ? "Ngưng bán" : "Mở bán lại"}
-                                                    >
-                                                        {pkg.status === "ACTIVE" ? <FiToggleLeft /> : <FiToggleRight />} 
-                                                        <span className="ms-1">{pkg.status === "ACTIVE" ? "Khóa" : "Mở"}</span>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                        <Pagination
-                            itemsPerPage={itemsPerPage}
-                            totalItems={totalItems}
-                            currentPage={currentPage}
-                            paginate={paginate}
-                        />
-                    </div>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Phân trang */}
+                <div className="d-flex justify-content-center mt-4">
+                    <Pagination
+                        itemsPerPage={itemsPerPage}
+                        totalItems={totalItems}
+                        currentPage={currentPage}
+                        paginate={paginate}
+                    />
                 </div>
             </div>
 
             {/* Modal Thêm/Sửa Gói Cước */}
             {showModal && (
-                <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }} tabIndex="-1">
-                    <div className="modal-dialog modal-dialog-centered">
-                        <div className="modal-content border-0 shadow-lg">
-                            <form onSubmit={handleSubmit}>
-                                <div className="modal-header bg-light">
-                                    <h5 className="modal-title fw-bold text-primary">
-                                        {isEditMode ? "Chỉnh sửa Gói Cước" : "Thêm Gói Cước Mới"}
-                                    </h5>
-                                    <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
-                                </div>
-                                <div className="modal-body">
-                                    <div className="mb-3">
-                                        <label className="form-label fw-bold">Tên gói cước <span className="text-danger">*</span></label>
-                                        <input type="text" className="form-control" name="name" value={formData.name} onChange={handleInputChange} required placeholder="VD: Gói Gửi Ô tô 3 tháng..." />
-                                    </div>
-                                    <div className="row mb-3">
-                                        <div className="col-md-6">
-                                            <label className="form-label fw-bold">Loại xe <span className="text-danger">*</span></label>
-                                            <select className="form-select" name="vehicleType" value={formData.vehicleType} onChange={handleInputChange} disabled={isEditMode}>
-                                                <option value="MOTORBIKE">Xe máy</option>
-                                                <option value="CAR">Ô tô</option>
+                <div className="modal fade show d-block modal-eco" style={{ backgroundColor: "rgba(15, 23, 42, 0.6)", backdropFilter: "blur(4px)" }} tabIndex="-1">
+                    <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                        <div className="modal-content">
+                            <div className="modal-header bg-white border-bottom p-3">
+                                <h5 className="modal-title fw-bolder text-dark d-flex align-items-center">
+                                    <i className={`bi ${isEditMode ? 'bi-pencil-square' : 'bi-plus-circle'} text-emerald me-2 fs-4`}></i>
+                                    {isEditMode ? "Chỉnh sửa Gói Cước" : "Thêm Gói Cước Mới"}
+                                </h5>
+                                <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
+                            </div>
+
+                            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                                <div className="modal-body p-3 bg-light">
+                                    <div className="bg-white p-3 rounded-4 border shadow-sm">
+                                        <div className="mb-3">
+                                            <label className="modern-label">Tên gói cước <span className="text-danger">*</span></label>
+                                            <input
+                                                type="text"
+                                                className="form-control modern-input"
+                                                name="name"
+                                                value={formData.name}
+                                                onChange={handleInputChange}
+                                                required
+                                                placeholder="VD: Gói Gửi Ô tô 3 tháng..."
+                                            />
+                                        </div>
+
+                                        <div className="row mb-3 g-3">
+                                            <div className="col-md-6">
+                                                <label className="modern-label">Loại xe <span className="text-danger">*</span></label>
+                                                <select
+                                                    className="form-select modern-input"
+                                                    name="vehicleType"
+                                                    value={formData.vehicleType}
+                                                    onChange={handleInputChange}
+                                                    disabled={isEditMode}
+                                                >
+                                                    <option value="MOTORBIKE">Xe máy</option>
+                                                    <option value="CAR">Ô tô</option>
+                                                </select>
+                                                {isEditMode && <small className="text-muted" style={{ fontSize: "12px" }}>* Không thể sửa loại xe</small>}
+                                            </div>
+                                            <div className="col-md-6">
+                                                <label className="modern-label">Thời hạn (Tháng) <span className="text-danger">*</span></label>
+                                                <div className="position-relative">
+                                                    <input
+                                                        type="number"
+                                                        className="form-control modern-input pe-5"
+                                                        name="durationMonths"
+                                                        min="1"
+                                                        value={formData.durationMonths}
+                                                        onChange={handleInputChange}
+                                                        required
+                                                        disabled={isEditMode}
+                                                    />
+                                                    <span className="position-absolute top-50 end-0 translate-middle-y me-3 text-muted fw-bold">tháng</span>
+                                                </div>
+                                                {isEditMode && <small className="text-muted" style={{ fontSize: "12px" }}>* Không thể sửa thời hạn</small>}
+                                            </div>
+                                        </div>
+
+                                        <div className="mb-3">
+                                            <label className="modern-label">Giá tiền thanh toán <span className="text-danger">*</span></label>
+                                            <div className="position-relative">
+                                                <input
+                                                    type="number"
+                                                    className="form-control modern-input pe-5 text-danger fw-bold fs-5"
+                                                    name="price"
+                                                    min="0"
+                                                    value={formData.price}
+                                                    onChange={handleInputChange}
+                                                    required
+                                                    disabled={isEditMode}
+                                                />
+                                                <span className="position-absolute top-50 end-0 translate-middle-y me-3 text-muted fw-bold">VNĐ</span>
+                                            </div>
+                                            {isEditMode && <small className="text-muted" style={{ fontSize: "12px" }}>* Không thể sửa giá sau khi tạo</small>}
+                                        </div>
+
+                                        <div className="mb-2 border-top pt-2">
+                                            <label className="modern-label">Trạng thái hiển thị</label>
+                                            <select
+                                                className={`form-select modern-input fw-bold ${formData.status === 'ACTIVE' ? 'text-success' : 'text-danger'}`}
+                                                name="status"
+                                                value={formData.status}
+                                                onChange={handleInputChange}
+                                            >
+                                                <option value="ACTIVE">Đang bán (Khách có thể mua)</option>
+                                                <option value="INACTIVE">Ngưng bán (Ẩn khỏi danh sách)</option>
                                             </select>
                                         </div>
-                                        <div className="col-md-6">
-                                            <label className="form-label fw-bold">Thời hạn (Tháng) <span className="text-danger">*</span></label>
-                                            <input type="number" className="form-control" name="durationMonths" min="1" value={formData.durationMonths} onChange={handleInputChange} required disabled={isEditMode} />
-                                        </div>
-                                    </div>
-                                    <div className="mb-3">
-                                        <label className="form-label fw-bold">Giá tiền (VNĐ) <span className="text-danger">*</span></label>
-                                        <input type="number" className="form-control" name="price" min="0" value={formData.price} onChange={handleInputChange} required disabled={isEditMode} />
-                                    </div>
-                                    <div className="mb-3">
-                                        <label className="form-label fw-bold">Trạng thái</label>
-                                        <select className="form-select" name="status" value={formData.status} onChange={handleInputChange}>
-                                            <option value="ACTIVE">Đang bán (Active)</option>
-                                            <option value="INACTIVE">Ngưng bán (Inactive)</option>
-                                        </select>
                                     </div>
                                 </div>
-                                <div className="modal-footer bg-light">
-                                    <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Hủy bỏ</button>
-                                    <button type="submit" className="btn btn-primary">
+                                <div className="modal-footer bg-white border-top p-3">
+                                    <button type="button" className="btn btn-light border text-secondary btn-modern" onClick={() => setShowModal(false)}>Hủy bỏ</button>
+                                    <button type="submit" className="btn bg-emerald text-white btn-modern px-4 shadow-sm">
+                                        <i className={`bi ${isEditMode ? 'bi-check2-circle' : 'bi-plus-circle'} me-2`}></i>
                                         {isEditMode ? "Lưu thay đổi" : "Tạo gói cước"}
                                     </button>
                                 </div>
