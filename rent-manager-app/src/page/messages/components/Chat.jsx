@@ -8,6 +8,9 @@ import { API_BASE_URL, ACCESS_TOKEN } from "../../../constants/Connect";
 import '../style.css';
 
 const Chat = (props) => {
+  // ==========================================
+  // 🧠 LOGIC & API GIỮ NGUYÊN BẢN 100%
+  // ==========================================
   const { selectedUser, setSelectedUser } = useUserContext();
   const location = useLocation();
 
@@ -60,40 +63,149 @@ const Chat = (props) => {
      }
   }
 
+  // ==========================================
+  // 🎨 GIAO DIỆN MỚI (MESSENGER x ECOHOME)
+  // ==========================================
   return (
-    <div className="position-relative">
-      
-      {/* HEADER THÔNG TIN */}
-      {selectedUser && (
-        <div className="py-2 px-4 border-bottom d-none d-lg-block bg-white shadow-sm">
-          <div className="d-flex align-items-center py-1">
-            <div className="position-relative">
-              <img
-                src={chatPartnerImage}
-                className="rounded-circle border border-2 border-success"
-                alt={chatPartnerName}
-                width="45"
-                height="45"
-                style={{ objectFit: "cover", marginRight: "15px" }}
-              />
-              <span className="position-absolute bottom-0 end-0 bg-success border border-white rounded-circle" style={{ width: "12px", height: "12px", right: "12px", marginBottom: "2px" }}></span>
-            </div>
-            <div className="flex-grow-1">
-              <h5 className="mb-0 fw-bold text-dark">{chatPartnerName}</h5>
-              <div className="text-success small fw-semibold">
-                Đang hoạt động
+    <>
+      <style>{`
+        .eco-chat-main-wrapper {
+          background-color: #ffffff;
+          border-radius: 16px;
+          border: 1px solid #E2E8F0;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .eco-chat-header {
+          padding: 16px 24px;
+          background-color: #ffffff;
+          border-bottom: 1px solid #E2E8F0;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          z-index: 10;
+        }
+
+        .eco-header-avatar {
+          width: 50px;
+          height: 50px;
+          border-radius: 50%;
+          object-fit: cover;
+          border: 2px solid #10B981;
+          padding: 2px;
+          background-color: #fff;
+        }
+
+        .eco-header-status-dot {
+          position: absolute;
+          bottom: 2px;
+          right: 0px;
+          width: 14px;
+          height: 14px;
+          background-color: #10B981;
+          border: 2px solid #ffffff;
+          border-radius: 50%;
+        }
+
+        .eco-header-name {
+          font-size: 1.1rem;
+          font-weight: 700;
+          color: #1E293B;
+          margin-bottom: 2px;
+        }
+
+        .eco-header-status-text {
+          font-size: 0.85rem;
+          color: #10B981;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+        }
+
+        .eco-pulse-dot {
+          width: 8px;
+          height: 8px;
+          background-color: #10B981;
+          border-radius: 50%;
+          margin-right: 6px;
+          animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+          0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+          70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .eco-header-actions .btn {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          color: #64748B;
+          background-color: transparent;
+          transition: all 0.2s ease;
+          margin-left: 8px;
+          border: none;
+        }
+
+        .eco-header-actions .btn:hover {
+          color: #10B981;
+          background-color: #F0FDF4;
+        }
+      `}</style>
+
+      <div className="position-relative eco-chat-main-wrapper h-100">
+        
+        {/* HEADER THÔNG TIN */}
+        {selectedUser ? (
+          <div className="eco-chat-header d-none d-lg-flex">
+            <div className="d-flex align-items-center">
+              <div className="position-relative me-3">
+                <img
+                  src={chatPartnerImage}
+                  className="eco-header-avatar shadow-sm"
+                  alt={chatPartnerName}
+                />
+                <span className="eco-header-status-dot"></span>
+              </div>
+              <div className="flex-grow-1">
+                <h5 className="eco-header-name">{chatPartnerName}</h5>
+                <div className="eco-header-status-text">
+                  <div className="eco-pulse-dot"></div>
+                  Đang hoạt động
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
 
-      <div className="chat-messages p-4 bg-light">
-        <Messages selectedUser={selectedUser} />
+            {/* Các icon chức năng trang trí phong cách Messenger */}
+            <div className="eco-header-actions d-flex align-items-center">
+              <button className="btn" title="Cuộc gọi thoại"><i className="bi bi-telephone-fill fs-5"></i></button>
+              <button className="btn" title="Cuộc gọi video"><i className="bi bi-camera-video-fill fs-5"></i></button>
+              <button className="btn" title="Thông tin cuộc trò chuyện"><i className="bi bi-info-circle-fill fs-5"></i></button>
+            </div>
+          </div>
+        ) : (
+          <div className="eco-chat-header d-none d-lg-flex" style={{minHeight: "83px", justifyContent: "center"}}>
+              <span className="text-muted fw-medium"><i className="bi bi-chat-dots me-2"></i>Chọn một người dùng để bắt đầu trò chuyện</span>
+          </div>
+        )}
+
+        <div className="chat-messages-container flex-grow-1">
+          <Messages selectedUser={selectedUser} />
+        </div>
+        
+        <div className="chat-input-container">
+          <Input selectedUser={selectedUser} />
+        </div>
+        
       </div>
-      <Input selectedUser={selectedUser} />
-      
-    </div>
+    </>
   );
 };
 

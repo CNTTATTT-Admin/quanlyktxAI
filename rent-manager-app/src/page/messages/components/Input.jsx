@@ -126,31 +126,109 @@ const Input = () => {
     fetchMessageData(currentId);
   };
 
-
   return (
     <>
-     
-        <div className="flex-grow-0 py-3 px-4 border-top">
-          <div className="input-group">
-            <input type="text" className="form-control" placeholder="Nhập tin nhắn của bạn"
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleSend();
-                }
-              }}
-              value={text}
-              style={{width : "300px"}}
-            />
-            <button className="btn btn-primary"  onClick={handleSend}>Send</button>
-          </div>
-        </div>
-     
+      <style>{`
+        .eco-chat-input-wrapper {
+          background-color: #ffffff;
+          border-top: 1px solid #E2E8F0;
+          padding: 15px 20px;
+        }
 
+        .eco-input-group {
+          display: flex;
+          align-items: center;
+          background-color: #F1F5F9;
+          border-radius: 50px;
+          padding: 6px 12px 6px 20px;
+          border: 1px solid transparent;
+          transition: all 0.3s ease;
+        }
+
+        .eco-input-group:focus-within {
+          border-color: #10B981;
+          box-shadow: 0 0 0 3px rgba(16,185,129,0.1);
+          background-color: #fff;
+        }
+
+        .eco-chat-input {
+          flex-grow: 1;
+          border: none;
+          background: transparent;
+          padding: 8px 0;
+          font-size: 0.95rem;
+          color: #1E293B;
+          outline: none;
+          width: 100%;
+        }
+
+        .eco-chat-input::placeholder {
+          color: #94A3B8;
+        }
+
+        .eco-send-btn {
+          background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+          color: white;
+          border: none;
+          border-radius: 50%;
+          width: 40px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+          flex-shrink: 0;
+          margin-left: 10px;
+          box-shadow: 0 2px 6px rgba(16,185,129,0.2);
+        }
+
+        .eco-send-btn:hover {
+          transform: scale(1.05) translateY(-2px);
+          box-shadow: 0 4px 10px rgba(16,185,129,0.3);
+        }
+
+        .eco-send-btn:active {
+          transform: scale(0.95) translateY(0);
+        }
+        
+        /* Hiệu ứng khi chưa nhập text thì làm mờ nút send */
+        .eco-send-btn.disabled {
+          opacity: 0.5;
+          pointer-events: none;
+          background: #CBD5E1;
+          box-shadow: none;
+        }
+      `}</style>
+
+      <div className="eco-chat-input-wrapper">
+        <div className="eco-input-group">
+          {/* Icon đính kèm (có thể dùng sau nếu bạn thêm chức năng gửi ảnh) */}
+          <i className="bi bi-plus-circle-fill text-muted me-3 fs-5" style={{cursor: "pointer", transition: "color 0.2s"}} onMouseOver={(e) => e.target.classList.add('text-emerald')} onMouseOut={(e) => e.target.classList.remove('text-emerald')}></i>
+          
+          <input 
+            type="text" 
+            className="eco-chat-input" 
+            placeholder="Nhập tin nhắn của bạn..."
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && text.trim() !== "") {
+                handleSend();
+              }
+            }}
+            value={text}
+          />
+          
+          <button 
+            className={`eco-send-btn ${text.trim() === "" ? "disabled" : ""}`}  
+            onClick={handleSend}
+            title="Gửi tin nhắn"
+          >
+            <i className="bi bi-send-fill ms-1"></i>
+          </button>
+        </div>
+      </div>
     </>
   );
-
 }
-
 
 export default Input;

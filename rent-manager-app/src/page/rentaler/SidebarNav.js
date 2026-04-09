@@ -11,13 +11,24 @@ const SidebarNav = () => {
         }
         
         .eco-sidebar-title {
-          font-size: 0.75rem;
-          text-transform: uppercase;
-          color: #94A3B8;
-          font-weight: 800;
-          letter-spacing: 1px;
-          margin-bottom: 15px;
+          font-size: 0.9rem;
+          color: #475569;
+          font-weight: 700;
+          margin-bottom: 18px;
           padding-left: 15px;
+          display: flex;
+          align-items: center;
+        }
+
+        .eco-sidebar-title::before {
+          content: '';
+          display: inline-block;
+          width: 6px;
+          height: 6px;
+          background-color: #10B981;
+          border-radius: 50%;
+          margin-right: 10px;
+          box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
         }
 
         .eco-nav-list {
