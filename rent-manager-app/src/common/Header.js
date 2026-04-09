@@ -8,8 +8,40 @@ class Header extends Component {
     console.log("logout", this.props.onLogout);
     return (
       <>
-        <nav className="navbar navbar-default navbar-trans navbar-expand-lg fixed-top">
-          <div className="container">
+        <style>{`
+          .spread-nav-container {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+          }
+          
+          .spread-nav-list {
+            width: 80%;
+            display: flex;
+            justify-content: space-evenly;
+            margin: 0 auto;
+          }
+
+          .nav-link {
+            font-weight: 500;
+            font-size: 1.05rem;
+            color: #333 !important;
+          }
+          
+          .nav-link.active, .nav-link:hover {
+            color: #0d6efd !important; 
+          }
+          
+          .auth-btn {
+            font-weight: 600;
+            white-space: nowrap;
+          }
+        `}</style>
+
+        {/* Trả lại bộ class gốc */}
+        <nav className="navbar navbar-default navbar-trans navbar-expand-lg fixed-top shadow-sm bg-white">
+          <div className="container-fluid px-4">
+            {/* Nút Toggle cho Mobile */}
             <button
               className="navbar-toggler collapsed"
               type="button"
@@ -23,154 +55,77 @@ class Header extends Component {
               <span></span>
               <span></span>
             </button>
+            
+            {/* Logo */}
             <a className="navbar-brand text-brand" href="/">
-              <img src={logo} alt="KtxAI" style={{ height: "50px" }} />
+              <img src={logo} alt="KtxAI" style={{ height: "45px" }} />
             </a>
 
-            <div
-              className="navbar-collapse collapse justify-content-center"
-              id="navbarDefault"
-            >
-              <ul className="navbar-nav">
-                <li className="nav-item">
-                  <NavLink
-                    className="nav-link"
-                    to="/"
-                    activeClassName="active"
-                    exact
-                  >
-                    Trang chủ
-                  </NavLink>
-                </li>
-
-                <li className="nav-item">
-                  <NavLink
-                    className="nav-link"
-                    to="/rental-home"
-                    activeClassName="active"
-                  >
-                    Phòng cho thuê
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink
-                    className="nav-link"
-                    to="/contact"
-                    activeClassName="active"
-                  >
-                    Liên hệ
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink
-                    className="nav-link"
-                    to="/policy"
-                    activeClassName="active"
-                  >
-                    Nội quy
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink
-                    className="nav-link"
-                    to="/angent-gird"
-                    activeClassName="active"
-                  >
-                    Người cho thuê
-                  </NavLink>
-                </li>
-                {(!this.props.authenticated ||
-                  this.props.currentUser?.allocatedRoomId != null) && (
+            <div className="navbar-collapse collapse" id="navbarDefault">
+              
+              {/* DANH SÁCH MENU DÀN ĐỀU */}
+              <div className="spread-nav-container">
+                <ul className="navbar-nav spread-nav-list">
                   <li className="nav-item">
-                    <NavLink
-                      className="nav-link"
-                      to="/check-in-out"
-                      activeClassName="active"
-                    >
-                      Điểm danh
-                    </NavLink>
+                    <NavLink className="nav-link" to="/" activeClassName="active" exact>Trang chủ</NavLink>
                   </li>
-                )}
-              </ul>
-            </div>
-            
-            {!this.props.authenticated ? (
-              <div className="d-flex align-items-center gap-2">
-                <Link
-                  to="/login"
-                  className="btn btn-outline-success"
-                  style={{ textDecoration: "none" }}
-                >
-                  Đăng nhập
-                </Link>
-                <Link
-                  to="/signup"
-                  className="btn btn-outline-success"
-                  style={{ textDecoration: "none" }}
-                >
-                  Đăng kí
-                </Link>
-                <Link
-                  to="/login-rentaler"
-                  className="btn btn-success"
-                  style={{ textDecoration: "none", color: "white" }}
-                >
-                  Đăng tin
-                </Link>
-              </div>
-            ) : (
-              <div className="profile-info d-flex align-items-center">
-                <div className="profile-avatar">
-                  {this.props.currentUser.imageUrl ? (
-                    <img
-                      src={this.props.currentUser.imageUrl}
-                      alt={this.props.currentUser.name}
-                      className="img-fluid rounded-circle border border-dark border-3"
-                      style={{ width: "50px" }}
-                    />
-                  ) : (
-                    <div
-                      className="text-avatar d-flex justify-content-center align-items-center bg-success text-white rounded-circle"
-                      style={{ width: "50px", height: "50px", fontSize: "1.2rem", fontWeight: "bold" }}
-                    >
-                      {this.props.currentUser.name && this.props.currentUser.name[0].toUpperCase()}
-                    </div>
+                  <li className="nav-item">
+                    <NavLink className="nav-link" to="/rental-home" activeClassName="active">Phòng cho thuê</NavLink>
+                  </li>
+                  <li className="nav-item">
+                    <NavLink className="nav-link" to="/contact" activeClassName="active">Liên hệ</NavLink>
+                  </li>
+                  <li className="nav-item">
+                    <NavLink className="nav-link" to="/policy" activeClassName="active">Nội quy</NavLink>
+                  </li>
+                  <li className="nav-item">
+                    <NavLink className="nav-link" to="/angent-gird" activeClassName="active">Người cho thuê</NavLink>
+                  </li>
+                  {(!this.props.authenticated || this.props.currentUser?.allocatedRoomId != null) && (
+                    <li className="nav-item">
+                      <NavLink className="nav-link" to="/check-in-out" activeClassName="active">Điểm danh</NavLink>
+                    </li>
                   )}
-                </div>
-                <div className="flex-grow-1 ms-3">
-                  <div className="d-flex flex-row align-items-center mb-1">
-                    <p className="mb-0 me-2 fw-bold">{this.props.currentUser.name}</p>
-                    <ul
-                      className="mb-0 list-unstyled d-flex flex-row"
-                      style={{ color: "#1B7B2C" }}
-                    >
-                      <li><i className="fas fa-star fa-xs"></i></li>
-                      <li><i className="fas fa-star fa-xs"></i></li>
-                      <li><i className="fas fa-star fa-xs"></i></li>
-                      <li><i className="fas fa-star fa-xs"></i></li>
-                      <li><i className="fas fa-star fa-xs"></i></li>
-                    </ul>
-                  </div>
-                  <div className="d-flex gap-2 mt-1">
-                    <Link to="/profile">
-                      <button
-                        type="button"
-                        className="btn btn-outline-dark btn-rounded btn-sm"
-                      >
-                        Hồ Sơ
-                      </button>
-                    </Link>
-                    <button
-                      type="button"
-                      className="btn btn-outline-dark btn-rounded btn-sm"
-                      onClick={this.props.onLogout}
-                    >
-                      Đăng xuất
-                    </button>
-                  </div>
-                </div>
+                </ul>
               </div>
-            )}
+              
+              {/* VÙNG THÔNG TIN USER / ĐĂNG NHẬP */}
+              <div className="d-flex align-items-center">
+                {!this.props.authenticated ? (
+                  <div className="d-flex align-items-center gap-3">
+                    <Link to="/login" className="btn btn-outline-primary auth-btn rounded-pill px-4">Đăng nhập</Link>
+                    <Link to="/signup" className="btn btn-primary auth-btn rounded-pill px-4">Đăng kí</Link>
+                    <div className="vr d-none d-lg-block text-secondary"></div>
+                    <Link to="/login-rentaler" className="btn btn-success auth-btn rounded-pill px-4">Đăng tin</Link>
+                  </div>
+                ) : (
+                  <div className="d-flex align-items-center">
+                    <div className="me-3">
+                      {this.props.currentUser.imageUrl ? (
+                        <img src={this.props.currentUser.imageUrl} alt={this.props.currentUser.name} className="rounded-circle border" style={{width: "45px", height: "45px", objectFit: "cover"}} />
+                      ) : (
+                        <div className="d-flex justify-content-center align-items-center text-white rounded-circle bg-primary" style={{ width: "45px", height: "45px", fontSize: "1.2rem", fontWeight: "bold" }}>
+                          {this.props.currentUser.name && this.props.currentUser.name[0].toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <div className="d-flex align-items-center mb-1">
+                        <span className="fw-bold me-2">{this.props.currentUser.name}</span>
+                        <span className="text-warning small">
+                          <i className="fas fa-star"></i><i className="fas fa-star"></i><i className="fas fa-star"></i><i className="fas fa-star"></i><i className="fas fa-star"></i>
+                        </span>
+                      </div>
+                      <div className="d-flex gap-2">
+                        <Link to="/profile" className="btn btn-outline-dark btn-sm rounded-pill px-3">Hồ Sơ</Link>
+                        <button className="btn btn-outline-danger btn-sm rounded-pill px-3" onClick={this.props.onLogout}>Đăng xuất</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+            </div>
           </div>
         </nav>
       </>

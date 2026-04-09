@@ -54,8 +54,6 @@ function Follow(props) {
                 <div className="wrapper">
                     <nav id="sidebar" className="sidebar js-sidebar">
                         <div className="sidebar-content js-simplebar">
-                            <a className="sidebar-brand" href="index.html">
-                            </a>
                             <SidebarNav />
                         </div>
                     </nav>

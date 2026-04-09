@@ -3,9 +3,17 @@ import React from "react";
 const Nav = (props) => {
   const { currentUser, onLogout } = props;
 
+  const toggleSidebar = (e) => {
+    e.preventDefault();
+    const sidebar = document.getElementById("sidebar") || document.querySelector(".sidebar");
+    if (sidebar) {
+      sidebar.classList.toggle("collapsed");
+    }
+  };
+
   return (
     <nav className="navbar navbar-expand navbar-light navbar-bg">
-      <a className="sidebar-toggle js-sidebar-toggle">
+      <a className="sidebar-toggle js-sidebar-toggle" onClick={toggleSidebar}>
         <i className="hamburger align-self-center"></i>
       </a>
 
