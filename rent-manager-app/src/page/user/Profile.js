@@ -29,7 +29,7 @@ const UserProfile = (props) => {
     const file = event.target.files[0];
     if (file) {
       const allowedTypes = ["image/jpeg", "image/png"];
-      const maxFileSize = 1 * 1024 * 1024; // 1MB
+      const maxFileSize = 10 * 1024 * 1024; // 10MB
 
       if (!allowedTypes.includes(file.type)) {
         toast.error("Only JPEG and PNG images are allowed.");
