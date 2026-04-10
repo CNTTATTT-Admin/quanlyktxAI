@@ -210,9 +210,9 @@ const CheckInOutHistory = (props) => {
       />
       
       {/* Spacer đẩy xuống dưới Header */}
-      <div style={{ marginTop: "70px" }}></div>
+      <div style={{ marginTop: "90px" }}></div>
       
-      <div className="eco-page-bg">
+      <main id="main" className="eco-page-bg">
         <div className="wrapper">
           
           <nav id="sidebar" className="sidebar js-sidebar">
@@ -365,7 +365,7 @@ const CheckInOutHistory = (props) => {
             </div>
           </div>
         </div>
-      </div>
+      </main>
       <Footer/>
     </>
   );

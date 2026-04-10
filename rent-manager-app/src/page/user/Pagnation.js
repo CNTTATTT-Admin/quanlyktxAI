@@ -1,7 +1,7 @@
 import React from 'react';
 
 const Pagination = ({ itemsPerPage, totalItems, currentPage, paginate }) => {
-    // Xử lý an toàn: Nếu API chưa kịp tải xong (totalItems bị null/undefined) thì mặc định là 1 trang
+    //totalItems bị null/undefined thì mặc định là 1 trang
     const safeTotalItems = totalItems || 0;
     const pageNumbers = Math.max(Math.ceil(safeTotalItems / itemsPerPage), 1);
 
@@ -17,7 +17,6 @@ const Pagination = ({ itemsPerPage, totalItems, currentPage, paginate }) => {
 
     return (
         <>
-            {/* CSS ĐỘC LẬP: Kháng lại mọi xung đột từ Theme gốc */}
             <style>{`
                 .bulletproof-pagination {
                     display: flex;

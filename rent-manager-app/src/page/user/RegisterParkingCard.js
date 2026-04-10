@@ -154,9 +154,105 @@ function RegisterParkingCard(props) {
 
   return (
     <>
+      <style>{`
+        .eco-page-bg {
+          background-color: #F8FAFC;
+          min-height: calc(100vh - 70px);
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .wrapper {
+          display: flex;
+          align-items: stretch; 
+          width: 100%;
+          flex-grow: 1; 
+        }
+        
+        #sidebar.sidebar {
+          background-color: #ffffff !important; 
+          position: relative !important; 
+          align-self: stretch !important; 
+          min-height: 100% !important; 
+          width: 260px !important;
+          min-width: 260px !important;
+          max-width: 260px !important;
+          border-right: 1px solid #EEF2FF;
+          z-index: 1000;
+          top: auto !important; bottom: auto !important; height: auto !important; margin: 0 !important; transform: none !important;
+        }
+
+        .sidebar-content {
+          position: sticky !important;
+          top: 70px !important; 
+          height: calc(100vh - 70px) !important;
+          overflow-y: auto !important;
+          background-color: #ffffff !important;
+          display: flex;
+          flex-direction: column;
+        }
+        
+        .sidebar-content::-webkit-scrollbar { width: 4px; }
+        .sidebar-content::-webkit-scrollbar-thumb { background-color: #CBD5E1; border-radius: 4px; }
+
+        .main { flex-grow: 1; min-width: 0; }
+
+        .eco-main-wrapper { padding: 30px; width: 100%; max-width: 1100px; margin: 0 auto;}
+
+        .eco-card-form {
+          background: #ffffff; border-radius: 16px; box-shadow: 0 4px 20px rgba(79, 70, 229, 0.05);
+          border: 1px solid #EEF2FF; overflow: hidden;
+        }
+
+        .eco-card-header {
+          background-color: #ffffff; padding: 25px 30px 20px 30px; border-bottom: 1px solid #EEF2FF;
+        }
+
+        .eco-title-icon { color: #4F46E5; margin-right: 10px; font-size: 1.3rem; }
+
+        .eco-form-label {
+          font-size: 0.85rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: block;
+        }
+
+        .eco-input-field {
+          background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 12px 16px; font-size: 0.95rem; color: #1E293B; transition: all 0.3s; width: 100%;
+        }
+
+        .eco-input-field:focus {
+          background-color: #ffffff; border-color: #4F46E5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); outline: none;
+        }
+
+        .eco-input-field:disabled {
+          background-color: #F1F5F9; color: #94A3B8; cursor: not-allowed;
+        }
+
+        .eco-file-upload::-webkit-file-upload-button {
+          background-color: #EEF2FF; color: #4F46E5; border: none; border-radius: 8px; padding: 8px 16px; font-weight: 600; margin-right: 15px; cursor: pointer; transition: all 0.2s;
+        }
+        .eco-file-upload::-webkit-file-upload-button:hover {
+          background-color: #E0E7FF;
+        }
+
+        .eco-btn-submit {
+          background: linear-gradient(135deg, #4F46E5 0%, #4338CA 100%); color: #ffffff; font-weight: 600; font-size: 1rem;
+          padding: 12px 35px; border-radius: 10px; border: none; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.25);
+          transition: all 0.3s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .eco-btn-submit:hover:not(:disabled) {
+          transform: translateY(-2px); box-shadow: 0 8px 20px rgba(79, 70, 229, 0.35); color: #ffffff;
+        }
+        .eco-btn-submit:disabled {
+          opacity: 0.7; cursor: not-allowed;
+        }
+      `}</style>
+
       <Header authenticated={authenticated} currentUser={currentUser} onLogout={onLogout} />
-      <div style={{ marginTop: "140px" }}></div>
-      <main id="main">
+      <div style={{ marginTop: "90px" }}></div>
+      
+      <main id="main" className="eco-page-bg">
         <div className="wrapper">
           <nav id="sidebar" className="sidebar js-sidebar">
             <div className="sidebar-content js-simplebar">
@@ -165,22 +261,33 @@ function RegisterParkingCard(props) {
           </nav>
 
           <div className="main">
-            <br />
-            <div className="container-fluid p-0">
-              <div className="card shadow-sm">
-                <div className="card-header">
-                  <h5 className="card-title mb-0">🚗 Đăng ký thẻ gửi xe</h5>
-                  <h6 className="card-subtitle text-muted mt-1">
-                    Chọn chủ trọ và điền thông tin để đăng ký thẻ.
-                  </h6>
+            <div className="eco-main-wrapper">
+              
+              <div className="eco-card-form">
+                <div className="eco-card-header d-flex justify-content-between align-items-center">
+                  <div>
+                    <h4 className="fw-bold text-dark mb-1">
+                      <i className="bi bi-car-front-fill eco-title-icon"></i>
+                      Đăng ký thẻ gửi xe
+                    </h4>
+                    <h6 className="text-muted mb-0" style={{fontSize: "0.95rem"}}>
+                      Vui lòng chọn chủ trọ và điền đầy đủ thông tin để cấp thẻ.
+                    </h6>
+                  </div>
+                  {/* thừa */}
+                  {/* <div className="text-muted opacity-50 d-none d-sm-block" style={{fontSize: "2.5rem"}}>
+                    <i className="bi bi-p-circle"></i>
+                  </div> */}
                 </div>
-                <div className="card-body">
+                
+                <div className="card-body p-4 p-md-5">
                   <form onSubmit={handleSubmit}>
                     
-                    <div className="row mb-3">
+                    {/* HÀNG 1: CHỦ TRỌ & GÓI CƯỚC */}
+                    <div className="row g-4 mb-4">
                       <div className="col-md-6">
-                        <label className="form-label fw-bold text-primary">Người cho thuê (Chủ trọ) <span className="text-danger">*</span></label>
-                        <select className="form-select form-control" value={selectedRentaler} onChange={handleRentalerChange} required>
+                        <label className="eco-form-label text-indigo">Người cho thuê (Chủ trọ) <span className="text-danger">*</span></label>
+                        <select className="eco-input-field form-select" value={selectedRentaler} onChange={handleRentalerChange} required>
                           <option value="">-- Chọn Chủ Trọ --</option>
                           {rentalers.map((rentaler) => (
                             <option key={rentaler.id} value={rentaler.id}>
@@ -189,76 +296,83 @@ function RegisterParkingCard(props) {
                           ))}
                         </select>
                       </div>
-                      <div className="col-md-6 mt-3 mt-md-0">
-                        <label className="form-label fw-bold text-primary">Gói gửi xe <span className="text-danger">*</span></label>
-                        <select className="form-select form-control" name="packageId" value={formData.packageId} onChange={handleInputChange} disabled={!selectedRentaler} required>
+                      <div className="col-md-6">
+                        <label className="eco-form-label text-indigo">Gói gửi xe <span className="text-danger">*</span></label>
+                        <select className="eco-input-field form-select" name="packageId" value={formData.packageId} onChange={handleInputChange} disabled={!selectedRentaler} required>
                           <option value="">{selectedRentaler ? "-- Chọn Gói Cước --" : "Vui lòng chọn Chủ trọ trước"}</option>
                           {packages.map((pkg) => (
                             <option key={pkg.id} value={pkg.id}>
-                              {pkg.name} - {pkg.price?.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })} / {pkg.durationMonths} tháng
+                              {pkg.name} - {pkg.price?.toLocaleString('vi-VN')} đ / {pkg.durationMonths} tháng
                             </option>
                           ))}
                         </select>
                       </div>
                     </div>
 
-                    <div className="row mb-3">
+                    {/* HÀNG 2: THÔNG TIN PHƯƠNG TIỆN */}
+                    <div className="row g-4 mb-4">
                       <div className="col-md-3">
-                        <label className="form-label fw-bold">Loại xe <span className="text-danger">*</span></label>
+                        <label className="eco-form-label">Loại xe <span className="text-danger">*</span></label>
                         {/* THAY ĐỔI: Khóa (disabled) không cho User sửa, hiển thị theo Gói cước */}
-                        <select className="form-select form-control bg-light" name="vehicleType" value={formData.vehicleType} disabled>
-                          <option value="">-- Loại xe --</option>
+                        <select className="eco-input-field form-select" name="vehicleType" value={formData.vehicleType} disabled>
+                          <option value="">-- Tự động --</option>
                           <option value="MOTORBIKE">Xe Máy</option>
                           <option value="CAR">Ô Tô</option>
                         </select>
                       </div>
-                      <div className="col-md-3 mt-3 mt-md-0">
-                        <label className="form-label fw-bold">Biển số <span className="text-danger">*</span></label>
-                        <input type="text" className="form-control" name="licensePlate" placeholder="VD: 29A-123.45" value={formData.licensePlate} onChange={handleInputChange} required />
+                      <div className="col-md-3">
+                        <label className="eco-form-label">Biển số <span className="text-danger">*</span></label>
+                        <input type="text" className="eco-input-field" name="licensePlate" placeholder="VD: 29A-123.45" value={formData.licensePlate} onChange={handleInputChange} required />
                       </div>
-                      <div className="col-md-3 mt-3 mt-md-0">
-                        <label className="form-label fw-bold">Dòng xe <span className="text-danger">*</span></label>
-                        <input type="text" className="form-control" name="brandModel" placeholder="VD: Honda Vision" value={formData.brandModel} onChange={handleInputChange} required />
+                      <div className="col-md-3">
+                        <label className="eco-form-label">Dòng xe <span className="text-danger">*</span></label>
+                        <input type="text" className="eco-input-field" name="brandModel" placeholder="VD: Honda Vision" value={formData.brandModel} onChange={handleInputChange} required />
                       </div>
-                      <div className="col-md-3 mt-3 mt-md-0">
-                        <label className="form-label fw-bold">Màu sắc <span className="text-danger">*</span></label>
-                        <input type="text" className="form-control" name="color" placeholder="VD: Đỏ đen" value={formData.color} onChange={handleInputChange} required />
+                      <div className="col-md-3">
+                        <label className="eco-form-label">Màu sắc <span className="text-danger">*</span></label>
+                        <input type="text" className="eco-input-field" name="color" placeholder="VD: Đỏ đen" value={formData.color} onChange={handleInputChange} required />
                       </div>
                     </div>
 
-                    <hr className="mb-4" />
+                    <hr className="my-5 text-muted" style={{opacity: 0.15}} />
 
-                    <div className="row mb-4">
+                    {/* HÀNG 3: TẢI ẢNH */}
+                    <div className="row g-4 mb-5">
                       <div className="col-md-6">
-                        <label className="form-label fw-bold">
-                          Ảnh giấy đăng ký xe (Cà vẹt) <span className="text-danger">*</span>
+                        <label className="eco-form-label">
+                          <i className="bi bi-file-earmark-image me-1"></i> Ảnh giấy đăng ký xe (Cà vẹt) <span className="text-danger">*</span>
                         </label>
-                        <input id="regImageInput" type="file" className="form-control" accept="image/*" onChange={handleRegImageChange} required />
-                        <small className="text-muted d-block mt-1">
-                          Bắt buộc. Dùng để chứng minh quyền sở hữu phương tiện.
+                        <input id="regImageInput" type="file" className="eco-input-field eco-file-upload p-2" accept="image/*" onChange={handleRegImageChange} required />
+                        <small className="text-muted d-block mt-2" style={{fontSize: "0.85rem"}}>
+                          Bắt buộc. Dùng để đối chiếu và chứng minh quyền sở hữu phương tiện.
                         </small>
                       </div>
-                      <div className="col-md-6 mt-3 mt-md-0">
-                        <label className="form-label fw-bold">Ảnh chụp phương tiện</label>
-                        <input id="vehImagesInput" type="file" className="form-control" accept="image/*" multiple onChange={handleVehImagesChange} />
-                        <small className="text-muted d-block mt-1">
-                          Tùy chọn. Nhấn giữ Ctrl (hoặc Cmd) để chọn nhiều ảnh (Đầu xe, đuôi xe...).
+                      <div className="col-md-6">
+                        <label className="eco-form-label">
+                          <i className="bi bi-camera me-1"></i> Ảnh chụp phương tiện (Tùy chọn)
+                        </label>
+                        <input id="vehImagesInput" type="file" className="eco-input-field eco-file-upload p-2" accept="image/*" multiple onChange={handleVehImagesChange} />
+                        <small className="text-muted d-block mt-2" style={{fontSize: "0.85rem"}}>
+                          Nhấn giữ <code>Ctrl</code> (hoặc <code>Cmd</code>) để tải lên nhiều ảnh (Đầu xe, đuôi xe...).
                         </small>
                       </div>
                     </div>
 
                     <div className="d-flex justify-content-end">
-                      <button type="submit" className="btn btn-primary px-4 py-2" disabled={isLoading}>
+                      <button type="submit" className="eco-btn-submit" disabled={isLoading}>
                         {isLoading ? (
                           <>
-                            <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                             Đang xử lý...
                           </>
                         ) : (
-                          "Gửi Yêu Cầu"
+                          <>
+                            <i className="bi bi-send-fill"></i> Gửi Yêu Cầu Đăng Ký
+                          </>
                         )}
                       </button>
                     </div>
+
                   </form>
                 </div>
               </div>

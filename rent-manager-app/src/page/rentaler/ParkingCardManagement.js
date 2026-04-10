@@ -240,6 +240,9 @@ const ParkingCardManagement = (props) => {
                                                 <span className="fw-bold">Tạo:</span> {item.createdAt ? new Date(item.createdAt).toLocaleDateString("vi-VN") : "-"}
                                             </div>
                                             <div className="text-muted" style={{ fontSize: "0.85rem" }}>
+                                                <span className="fw-bold">Phát hành:</span> {item.issueDate ? new Date(item.issueDate).toLocaleDateString("vi-VN") : "-"}
+                                            </div>
+                                            <div className="text-muted" style={{ fontSize: "0.85rem" }}>
                                                 <span className="fw-bold">Cập nhật:</span> {item.updatedAt ? new Date(item.updatedAt).toLocaleDateString("vi-VN") : "-"}
                                             </div>
                                         </td>

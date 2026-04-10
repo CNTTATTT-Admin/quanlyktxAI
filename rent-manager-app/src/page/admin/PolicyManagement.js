@@ -47,21 +47,138 @@ function PolicyManagement(props) {
 
   return (
     <>
-      <div className="container-fluid p-0">
-        <div className="card shadow-sm">
-          <div className="card-header bg-white py-3">
-            <div className="row align-items-center">
-              <div className="col-sm-12 col-md-6">
-                <h5 className="card-title mb-0">
-                  Nội quy chung của Kí túc xá
-                </h5>
-                <p className="card-subtitle text-muted small mt-1">
-                  Xem và quản lý nội quy chính thức của cơ sở.
-                </p>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+
+        .admin-policy-scope,
+        .admin-policy-scope * {
+          font-family: 'Be Vietnam Pro', 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .admin-policy-card {
+          border: 1px solid #e2e8f0;
+          border-radius: 16px;
+          background: #fff;
+          box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+          overflow: hidden;
+        }
+
+        .admin-policy-card .card-header {
+          background: linear-gradient(90deg, #eff6ff 0%, #f8fbff 100%);
+          border-bottom: 1px solid #e2e8f0;
+          padding: 18px 22px;
+        }
+
+        .admin-policy-card .card-title {
+          margin: 0;
+          font-weight: 800;
+          color: #0f172a;
+        }
+
+        .admin-policy-card .card-subtitle {
+          margin-top: 6px;
+          color: #64748b;
+        }
+
+        .admin-policy-edit-btn {
+          border-radius: 999px;
+          font-weight: 700;
+          padding: 8px 16px;
+          font-size: 0.84rem;
+          box-shadow: 0 8px 18px rgba(37, 99, 235, 0.26);
+          transition: all 0.2s ease;
+        }
+
+        .admin-policy-edit-btn:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 12px 22px rgba(37, 99, 235, 0.33);
+        }
+
+        .admin-policy-card .card-body {
+          padding: 22px;
+          background: #f8fafc;
+        }
+
+        .admin-policy-loading,
+        .admin-policy-empty {
+          background: #fff;
+          border: 1px solid #e2e8f0;
+          border-radius: 14px;
+          padding: 56px 20px;
+          text-align: center;
+          color: #64748b;
+        }
+
+        .admin-policy-content {
+          background: #fff;
+          border: 1px solid #dbeafe;
+          border-radius: 16px;
+          padding: 30px;
+          max-width: 980px;
+          margin: 0 auto;
+          box-shadow: 0 12px 26px rgba(37, 99, 235, 0.08);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .admin-policy-content::before {
+          content: "";
+          position: absolute;
+          width: 180px;
+          height: 180px;
+          border-radius: 50%;
+          background: rgba(59, 130, 246, 0.08);
+          right: -70px;
+          top: -70px;
+          pointer-events: none;
+        }
+
+        .admin-policy-title {
+          text-align: center;
+          color: #1d4ed8;
+          margin-bottom: 18px;
+          padding-bottom: 12px;
+          border-bottom: 1px solid #dbeafe;
+          font-size: 1.5rem;
+          font-weight: 800;
+          letter-spacing: -0.2px;
+          position: relative;
+          z-index: 1;
+        }
+
+        .admin-policy-body {
+          white-space: pre-line;
+          line-height: 1.85;
+          font-size: 1.02rem;
+          color: #334155;
+          position: relative;
+          z-index: 1;
+        }
+
+        .admin-policy-updated {
+          margin-top: 26px;
+          padding-top: 16px;
+          border-top: 1px dashed #dbeafe;
+          text-align: right;
+          color: #64748b;
+          font-size: 0.82rem;
+          font-style: italic;
+          position: relative;
+          z-index: 1;
+        }
+      `}</style>
+
+      <div className="container-fluid p-0 admin-policy-scope">
+        <div className="card admin-policy-card">
+          <div className="card-header">
+            <div className="row align-items-center g-3">
+              <div className="col-sm-12 col-md-7">
+                <h5 className="card-title mb-0">Nội quy chung của Kí túc xá</h5>
+                <p className="card-subtitle small">Xem và quản lý nội quy chính thức của cơ sở.</p>
               </div>
-              <div className="col-sm-12 col-md-6 text-end">
+              <div className="col-sm-12 col-md-5 text-md-end">
                 <button
-                  className="btn btn-primary btn-md shadow-sm"
+                  className="btn btn-primary admin-policy-edit-btn"
                   onClick={handleEdit}
                 >
                   <svg
@@ -84,39 +201,24 @@ function PolicyManagement(props) {
               </div>
             </div>
           </div>
-          <div className="card-body bg-light bg-opacity-10 p-4">
+
+          <div className="card-body">
             {loading ? (
-              <div className="text-center p-5">
+              <div className="admin-policy-loading">
                 <div className="spinner-border text-primary" role="status">
                   <span className="visually-hidden">Đang tải...</span>
                 </div>
               </div>
             ) : policy ? (
-              <div
-                className="policy-content bg-white p-5 rounded border shadow-sm mx-auto"
-                style={{ maxWidth: "900px" }}
-              >
-                <h2 className="text-center text-primary mb-4 border-bottom pb-3">
-                  {policy.title}
-                </h2>
-                <div
-                  className="content-body"
-                  style={{
-                    whiteSpace: "pre-line",
-                    lineHeight: "1.8",
-                    fontSize: "1.1rem",
-                    color: "#333",
-                  }}
-                >
-                  {policy.content}
-                </div>
-                <div className="mt-5 pt-4 border-top text-end text-muted small italic">
-                  Cập nhật lần cuối:{" "}
-                  {new Date(policy.updatedAt).toLocaleString("vi-VN")}
+              <div className="admin-policy-content">
+                <h2 className="admin-policy-title">{policy.title}</h2>
+                <div className="admin-policy-body">{policy.content}</div>
+                <div className="admin-policy-updated">
+                  Cập nhật lần cuối: {new Date(policy.updatedAt).toLocaleString("vi-VN")}
                 </div>
               </div>
             ) : (
-              <div className="text-center p-5 text-muted">
+              <div className="admin-policy-empty">
                 Chưa có nội dung nội quy nào được thiết lập.
               </div>
             )}
