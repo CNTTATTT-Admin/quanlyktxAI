@@ -58,7 +58,7 @@ class Header extends Component {
             
             {/* Logo - ĐÃ THÊM marginLeft để đẩy sang phải một chút */}
             <a className="navbar-brand text-brand" href="/" style={{ marginLeft: "30px" }}>
-              <img src={logo} alt="KtxAI" style={{ height: "60px" }} />
+              <img src={logo} alt="KtxAI" style={{ height: "50px" }} />
             </a>
 
             <div className="navbar-collapse collapse" id="navbarDefault">
