@@ -22,6 +22,8 @@ public interface ContractRepository extends JpaRepository<Contract, Long>, Contr
 
     boolean existsByStudentAndDeadlineContractAfter(User student, LocalDateTime time);
 
+    boolean existsByStudentAndDeadlineContractAfterAndStudent_AllocatedRoomIsNotNull(User student, LocalDateTime time);
+
     List<Contract> findByRoomAndDeadlineContractAfter(Room room, LocalDateTime time);
 
     @Modifying

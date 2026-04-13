@@ -174,13 +174,8 @@ public class StatisticalServiceImpl extends BaseService implements StatisticalSe
 
         //tiền phòng + net
         for (Contract contract : contractRepository.getAllContract(getUserId())) {
-            LocalDateTime defaultEndDate = contract.getCreatedAt().withMonth(12).withDayOfMonth(31);
             YearMonth currentMonth = YearMonth.from(contract.getCreatedAt());
-            YearMonth endMonth = YearMonth.from(defaultEndDate);
-            
-            if (realNowMonth.isBefore(endMonth)) {
-                endMonth = realNowMonth;
-            }
+            YearMonth endMonth = realNowMonth;
             
             if (contract.getDeadlineContract() != null) {
                 YearMonth contractEndMonth = YearMonth.from(contract.getDeadlineContract());
