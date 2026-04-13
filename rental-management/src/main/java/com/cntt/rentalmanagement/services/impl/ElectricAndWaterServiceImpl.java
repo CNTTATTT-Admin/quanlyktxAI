@@ -4,6 +4,7 @@ import com.cntt.rentalmanagement.domain.models.ElectricAndWater;
 import com.cntt.rentalmanagement.domain.models.Room;
 import com.cntt.rentalmanagement.domain.payload.response.ElectricAndWaterResponse;
 import com.cntt.rentalmanagement.repository.ElectricAndWaterRepository;
+import com.cntt.rentalmanagement.repository.RoomRepository;
 import com.cntt.rentalmanagement.services.ElectricAndWaterService;
 import com.cntt.rentalmanagement.services.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,8 @@ public class ElectricAndWaterServiceImpl implements ElectricAndWaterService {
     @Autowired
     private ElectricAndWaterRepository electricAndWaterRepository;
     @Autowired
+    private RoomRepository roomRepository;
+    @Autowired
     private RoomService roomService;
 
     @Override
@@ -31,10 +34,12 @@ public class ElectricAndWaterServiceImpl implements ElectricAndWaterService {
         electricAndWater.setTotalMoneyOfWater(totalMoneyOfWater);
         electricAndWater.setTotalMoneyOfElectric(totalMoneyOfElectric);
 
-        Room room = electricAndWater.getRoom();
+        Room room = roomRepository.findById(electricAndWater.getRoom().getId())
+            .orElseThrow(() -> new RuntimeException("Room not found"));
+        electricAndWater.setRoom(room);
         room.setPublicElectricCost(totalMoneyOfElectric);
         room.setWaterCost(totalMoneyOfWater);
-        roomService.updateRoom(room, room.getId());
+        roomRepository.save(room);
         return electricAndWaterRepository.save(electricAndWater);
     }
 
@@ -48,7 +53,9 @@ public class ElectricAndWaterServiceImpl implements ElectricAndWaterService {
                 BigDecimal totalMoneyOfWater = deviatedBlock > 0 ? electricAndWater.getMoneyEachBlockOfWater().multiply(BigDecimal.valueOf(deviatedBlock)) : BigDecimal.ZERO;
                 BigDecimal totalMoneyOfElectric = deviatedNumber > 0 ? electricAndWater.getMoneyEachNumberOfElectric().multiply(BigDecimal.valueOf(deviatedNumber)) : BigDecimal.ZERO;
 
-                electricAndWater1.setRoom(electricAndWater.getRoom());
+                Room room = roomRepository.findById(electricAndWater.getRoom().getId())
+                    .orElseThrow(() -> new RuntimeException("Room not found"));
+                electricAndWater1.setRoom(room);
                 electricAndWater1.setMonth(electricAndWater.getMonth());
                 electricAndWater1.setName(electricAndWater.getName());
 
@@ -63,10 +70,9 @@ public class ElectricAndWaterServiceImpl implements ElectricAndWaterService {
                 electricAndWater1.setTotalMoneyOfElectric(totalMoneyOfElectric);
                 electricAndWater1.setPaid(electricAndWater.isPaid());
 
-                Room room = electricAndWater.getRoom();
                 room.setPublicElectricCost(totalMoneyOfElectric);
                 room.setWaterCost(totalMoneyOfWater);
-                roomService.updateRoom(room, room.getId());
+                roomRepository.save(room);
                 return electricAndWaterRepository.save(electricAndWater1);
             })
             .orElseThrow(() -> new RuntimeException("Electric not found with id " + id));

@@ -3,8 +3,8 @@ import { Navigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import SidebarNav from "./SidebarNav";
 import {
+  createVNPayElectricWaterUrl,
   getElectricByRoomUser,
-  payElectricBill,
 } from "../../services/fetch/ApiUtils";
 import Header from "../../common/Header";
 import Footer from "../../common/Footer";
@@ -62,13 +62,16 @@ function ElectricAndWaterUserPage(props) {
 
   const handlePay = (id) => {
     if (window.confirm("Bạn có chắc chắn muốn thanh toán hóa đơn này không?")) {
-      payElectricBill(id)
+      createVNPayElectricWaterUrl(id)
         .then((response) => {
-          toast.success(response?.message || "Thanh toán thành công");
-          fetchElectricBills();
+          if (response?.url) {
+            window.location.href = response.url;
+          } else {
+            toast.error("Không thể tạo liên kết thanh toán VNPAY.");
+          }
         })
         .catch((error) => {
-          toast.error((error && error.message) || "Thanh toán thất bại.");
+          toast.error((error && error.message) || "Không thể khởi tạo thanh toán VNPAY.");
         });
     }
   };

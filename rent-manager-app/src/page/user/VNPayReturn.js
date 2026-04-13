@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { updateInvoiceStatus } from "../../services/fetch/ApiUtils";
+import { payElectricBill, updateInvoiceStatus } from "../../services/fetch/ApiUtils";
 import { toast } from "react-toastify";
 
 const VNPayReturn = () => {
@@ -16,20 +16,37 @@ const VNPayReturn = () => {
 
         if (responseCode === "00" && txnRef) {
             //00 là mã thành công
-            const invoiceId = txnRef.split("_")[0];//lấy invoiceID
-            
-            updateInvoiceStatus(invoiceId, "PAID", "VNPAY")
-                .then(() => {
-                    setStatus("Thanh toán thành công! Đang đưa bạn về trang lịch sử...");
-                    toast.success("Thanh toán phí gửi xe thành công!");
-                    setTimeout(() => {
-                        navigate("/parking-card-history");
-                    }, 2500);
-                })
-                .catch((err) => {
-                    setStatus("Lỗi đồng bộ dữ liệu với hệ thống.");
-                    toast.error("Thanh toán thành công trên VNPAY nhưng có lỗi cập nhật hệ thống!");
-                });
+            if (txnRef.startsWith("EW_")) {
+                const electricWaterId = txnRef.split("_")[1];
+
+                payElectricBill(electricWaterId)
+                    .then(() => {
+                        setStatus("Thanh toán thành công! Đang đưa bạn về trang hóa đơn điện nước...");
+                        toast.success("Thanh toán điện nước thành công!");
+                        setTimeout(() => {
+                            navigate("/electric-water-user");
+                        }, 2500);
+                    })
+                    .catch(() => {
+                        setStatus("Lỗi đồng bộ dữ liệu với hệ thống.");
+                        toast.error("Thanh toán thành công trên VNPAY nhưng có lỗi cập nhật hệ thống!");
+                    });
+            } else {
+                const invoiceId = txnRef.split("_")[0];//lấy invoiceID
+
+                updateInvoiceStatus(invoiceId, "PAID", "VNPAY")
+                    .then(() => {
+                        setStatus("Thanh toán thành công! Đang đưa bạn về trang lịch sử...");
+                        toast.success("Thanh toán phí gửi xe thành công!");
+                        setTimeout(() => {
+                            navigate("/parking-card-history");
+                        }, 2500);
+                    })
+                    .catch(() => {
+                        setStatus("Lỗi đồng bộ dữ liệu với hệ thống.");
+                        toast.error("Thanh toán thành công trên VNPAY nhưng có lỗi cập nhật hệ thống!");
+                    });
+            }
         } else {
             //Hủy/Lỗi
             setStatus("Thanh toán thất bại.");

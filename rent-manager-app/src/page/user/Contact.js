@@ -95,7 +95,7 @@ const Contact = (props) => {
                 <div className="contact-map box rounded-4 overflow-hidden shadow-sm border border-light bg-white p-2">
                   <div id="map" className="contact-map rounded-3 overflow-hidden">
                     <iframe
-                      src="https://maps.google.com/maps?q=Hanoi%20University%20of%20Civil%20Engineering&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3929.215255582693!2d105.75737717376435!3d9.999070373053279!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31a089c799d1a341%3A0xa3c33eac2e0e8938!2zVHLGsOG7nW5nIMSQ4bqhaSBI4buNYyBUw6J5IMSQw7Q!5e0!3m2!1svi!2s!4v1776050366880!5m2!1svi!2s"
                       width="100%"
                       height="450"
                       frameBorder="0"

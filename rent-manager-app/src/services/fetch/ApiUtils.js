@@ -715,6 +715,17 @@ export function payElectricBill(id) {
   });
 }
 
+export function createVNPayElectricWaterUrl(id) {
+  if (!localStorage.getItem(ACCESS_TOKEN)) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url: API_BASE_URL + "/payment/create-vnpay-url-electric-water?electricWaterId=" + id,
+    method: "GET",
+  });
+}
+
 export function createCheckoutRequest(data) {
   if (!localStorage.getItem(ACCESS_TOKEN)) {
     return Promise.reject("No access token set.");

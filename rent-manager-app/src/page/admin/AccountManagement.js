@@ -271,6 +271,7 @@ function AccountManagement(props) {
         .admin-account-table {
           margin-bottom: 0;
           min-width: 920px;
+          table-layout: fixed;
         }
 
         .admin-account-table thead th {
@@ -294,6 +295,40 @@ function AccountManagement(props) {
           padding: 9px 10px;
           background: #fff;
           font-size: 0.82rem;
+        }
+
+        .admin-account-table th:nth-child(1),
+        .admin-account-table td:nth-child(1) {
+          width: 46px;
+          text-align: center;
+        }
+
+        .admin-account-table th:nth-child(4),
+        .admin-account-table td:nth-child(4) {
+          width: 170px;
+          text-align: center;
+          padding-left: 14px;
+          padding-right: 14px;
+        }
+
+        .admin-account-table th:nth-child(5),
+        .admin-account-table td:nth-child(5) {
+          width: 150px;
+          text-align: center;
+          padding-left: 12px;
+          padding-right: 12px;
+        }
+
+        .admin-account-table th:nth-child(6),
+        .admin-account-table td:nth-child(6) {
+          width: 130px;
+          text-align: center;
+        }
+
+        .admin-account-table th:nth-child(7),
+        .admin-account-table td:nth-child(7) {
+          width: 130px;
+          text-align: center;
         }
 
         .admin-account-table tbody tr:nth-child(even) td {
@@ -447,7 +482,7 @@ function AccountManagement(props) {
                             <th>Họ và tên</th>
                             <th>Email</th>
                             <th>Số điện thoại</th>
-                            <th>Role</th>
+                            <th>Vai trò</th>
                             <th>Trạng thái</th>
                             <th>Chế độ</th>
                           </tr>
