@@ -83,6 +83,21 @@ function AccountManagement(props) {
     setCurrentPage(pageNumber);
   };
 
+  const formatRoles = (roles) => {
+    if (!Array.isArray(roles) || roles.length === 0) return [];
+    return roles
+      .map((role) => role?.name || "")
+      .filter(Boolean)
+      .map((name) => name.replace("ROLE_", ""));
+  };
+
+  const getRoleClass = (roleName) => {
+    if (roleName === "ADMIN") return "role-chip role-admin";
+    if (roleName === "RENTALER") return "role-chip role-rentaler";
+    if (roleName === "USER") return "role-chip role-user";
+    return "role-chip role-default";
+  };
+
   const handleSelectAll = (event) => {
     if (event.target.checked) {
       const allIds = tableData.map((item) => item.id);
@@ -143,33 +158,35 @@ function AccountManagement(props) {
 
         .admin-account-card {
           border: 1px solid #e2e8f0;
-          border-radius: 16px;
+          border-radius: 14px;
           background: #fff;
-          box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+          box-shadow: 0 6px 16px rgba(15, 23, 42, 0.05);
         }
 
         .admin-account-card .card-header {
           background: transparent;
           border-bottom: 1px solid #eef2f7;
-          padding: 18px 22px;
+          padding: 14px 18px;
         }
 
         .admin-account-card .card-title {
           margin: 0;
           font-weight: 800;
+          font-size: 1.02rem;
           color: #0f172a;
         }
 
         .admin-account-card .card-subtitle {
-          margin-top: 6px;
+          margin-top: 4px;
+          font-size: 0.82rem;
           color: #64748b;
         }
 
         .admin-account-shell {
           border: 1px solid #dbeafe;
-          border-radius: 16px;
+          border-radius: 14px;
           background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-          box-shadow: 0 8px 22px rgba(37, 99, 235, 0.08);
+          box-shadow: 0 6px 18px rgba(37, 99, 235, 0.08);
           overflow: hidden;
         }
 
@@ -178,7 +195,7 @@ function AccountManagement(props) {
           align-items: center;
           justify-content: space-between;
           gap: 12px;
-          padding: 14px 16px;
+          padding: 10px 14px;
           border-bottom: 1px solid #e2e8f0;
           background: linear-gradient(90deg, #eff6ff 0%, #f8fbff 100%);
         }
@@ -189,15 +206,16 @@ function AccountManagement(props) {
           gap: 8px;
           color: #1e3a8a;
           font-weight: 700;
+          font-size: 0.9rem;
         }
 
         .admin-account-count-pill {
           background: #1d4ed8;
           color: #fff;
           border-radius: 999px;
-          font-size: 0.75rem;
+          font-size: 0.7rem;
           font-weight: 700;
-          padding: 4px 10px;
+          padding: 3px 9px;
         }
 
         .admin-account-actions {
@@ -205,14 +223,14 @@ function AccountManagement(props) {
           flex-wrap: wrap;
           align-items: center;
           gap: 10px;
-          margin-bottom: 14px;
+          margin-bottom: 10px;
         }
 
         .admin-delete-btn {
           border-radius: 999px;
           font-weight: 700;
-          padding: 7px 14px;
-          font-size: 0.82rem;
+          padding: 6px 12px;
+          font-size: 0.76rem;
           margin-left: auto;
         }
 
@@ -225,8 +243,9 @@ function AccountManagement(props) {
           border-radius: 999px;
           border: 1px solid #cbd5e1;
           padding-left: 34px;
-          font-size: 0.84rem;
+          font-size: 0.8rem;
           background: #fff;
+          height: 34px;
         }
 
         .admin-search-icon {
@@ -244,7 +263,7 @@ function AccountManagement(props) {
 
         .admin-account-table-wrap {
           border: 1px solid #e2e8f0;
-          border-radius: 14px;
+          border-radius: 12px;
           overflow-x: auto;
           background: #fff;
         }
@@ -257,14 +276,14 @@ function AccountManagement(props) {
         .admin-account-table thead th {
           background: #f1f5f9;
           color: #334155;
-          font-size: 0.78rem;
+          font-size: 0.72rem;
           text-transform: uppercase;
           letter-spacing: 0.5px;
           font-weight: 900;
           text-align: center;
           vertical-align: middle;
           border-color: #dbe4ef;
-          padding: 12px 12px;
+          padding: 9px 10px;
           white-space: nowrap;
           font-family: 'Plus Jakarta Sans', 'Be Vietnam Pro', sans-serif;
         }
@@ -272,8 +291,9 @@ function AccountManagement(props) {
         .admin-account-table tbody td {
           border-color: #eef2f7;
           vertical-align: middle;
-          padding: 12px;
+          padding: 9px 10px;
           background: #fff;
+          font-size: 0.82rem;
         }
 
         .admin-account-table tbody tr:nth-child(even) td {
@@ -295,6 +315,7 @@ function AccountManagement(props) {
 
         .admin-name-cell {
           font-weight: 700;
+          font-size: 0.82rem;
           color: #0f172a;
         }
 
@@ -311,11 +332,52 @@ function AccountManagement(props) {
           font-weight: 600;
         }
 
+        .role-cell {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          flex-wrap: wrap;
+        }
+
+        .role-chip {
+          border-radius: 999px;
+          padding: 2px 8px;
+          font-size: 0.68rem;
+          font-weight: 700;
+          border: 1px solid transparent;
+          line-height: 1.5;
+        }
+
+        .role-admin {
+          background: #fee2e2;
+          border-color: #fecaca;
+          color: #b91c1c;
+        }
+
+        .role-rentaler {
+          background: #dcfce7;
+          border-color: #bbf7d0;
+          color: #15803d;
+        }
+
+        .role-user {
+          background: #dbeafe;
+          border-color: #bfdbfe;
+          color: #1d4ed8;
+        }
+
+        .role-default {
+          background: #f1f5f9;
+          border-color: #e2e8f0;
+          color: #475569;
+        }
+
         .admin-table-btn {
           border-radius: 999px;
-          padding: 5px 12px;
+          padding: 4px 10px;
           font-weight: 700;
-          font-size: 0.78rem;
+          font-size: 0.72rem;
           white-space: nowrap;
         }
       `}</style>
@@ -385,6 +447,7 @@ function AccountManagement(props) {
                             <th>Họ và tên</th>
                             <th>Email</th>
                             <th>Số điện thoại</th>
+                            <th>Role</th>
                             <th>Trạng thái</th>
                             <th>Chế độ</th>
                           </tr>
@@ -402,6 +465,15 @@ function AccountManagement(props) {
                               <td className="admin-name-cell">{item.name}</td>
                               <td className="admin-email-cell" title={item.email}>{item.email}</td>
                               <td className="admin-phone-cell">{item.phone}</td>
+                              <td>
+                                <div className="role-cell">
+                                  {(formatRoles(item.roles).length > 0 ? formatRoles(item.roles) : ["-"]).map((roleName, idx) => (
+                                    <span key={`${item.id}-${roleName}-${idx}`} className={getRoleClass(roleName)}>
+                                      {roleName}
+                                    </span>
+                                  ))}
+                                </div>
+                              </td>
 
                               <td style={{ textAlign: "center" }}>
                                 <button
