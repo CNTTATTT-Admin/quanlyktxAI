@@ -47,12 +47,76 @@ const AgentsGird = (props) => {
         currentUser={props.currentUser}
         onLogout={props.onLogout}
       />
+
+      <style>{`
+        .modern-card {
+          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          border: 1px solid transparent !important;
+        }
+        .modern-card:hover {
+          transform: translateY(-10px);
+          box-shadow: 0 25px 50px rgba(16, 185, 129, 0.12) !important;
+          border-color: rgba(16, 185, 129, 0.2) !important;
+        }
+
+        .img-hover-zoom {
+          overflow: hidden;
+        }
+        .img-hover-zoom img {
+          transition: transform 0.7s ease;
+        }
+        .modern-card:hover .img-hover-zoom img {
+          transform: scale(1.08);
+        }
+
+        .search-bar-modern {
+          transition: all 0.3s ease;
+          border: 2px solid transparent;
+        }
+        .search-bar-modern:focus-within {
+          box-shadow: 0 10px 25px rgba(16, 185, 129, 0.15) !important;
+          border-color: #10B981 !important;
+          transform: translateY(-2px);
+        }
+
+        .contact-item {
+          transition: all 0.3s ease;
+          border-radius: 8px;
+          padding: 8px 12px;
+          margin-left: -12px;
+          margin-right: -12px;
+          cursor: default;
+        }
+        .contact-item:hover {
+          background-color: #F0FDF4;
+          transform: translateX(8px);
+        }
+        .contact-item:hover .text-muted {
+          color: #10B981 !important;
+        }
+
+        .btn-modern {
+          transition: all 0.3s ease;
+        }
+        .btn-modern:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3) !important;
+        }
+
+        .social-btn-hover {
+          transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .social-btn-hover:hover {
+          transform: translateY(-5px) scale(1.1);
+          box-shadow: 0 10px 20px rgba(13, 110, 253, 0.2) !important;
+        }
+      `}</style>
+
       <main id="main" style={{ backgroundColor: "#F0FDF4", minHeight: "100vh" }} className="pt-5 mt-4 pb-5">
         <section className="intro-single pt-5 pb-2">
           <div className="container mt-4">
             <div className="row align-items-center">
 
-              {/* Cột trái: Tiêu đề chi tiết */}
               <div className="col-md-12 col-lg-6">
                 <div className="title-single-box">
                   <h1 className="title-single fw-bold text-dark" style={{ fontSize: "2.2rem" }}>Người cho thuê</h1>
@@ -62,7 +126,6 @@ const AgentsGird = (props) => {
                 </div>
               </div>
 
-              {/* Cột phải: Breadcrumb nằm ngang */}
               <div className="col-md-12 col-lg-6 d-flex justify-content-lg-end mt-4 mt-lg-0">
                 <nav aria-label="breadcrumb" className="breadcrumb-box bg-white px-4 py-2 rounded-pill shadow-sm border">
                   <ol className="breadcrumb mb-0">
@@ -79,12 +142,14 @@ const AgentsGird = (props) => {
             </div>
           </div>
         </section>
+        
         <section className="agents-grid grid">
           <div className="container">
+            {/* Thanh tìm kiếm */}
             <div className="row mb-5 justify-content-center">
               <div className="col-md-8 col-lg-6">
-                <div className="bg-white p-2 rounded-pill shadow-sm border d-flex align-items-center">
-                  <i className="bi bi-search text-muted fs-5 ms-3 me-2"></i>
+                <div className="bg-white p-2 rounded-pill shadow-sm d-flex align-items-center search-bar-modern">
+                  <i className="bi bi-search text-muted fs-5 ms-3 me-2" style={{ transition: "color 0.3s" }}></i>
                   <input
                     type="text"
                     className="form-control border-0 shadow-none bg-transparent"
@@ -96,13 +161,15 @@ const AgentsGird = (props) => {
               </div>
             </div>
 
+            {/* Danh sách người cho thuê */}
             <div className="row g-4 mb-5">
               {tableData.length > 0 ? (
                 tableData.map((rentaler) => (
                   <div className="col-md-6 col-lg-4" key={rentaler.id}>
-                    <div className="card h-100 rounded-4 shadow-sm border-0 overflow-hidden bg-white">
+                    <div className="card h-100 rounded-4 shadow-sm border-0 overflow-hidden bg-white modern-card">
+                      
                       {/* Ảnh đại diện & Tên */}
-                      <div className="position-relative">
+                      <div className="position-relative img-hover-zoom">
                         <img
                           src={rentaler?.imageUrl || "assets/img/agent-4.jpg"}
                           alt={rentaler.name}
@@ -111,15 +178,15 @@ const AgentsGird = (props) => {
                         />
                         <div
                           className="position-absolute bottom-0 start-0 w-100 p-4 d-flex flex-column justify-content-end"
-                          style={{ background: "linear-gradient(to top, rgba(0,0,0,0.9), transparent)", height: "50%" }}
+                          style={{ background: "linear-gradient(to top, rgba(0,0,0,0.95), transparent)", height: "60%" }}
                         >
-                          <h3 className="card-title text-white mb-1 fs-4 fw-bold">
+                          <h3 className="card-title text-white mb-2 fs-4 fw-bold">
                             <Link to={`/angent-single/${rentaler.id}`} className="text-white text-decoration-none">
                               {rentaler.name}
                             </Link>
                           </h3>
                           <div>
-                            <span className="badge bg-success rounded-pill px-3 py-2 shadow-sm">
+                            <span className="badge rounded-pill px-3 py-2 shadow-sm" style={{ backgroundColor: "#10B981" }}>
                               Quản lý / Chủ nhà
                             </span>
                           </div>
@@ -128,21 +195,21 @@ const AgentsGird = (props) => {
 
                       <div className="card-body p-4">
                         <ul className="list-unstyled mb-0">
-                          <li className="d-flex align-items-start mb-3 pb-2 border-bottom border-light">
+                          <li className="d-flex align-items-start mb-2 border-bottom border-light contact-item">
                             <i className="bi bi-geo-alt-fill text-success fs-5 me-3 mt-1"></i>
-                            <span className="text-muted small">
+                            <span className="text-muted small fw-medium" style={{ lineHeight: "1.6" }}>
                               {rentaler.address || "Chưa cập nhật địa chỉ"}
                             </span>
                           </li>
-                          <li className="d-flex align-items-center mb-3 pb-2 border-bottom border-light">
+                          <li className="d-flex align-items-center mb-2 border-bottom border-light contact-item">
                             <i className="bi bi-telephone-fill text-success fs-5 me-3"></i>
                             <strong className="text-dark">
                               {rentaler.phone || "Chưa cập nhật"}
                             </strong>
                           </li>
-                          <li className="d-flex align-items-center mb-2">
+                          <li className="d-flex align-items-center mb-1 contact-item">
                             <i className="bi bi-envelope-fill text-success fs-5 me-3"></i>
-                            <span className="text-muted small text-truncate">
+                            <span className="text-muted small text-truncate fw-medium">
                               {rentaler.email}
                             </span>
                           </li>
@@ -154,18 +221,18 @@ const AgentsGird = (props) => {
                           {rentaler?.facebookUrl && (
                             <a
                               href={rentaler.facebookUrl}
-                              className="btn btn-primary rounded-circle shadow-sm"
+                              className="btn btn-primary rounded-circle shadow-sm social-btn-hover"
                               target="_blank"
                               rel="noopener noreferrer"
-                              style={{ width: "40px", height: "40px", display: "flex", alignItems: "center", justifyItems: "center" }}
+                              style={{ width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center" }}
                             >
-                              <i className="bi bi-facebook fs-6"></i>
+                              <i className="bi bi-facebook fs-6 text-white"></i>
                             </a>
                           )}
                           {rentaler?.zaloUrl && (
                             <a
                               href={rentaler.zaloUrl}
-                              className="btn btn-primary rounded-circle shadow-sm"
+                              className="btn btn-info rounded-circle shadow-sm social-btn-hover text-white"
                               target="_blank"
                               rel="noopener noreferrer"
                               style={{ width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center" }}
@@ -174,7 +241,7 @@ const AgentsGird = (props) => {
                                 xmlns="http://www.w3.org/2000/svg"
                                 width="1em"
                                 height="1em"
-                                fill="white"
+                                fill="currentColor"
                                 className="fs-6"
                                 viewBox="0 0 50 50"
                               >
@@ -185,7 +252,8 @@ const AgentsGird = (props) => {
                         </div>
                         <Link
                           to={`/angent-single/${rentaler.id}`}
-                          className="btn btn-success rounded-pill px-4 fw-bold shadow-sm"
+                          className="btn text-white rounded-pill px-4 fw-bold shadow-sm btn-modern"
+                          style={{ backgroundColor: "#10B981" }}
                         >
                           Chi tiết <i className="bi bi-arrow-right ms-1"></i>
                         </Link>
@@ -194,14 +262,15 @@ const AgentsGird = (props) => {
                   </div>
                 ))
               ) : (
-                <div className="col-12 text-center py-5 my-5">
-                  <i className="bi bi-search text-muted mb-3 d-block" style={{ fontSize: "4rem" }}></i>
+                <div className="col-12 text-center py-5 my-5 bg-white rounded-4 shadow-sm border border-light">
+                  <i className="bi bi-search text-muted mb-3 d-block" style={{ fontSize: "3.5rem", opacity: "0.5" }}></i>
                   <h4 className="fw-bold text-dark">Không tìm thấy kết quả</h4>
                   <p className="text-muted">Không có người cho thuê nào khớp với tìm kiếm của bạn.</p>
                 </div>
               )}
             </div>
 
+            {/* Phân trang */}
             <div className="row">
               <div className="col-sm-12 d-flex justify-content-center mt-2">
                 <Pagination

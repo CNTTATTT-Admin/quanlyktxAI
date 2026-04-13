@@ -9,9 +9,6 @@ const ParkingPackageManagement = (props) => {
     const { authenticated, location } = props;
     const history = useNavigate();
 
-    // ==========================================
-    // 🧠 LOGIC & STATE GIỮ NGUYÊN 100%
-    // ==========================================
     const [packages, setPackages] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(10);
@@ -106,9 +103,6 @@ const ParkingPackageManagement = (props) => {
         return <Navigate to={{ pathname: "/login-rentaler", state: { from: location } }} />;
     }
 
-    // ==========================================
-    // 🎨 GIAO DIỆN MỚI (ECOHOME STYLE)
-    // ==========================================
     return (
         <>
             <style>{`
@@ -136,6 +130,34 @@ const ParkingPackageManagement = (props) => {
 
                 .btn-action-table { transition: all 0.2s; font-size: 0.85rem; padding: 6px 12px; border-radius: 8px; }
                 .btn-action-table:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+
+                .btn-action-table.btn-outline-primary:hover:not(:disabled) {
+                    background-color: #2563eb !important;
+                    border-color: #2563eb !important;
+                    color: #ffffff !important;
+                }
+                .btn-action-table.btn-outline-danger:hover:not(:disabled) {
+                    background-color: #dc2626 !important;
+                    border-color: #dc2626 !important;
+                    color: #ffffff !important;
+                }
+                .btn-success.btn-action-table:hover:not(:disabled) {
+                    background-color: #0f766e !important;
+                    border-color: #0f766e !important;
+                    color: #ffffff !important;
+                }
+                .btn-light.btn-modern:hover:not(:disabled),
+                .btn-light.border.text-secondary.btn-modern:hover:not(:disabled) {
+                    background-color: #f1f5f9 !important;
+                    border-color: #cbd5e1 !important;
+                    color: #334155 !important;
+                }
+                .bg-emerald.btn-modern:hover:not(:disabled),
+                .btn.bg-emerald:hover:not(:disabled) {
+                    background-color: #0d9488 !important;
+                    border-color: #0d9488 !important;
+                    color: #ffffff !important;
+                }
                 
                 .modal-eco .modal-content { border-radius: 20px; border: none; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
                 .modern-input:disabled, .modern-input[readonly] { background-color: #F1F5F9; color: #64748B; cursor: not-allowed; border-color: #E2E8F0; }
