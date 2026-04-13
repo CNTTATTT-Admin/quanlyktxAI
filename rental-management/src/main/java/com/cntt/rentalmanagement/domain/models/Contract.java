@@ -26,6 +26,9 @@ public class Contract extends DateAudit {
     private String nameOfRent;
     @Column(name = "deadline_contract")
     private LocalDateTime deadlineContract;
+
+    @Column(name = "is_expired")
+    private Boolean isExpired;
     @Column(name = "created_by")
     private String createdBy;
 
@@ -54,6 +57,7 @@ public class Contract extends DateAudit {
         this.numOfPeople = numOfPeople;
         this.phone = phone;
         this.deadlineContract = LocalDateTime.parse(deadlineContract);
+        this.isExpired = false;
         this.createdBy = createdBy;
         this.updatedBy = updatedBy;
         this.room = room;

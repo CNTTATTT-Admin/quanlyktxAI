@@ -18,5 +18,6 @@ public class ContractResponse {
     private LocalDateTime createdAt;
     private String phone;
     private Long numOfPeople;
+    private Boolean isExpired;
 
 }

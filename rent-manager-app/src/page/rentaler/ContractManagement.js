@@ -22,7 +22,7 @@ function ContractManagement(props) {
   const fetchData = () => {
     getAllContractOfRentaler(currentPage, itemsPerPage, searchQuery)
       .then((response) => {
-        setTableData(response.content);
+        setTableData(response.content || []);
         setTotalItems(response.totalElements);
       })
       .catch((error) => {
@@ -211,23 +211,10 @@ function ContractManagement(props) {
                       </td>
 
                       <td>
-                        {item.room.status === "AVAILABLE" && (
-                          <span className="badge bg-success text-white rounded-pill px-2 py-1">Trống</span>
-                        )}
-                        {item.room.status === "PARTIALLY_FILLED" && (
-                          <span className="badge bg-warning text-dark rounded-pill px-2 py-1">Còn chỗ</span>
-                        )}
-                        {item.room.status === "FULL" && (
-                          <span className="badge bg-danger text-white rounded-pill px-2 py-1">Hết chỗ</span>
-                        )}
-                        {item.room.status === "MAINTENANCE" && (
-                          <span className="badge bg-secondary text-white rounded-pill px-2 py-1">Bảo trì</span>
-                        )}
-                        {item.room.status === "ROOM_RENT" && (
-                          <span className="badge bg-success text-white rounded-pill px-2 py-1">Còn chỗ</span>
-                        )}
-                        {item.room.status === "HIRED" && (
-                          <span className="badge bg-danger text-white rounded-pill px-2 py-1">Hết chỗ</span>
+                        {item.isExpired ? (
+                          <span className="badge bg-danger text-white rounded-pill px-2 py-1">Hết hạn</span>
+                        ) : (
+                          <span className="badge bg-success text-white rounded-pill px-2 py-1">Còn hạn</span>
                         )}
                       </td>
 

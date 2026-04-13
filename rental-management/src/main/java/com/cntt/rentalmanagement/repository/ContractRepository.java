@@ -24,7 +24,14 @@ public interface ContractRepository extends JpaRepository<Contract, Long>, Contr
 
     boolean existsByStudentAndDeadlineContractAfterAndStudent_AllocatedRoomIsNotNull(User student, LocalDateTime time);
 
+    boolean existsByStudentAndIsExpiredFalseAndDeadlineContractAfter(User student, LocalDateTime time);
+
     List<Contract> findByRoomAndDeadlineContractAfter(Room room, LocalDateTime time);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Contract c SET c.isExpired = true WHERE c.isExpired = false AND c.deadlineContract <= :time")
+    int markExpiredContracts(@Param("time") LocalDateTime time);
 
     @Modifying
     @Transactional

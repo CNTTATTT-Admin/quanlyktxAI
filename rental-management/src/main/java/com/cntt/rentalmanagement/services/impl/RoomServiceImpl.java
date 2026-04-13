@@ -297,6 +297,7 @@ public class RoomServiceImpl extends BaseService implements RoomService {
         List<Contract> activeContracts = contractRepository.findByRoomAndDeadlineContractAfter(room, LocalDateTime.now());
         for (Contract contract : activeContracts) {
             contract.setDeadlineContract(LocalDateTime.now());
+            contract.setIsExpired(true);
             contractRepository.save(contract);
         }
 
@@ -322,6 +323,7 @@ public class RoomServiceImpl extends BaseService implements RoomService {
         }
 
         contract.setDeadlineContract(LocalDateTime.now());
+        contract.setIsExpired(true);
         contractRepository.save(contract);
 
         updateRoomStatus(room);
