@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import Pagination from "./Pagnation";
 import { toast } from "react-toastify";
 import { FiCheckCircle, FiXCircle, FiClock, FiCheck, FiX } from "react-icons/fi";
@@ -10,7 +10,6 @@ const AUTO_RELOAD_INTERVAL_MS = 15000;
 
 const InvoiceManagement = (props) => {
   const { authenticated, location } = props;
-  const history = useNavigate();
 
   const [tableData, setTableData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -20,12 +19,6 @@ const InvoiceManagement = (props) => {
 
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
-
-  useEffect(() => {
-    if (authenticated) {
-      fetchData();
-    }
-  }, [authenticated, fetchData]);
 
   const fetchData = useCallback(() => {
     getAllInvoices(currentPage - 1, itemsPerPage, searchQuery)
@@ -37,6 +30,12 @@ const InvoiceManagement = (props) => {
         toast.error((error && error.message) || "Không thể tải danh sách hóa đơn.");
       });
   }, [currentPage, itemsPerPage, searchQuery]);
+
+  useEffect(() => {
+    if (authenticated) {
+      fetchData();
+    }
+  }, [authenticated, fetchData]);
 
   useEffect(() => {
     if (!authenticated) return;

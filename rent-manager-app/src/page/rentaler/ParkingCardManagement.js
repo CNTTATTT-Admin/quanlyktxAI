@@ -26,6 +26,10 @@ const ParkingCardManagement = (props) => {
     const [showInvoiceModal, setShowInvoiceModal] = useState(false);
     const [selectedInvoice, setSelectedInvoice] = useState(null);
 
+    const [showRejectModal, setShowRejectModal] = useState(false);
+    const [rejectingCardId, setRejectingCardId] = useState(null);
+    const [rejectReason, setRejectReason] = useState("");
+
     const fetchData = useCallback(() => {
         getAllParkingCards(currentPage - 1, itemsPerPage, searchQuery)
             .then((response) => {
@@ -61,15 +65,9 @@ const ParkingCardManagement = (props) => {
 
     const handleUpdateStatus = (id, status) => {
         if (status === "REJECTED") {
-            const reason = window.prompt("Nhập lý do từ chối (nếu có):");
-            if (reason === null) return;
-            updateParkingCardStatus(id, { status, rejectedReason: reason })
-                .then(() => {
-                    toast.success("Đã từ chối thẻ xe.");
-                    notifyDataUpdated();
-                    fetchData();
-                })
-                .catch((error) => toast.error(error.message || "Lỗi khi từ chối."));
+            setRejectingCardId(id);
+            setRejectReason("");
+            setShowRejectModal(true);
         } else {
             updateParkingCardStatus(id, { status })
                 .then(() => {
@@ -79,6 +77,23 @@ const ParkingCardManagement = (props) => {
                 })
                 .catch((error) => toast.error(error.message || "Lỗi khi duyệt."));
         }
+    };
+
+    const confirmReject = (e) => {
+        e.preventDefault();
+        if (!rejectReason.trim()) {
+            toast.warning("Vui lòng nhập lý do từ chối!");
+            return;
+        }
+        
+        updateParkingCardStatus(rejectingCardId, { status: "REJECTED", rejectedReason: rejectReason })
+            .then(() => {
+                toast.success("Đã từ chối thẻ xe.");
+                setShowRejectModal(false);
+                notifyDataUpdated();
+                fetchData();
+            })
+            .catch((error) => toast.error(error.message || "Lỗi khi từ chối."));
     };
 
     const openImagesModal = (images, title) => {
@@ -329,6 +344,53 @@ const ParkingCardManagement = (props) => {
                 </div>
 
             </div>
+
+            {/* Modal Nhập Lý Do Từ Chối */}
+            {showRejectModal && (
+                <div className="modal fade show d-block modal-eco" style={{ backgroundColor: "rgba(15, 23, 42, 0.6)", backdropFilter: "blur(4px)", zIndex: 1050 }} tabIndex="-1">
+                    <div className="modal-dialog modal-dialog-centered">
+                        <div className="modal-content border-0">
+                            <div className="modal-header border-bottom pb-3">
+                                <h5 className="modal-title fw-bolder text-danger d-flex align-items-center">
+                                    <FiX className="me-2 fs-4" />
+                                    Từ chối cấp thẻ xe
+                                </h5>
+                                <button type="button" className="btn-close" onClick={() => setShowRejectModal(false)}></button>
+                            </div>
+                            <form onSubmit={confirmReject}>
+                                <div className="modal-body p-4 bg-light">
+                                    <div className="mb-2">
+                                        <label className="fw-bold text-dark mb-2" style={{ fontSize: "0.95rem" }}>
+                                            Lý do từ chối <span className="text-danger">*</span>
+                                        </label>
+                                        <textarea
+                                            className="form-control shadow-sm border-0 p-3"
+                                            style={{ borderRadius: "12px", resize: "none", fontSize: "0.95rem" }}
+                                            rows="4"
+                                            placeholder="Ví dụ: Giấy tờ xe bị mờ, Biển số đăng ký không khớp với ảnh thực tế..."
+                                            value={rejectReason}
+                                            onChange={(e) => setRejectReason(e.target.value)}
+                                            required
+                                            autoFocus
+                                        ></textarea>
+                                    </div>
+                                    <small className="text-muted fst-italic" style={{ fontSize: "0.85rem" }}>
+                                        * Lý do này sẽ được gửi thông báo đến cho người đăng ký để họ chỉnh sửa.
+                                    </small>
+                                </div>
+                                <div className="modal-footer border-top p-3 d-flex justify-content-end gap-2 bg-white">
+                                    <button type="button" className="btn btn-light border text-secondary btn-modern rounded-pill px-4 shadow-sm" onClick={() => setShowRejectModal(false)}>
+                                        Hủy bỏ
+                                    </button>
+                                    <button type="submit" className="btn btn-danger text-white btn-modern rounded-pill px-4 shadow-sm">
+                                        Xác nhận từ chối
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Modal Chi Tiết Hóa Đơn */}
             {showInvoiceModal && selectedInvoice && (
