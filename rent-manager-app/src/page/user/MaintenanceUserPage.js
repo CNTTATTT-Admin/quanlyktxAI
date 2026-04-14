@@ -379,6 +379,7 @@ function MaintenanceUserPage(props) {
                               <th style={{ paddingLeft: "30px" }}>Phòng</th>
                               <th>Mô tả lỗi</th>
                               <th>Ngày yêu cầu</th>
+                              <th>Ngày cập nhật</th>
                               <th>Chi phí</th>
                               <th style={{ paddingRight: "30px" }}>Trạng thái</th>
                             </tr>
@@ -403,7 +404,13 @@ function MaintenanceUserPage(props) {
                                   <td>
                                     <span className="text-muted">
                                       <i className="bi bi-calendar3 me-1"></i>
-                                      {item.createdAt ? new Date(item.createdAt).toLocaleDateString("vi-VN") : "N/A"}
+                                      {item.createdAt ? new Date(item.createdAt).toLocaleDateString("vi-VN") : "-"}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    <span className="text-muted">
+                                      <i className="bi bi-calendar3 me-1"></i>
+                                      {item.updatedAt ? new Date(item.updatedAt).toLocaleDateString("vi-VN") : "N/A"}
                                     </span>
                                   </td>
                                   <td className="fw-bold text-danger">

@@ -36,7 +36,7 @@ const UserProfile = (props) => {
         return;
       }
       if (file.size > maxFileSize) {
-        toast.error("File size exceeds the maximum limit of 1MB.");
+        toast.error("File size exceeds the maximum limit of 10MB.");
         return;
       }
       setImageFile(file);
@@ -273,7 +273,7 @@ const UserProfile = (props) => {
                     </div>
                     
                     <div className="mb-5">
-                      <label className="eco-form-label">Cập nhật ảnh đại diện mới (Tối đa 1MB)</label>
+                      <label className="eco-form-label">Cập nhật ảnh đại diện mới (Tối đa 10MB)</label>
                       <input
                         className="eco-input-field eco-file-upload p-2"
                         accept=".png, .jpeg, .jpg, image/jpeg, image/png"

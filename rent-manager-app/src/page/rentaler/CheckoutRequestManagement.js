@@ -200,7 +200,7 @@ function CheckoutRequestManagement(props) {
                           </button>
                           <button
                             type="button"
-                            className="btn btn-outline-danger shadow-sm rounded-pill fw-semibold bg-white btn-action-table"
+                            className="btn btn-outline-danger shadow-sm rounded-pill fw-semibold btn-action-table"
                             onClick={() => handleUpdateStatus(item.id, "REJECTED")}
                             title="Từ chối yêu cầu"
                           >

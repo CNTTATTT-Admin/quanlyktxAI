@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @RestController
@@ -46,6 +47,10 @@ public class ElectricAndWaterController {
             List<ElectricAndWaterResponse> electrics = electricAndWaterService.getElectricByRoom(room.getId());
             electricAndWatersList.addAll(electrics);
         }
+
+        electricAndWatersList.sort(Comparator
+            .comparing(ElectricAndWaterResponse::isPaid)
+            .thenComparing(ElectricAndWaterResponse::getId, Comparator.reverseOrder()));
 
         // Sử dụng PageRequest để tạo Pageable
         Pageable pageable = PageRequest.of(pageNo, pageSize);

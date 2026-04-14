@@ -41,7 +41,14 @@ const ElectricAndWaterManagement = (props) => {
         console.log("dataTable", response);
 
         if (response && response.content) {
-          setTableData(response.content);
+          const sortedContent = [...response.content].sort((a, b) => {
+            if (a.paid !== b.paid) {
+              return Number(a.paid) - Number(b.paid);
+            }
+            return (b.id || 0) - (a.id || 0);
+          });
+
+          setTableData(sortedContent);
           setTotalItems(response.totalElements);
         } else {
           setTableData([]);

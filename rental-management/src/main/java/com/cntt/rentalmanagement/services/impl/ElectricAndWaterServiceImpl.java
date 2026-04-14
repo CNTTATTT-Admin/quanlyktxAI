@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -92,6 +93,9 @@ public class ElectricAndWaterServiceImpl implements ElectricAndWaterService {
     public List<ElectricAndWaterResponse> getElectricByRoom(Long id) {
         return electricAndWaterRepository.findByRoomId(id)
             .stream()
+            .sorted(Comparator
+                .comparing(ElectricAndWater::isPaid)
+                .thenComparing(ElectricAndWater::getId, Comparator.reverseOrder()))
             .map(this::toResponse)
             .toList();
     }
@@ -118,6 +122,9 @@ public class ElectricAndWaterServiceImpl implements ElectricAndWaterService {
 
         return electricAndWaterRepository.findByRoomIdIn(new ArrayList<>(roomIds))
             .stream()
+            .sorted(Comparator
+                .comparing(ElectricAndWater::isPaid)
+                .thenComparing(ElectricAndWater::getId, Comparator.reverseOrder()))
             .map(this::toResponse)
             .toList();
     }

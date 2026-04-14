@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import SidebarNav from "./SidebarNav";
 import Nav from "./Nav";
 import {
@@ -9,6 +9,8 @@ import {
 import Pagination from "./Pagnation";
 import { toast } from "react-toastify";
 import { Navigate, useNavigate } from "react-router-dom";
+import { formatVnd } from "../../utils/currency";
+import useAutoReload from "../../hooks/useAutoReload";
 import {
   FiCheck,
   FiTool,
@@ -16,8 +18,6 @@ import {
   FiTrash2,
   FiExternalLink,
 } from "react-icons/fi";
-import useAutoReload from "../../hooks/useAutoReload";
-import { formatVnd } from "../../utils/currency";
 
 function MaintenceManagement(props) {
   const { authenticated, role, currentUser, location, onLogout } = props;
@@ -49,18 +49,15 @@ function MaintenceManagement(props) {
             "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
         );
       });
-    }, [currentPage, itemsPerPage, searchQuery]);
+  }, [currentPage, itemsPerPage, searchQuery]);
 
-    useEffect(() => {
+  useEffect(() => {
+    if (authenticated) {
       fetchData();
-    }, [fetchData]);
+    }
+  }, [authenticated, fetchData]);
 
-    useAutoReload({ enabled: authenticated, onReload: fetchData });
-
-    const notifyDataUpdated = () => {
-      localStorage.setItem("app-data-updated-at", String(Date.now()));
-      window.dispatchEvent(new Event("app-data-updated"));
-    };
+  useAutoReload({ enabled: authenticated, onReload: fetchData });
 
   const handleSearch = (event) => {
     setSearchQuery(event.target.value);
@@ -82,7 +79,6 @@ function MaintenceManagement(props) {
     deleteMaintenance(id)
       .then((response) => {
         toast.success("Xóa phiếu bảo trì thành công");
-        notifyDataUpdated();
         fetchData();
       })
       .catch((error) => {
@@ -97,7 +93,6 @@ function MaintenceManagement(props) {
     updateMaintenanceStatus(id, { status, ...extraData })
       .then((response) => {
         toast.success(response.message);
-        notifyDataUpdated();
         fetchData();
         setShowResolveModal(false);
       })
@@ -153,7 +148,6 @@ function MaintenceManagement(props) {
         .btn-modern { transition: all 0.3s ease; border-radius: 50px; font-weight: 600; font-size: 0.9rem; padding: 8px 20px; }
         .btn-modern:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
         
-        /* Table Styles */
         .modern-table-wrapper { background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); overflow: hidden; border: 1px solid #f1f5f9; }
         .eco-table { margin-bottom: 0; }
         .eco-table thead { background-color: #F8FAFC; border-bottom: 2px solid #E2E8F0; }
@@ -162,11 +156,9 @@ function MaintenceManagement(props) {
         .eco-table tbody tr { transition: all 0.2s ease; }
         .eco-table tbody tr:hover { background-color: #F0FDF4; }
         
-        /* Nút trong bảng */
         .btn-table-action { width: 34px; height: 34px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; transition: all 0.2s; }
         .btn-table-action:hover:not(:disabled) { transform: translateY(-2px); }
 
-        /* Modal Style */
         .modern-modal-content { border-radius: 20px; border: none; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
         .modern-modal-input { border-radius: 10px; border: 1px solid #E2E8F0; padding: 10px 15px; }
         .modern-modal-input:focus { border-color: #10B981; box-shadow: 0 0 0 3px rgba(16,185,129,0.1); outline: none; }
@@ -210,15 +202,16 @@ function MaintenceManagement(props) {
                   <th>Người báo / Mô tả</th>
                   <th>Trạng thái</th>
                   <th>Chi phí</th>
-                  <th>Thời gian</th>
-                  <th>Hóa đơn</th>
+                  <th>Thời gian yêu cầu</th>
+                  <th>Ngày cập nhật</th>
+                  <th>Tài liệu đính kèm</th>
                   <th className="text-end pe-4">Hành động</th>
                 </tr>
               </thead>
               <tbody>
                 {tableData.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="text-center py-5">
+                    <td colSpan="8" className="text-center py-5">
                       <div className="text-muted">
                         <i className="bi bi-inboxes fs-1 d-block mb-2 opacity-50"></i>
                         Không có dữ liệu bảo trì nào.
@@ -252,7 +245,7 @@ function MaintenceManagement(props) {
 
                       <td className="fw-semibold text-dark">
                         {item.price
-                         ? formatVnd(item.price)
+                          ? formatVnd(item.price)
                           : "-"}
                       </td>
 
@@ -262,6 +255,12 @@ function MaintenceManagement(props) {
                           : item.createdAt
                             ? new Date(item.createdAt).toLocaleDateString("vi-VN")
                             : "-"}
+                      </td>
+
+                      <td>
+                        {item.updatedAt
+                          ? new Date(item.updatedAt).toLocaleDateString("vi-VN")
+                          :  "-"}
                       </td>
 
                       <td>

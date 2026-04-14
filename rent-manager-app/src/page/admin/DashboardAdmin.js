@@ -75,6 +75,10 @@ const DashboardAdmin = (props) => {
     setShowModal(true);
   };
 
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
   const handleSendEmail = (userId) => {
     history("/admin/send-email/" + userId);
   };
@@ -629,7 +633,7 @@ const DashboardAdmin = (props) => {
                                   {item.description}
                                 </div>
                               </td>
-                              <td>{item.address}</td>
+                              <td>{item.location.cityName}</td>
                               <td className="admin-price">
                                 {formatVnd(item.price)}
                               </td>
@@ -681,11 +685,11 @@ const DashboardAdmin = (props) => {
                                   </a>
                                   <a
                                     className="admin-action-btn detail"
-                                    onClick={() => handleSetRoomId(item.id)}
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#exampleModal"
-                                    data-toggle="tooltip"
-                                    data-placement="bottom"
+                                    href="#"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      handleSetRoomId(item.id);
+                                    }}
                                     title="Xem chi tiết"
                                   >
                                     <i className="bi bi-info-circle-fill"></i>
@@ -709,7 +713,33 @@ const DashboardAdmin = (props) => {
             </div>
           </div>
         </div>
-        {showModal && <ModalRoomDetails roomId={roomId} />}
+        {showModal && (
+          <div
+            className="modal fade show d-block"
+            style={{ backgroundColor: "rgba(15, 23, 42, 0.55)", zIndex: 1055 }}
+            onClick={handleCloseModal}
+          >
+            <div
+              className="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+                <div className="modal-header border-bottom bg-light py-3">
+                  <h5 className="modal-title fw-bold mb-0">Chi tiết phòng trọ</h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    aria-label="Close"
+                    onClick={handleCloseModal}
+                  ></button>
+                </div>
+                <div className="modal-body p-3 p-md-4" style={{ maxHeight: "80vh", overflowY: "auto" }}>
+                  <ModalRoomDetails roomId={roomId} />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

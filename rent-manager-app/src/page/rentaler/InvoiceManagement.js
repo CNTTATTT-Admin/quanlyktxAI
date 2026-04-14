@@ -265,7 +265,7 @@ const InvoiceManagement = (props) => {
                             <FiCheck className="me-1 fs-5" /> Thu tiền
                           </button>
                           <button
-                            className="btn btn-outline-danger bg-white shadow-sm btn-action-table w-100 d-flex justify-content-center align-items-center"
+                            className="btn btn-outline-danger shadow-sm btn-action-table w-100 d-flex justify-content-center align-items-center"
                             onClick={() => handleCancelInvoice(item.id)}
                             title="Hủy hóa đơn này"
                           >

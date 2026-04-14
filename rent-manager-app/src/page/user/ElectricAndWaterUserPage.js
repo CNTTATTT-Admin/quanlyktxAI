@@ -35,8 +35,13 @@ function ElectricAndWaterUserPage(props) {
           ? response.length
           : response.totalElements || data.length;
 
-        // sort by month or ID
-        data.sort((a, b) => b.id - a.id);
+        // Ưu tiên chưa thanh toán trước, sau đó mới nhất đến cũ nhất
+        data.sort((a, b) => {
+          if (a.paid !== b.paid) {
+            return Number(a.paid) - Number(b.paid);
+          }
+          return (b.id || 0) - (a.id || 0);
+        });
 
         const indexOfLastItem = currentPage * itemsPerPage;
         const indexOfFirstItem = indexOfLastItem - itemsPerPage;

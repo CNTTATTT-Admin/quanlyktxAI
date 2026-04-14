@@ -13,6 +13,7 @@ public class MaintenanceResponse {
     private LocalDateTime maintenanceDate;
     private BigDecimal price;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private RoomResponse room;
     private String files;
     private String status;
