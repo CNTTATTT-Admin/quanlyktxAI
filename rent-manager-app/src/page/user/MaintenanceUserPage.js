@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import SidebarNav from "./SidebarNav";
@@ -10,6 +10,8 @@ import {
 import Header from "../../common/Header";
 import Footer from "../../common/Footer";
 import Pagination from "./Pagnation";
+import { formatVnd } from "../../utils/currency";
+import useAutoReload from "../../hooks/useAutoReload";
 
 function MaintenanceUserPage(props) {
   
@@ -27,14 +29,7 @@ function MaintenanceUserPage(props) {
   const [itemsPerPage] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
 
-  useEffect(() => {
-    if (authenticated) {
-      fetchUserRooms();
-      fetchMaintenanceHistory();
-    }
-  }, [currentPage, authenticated]);
-
-  const fetchUserRooms = () => {
+  const fetchUserRooms = useCallback(() => {
     const allocatedRoomId = currentUser?.allocatedRoomId;
     if (!allocatedRoomId) {
       setRooms([]);
@@ -53,9 +48,9 @@ function MaintenanceUserPage(props) {
           (error && error.message) || "Không thể tải thông tin phòng.",
         );
       });
-  };
+  }, [currentUser]);
 
-  const fetchMaintenanceHistory = () => {
+  const fetchMaintenanceHistory = useCallback(() => {
     getMaintenanceHistoryForUser(currentPage, itemsPerPage)
       .then((response) => {
         setTableData(response.content);
@@ -66,6 +61,24 @@ function MaintenanceUserPage(props) {
           (error && error.message) || "Không thể tải lịch sử bảo trì.",
         );
       });
+  }, [currentPage, itemsPerPage]);
+
+  const refreshData = useCallback(() => {
+    fetchUserRooms();
+    fetchMaintenanceHistory();
+  }, [fetchMaintenanceHistory, fetchUserRooms]);
+
+  useEffect(() => {
+    if (authenticated) {
+      refreshData();
+    }
+  }, [authenticated, refreshData]);
+
+  useAutoReload({ enabled: authenticated, onReload: refreshData });
+
+  const notifyDataUpdated = () => {
+    localStorage.setItem("app-data-updated-at", String(Date.now()));
+    window.dispatchEvent(new Event("app-data-updated"));
   };
 
   const handleInputChange = (event) => {
@@ -99,6 +112,7 @@ function MaintenanceUserPage(props) {
           description: "",
           files: [],
         });
+        notifyDataUpdated();
         fetchMaintenanceHistory();
       })
       .catch((error) => {
@@ -393,7 +407,7 @@ function MaintenanceUserPage(props) {
                                     </span>
                                   </td>
                                   <td className="fw-bold text-danger">
-                                    {item.price ? item.price.toLocaleString("vi-VN", { style: "currency", currency: "VND" }) : "-"}
+                                    {item.price ? formatVnd(item.price) : "-"}
                                   </td>
                                   <td style={{ paddingRight: "30px" }}>
                                     {getStatusBadge(item.status)}

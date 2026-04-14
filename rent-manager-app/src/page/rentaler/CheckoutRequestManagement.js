@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import SidebarNav from "./SidebarNav";
 import Nav from "./Nav";
 import {
@@ -10,6 +10,7 @@ import Pagination from "./Pagnation";
 import { toast } from "react-toastify";
 import { Navigate } from "react-router-dom";
 import moment from "moment";
+import useAutoReload from "../../hooks/useAutoReload";
 
 function CheckoutRequestManagement(props) {
   const { authenticated, currentUser, location, onLogout } = props;
@@ -19,13 +20,7 @@ function CheckoutRequestManagement(props) {
   const [itemsPerPage] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
 
-  useEffect(() => {
-    if (authenticated) {
-      fetchData();
-    }
-  }, [currentPage, authenticated]);
-
-  const fetchData = () => {
+  const fetchData = useCallback(() => {
     getCheckoutRequestsForRentaler(currentPage, itemsPerPage)
       .then((response) => {
         setTableData(response?.content || []);
@@ -37,6 +32,19 @@ function CheckoutRequestManagement(props) {
             "Không thể tải danh sách yêu cầu trả phòng.",
         );
       });
+  }, [currentPage, itemsPerPage]);
+
+  useEffect(() => {
+    if (authenticated) {
+      fetchData();
+    }
+  }, [authenticated, fetchData]);
+
+  useAutoReload({ enabled: authenticated, onReload: fetchData });
+
+  const notifyDataUpdated = () => {
+    localStorage.setItem("app-data-updated-at", String(Date.now()));
+    window.dispatchEvent(new Event("app-data-updated"));
   };
 
   const handleUpdateStatus = (id, status) => {
@@ -57,6 +65,7 @@ function CheckoutRequestManagement(props) {
           response?.message ||
             `Đã ${status === "APPROVED" ? "duyệt" : "từ chối"} yêu cầu trả phòng.`,
         );
+        notifyDataUpdated();
         fetchData();
       })
       .catch((error) => {

@@ -8,6 +8,7 @@ import { API_BASE_URL } from "../constants/Connect";
 import { toast } from "react-toastify";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
+import { formatVnd } from "../utils/currency";
 
 class Home extends Component {
   constructor(props) {
@@ -180,12 +181,12 @@ class Home extends Component {
                         <div className="card-body-a">
                           <div className="price-box d-flex mb-3">
                             <span className="price-a bg-success text-white px-3 py-2 rounded-pill fw-bold">
-                              {room.status === "ROOM_RENT" &&
-                                `Cho thuê | ${room.price.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}`}
+                                {room.status === "ROOM_RENT" &&
+                                  `Cho thuê | ${formatVnd(room.price)}`}
                               {room.status === "HIRED" &&
-                                `Đã thuê | ${room.price.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}`}
+                                `Đã thuê | ${formatVnd(room.price)}`}
                               {room.status === "CHECKED_OUT" &&
-                                `Đã trả phòng | ${room.price.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}`}
+                                `Đã trả phòng | ${formatVnd(room.price)}`}
                             </span>
                           </div>
                           <Link to={`/rental-home/${room.id}`} className="text-white text-decoration-none fw-bold">

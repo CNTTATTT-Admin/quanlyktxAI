@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import "../../assets/css/app.css";
 import {
@@ -12,6 +12,8 @@ import { toast } from "react-toastify";
 import ModalRoomDetails from "./modal/ModalRoomDetail";
 import { request } from "../../services/fetch/ApiUtils";
 import { API_BASE_URL } from "../../constants/Connect";
+import useAutoReload from "../../hooks/useAutoReload";
+import { formatVnd } from "../../utils/currency";
 
 const DashboardAdmin = (props) => {
   const { authenticated, role, location, currentUser, onLogout } = props;
@@ -32,6 +34,20 @@ const DashboardAdmin = (props) => {
     numberOfAccountLocked: "",
   });
 
+  const fetchData = useCallback(() => {
+    getAllRoomApprovingOfAdmin(currentPage, itemsPerPage, false)
+      .then((response) => {
+        setTableData(response.content);
+        setTotalItems(response.totalElements);
+      })
+      .catch((error) => {
+        toast.error(
+          (error && error.message) ||
+            "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
+        );
+      });
+  }, [currentPage, itemsPerPage]);
+
   useEffect(() => {
     fetchData();
     // Fetch liveness configuration from backend
@@ -45,20 +61,13 @@ const DashboardAdmin = (props) => {
       .catch((error) => {
         console.error("Error fetching liveness config:", error);
       });
-  }, [currentPage]);
+  }, [currentPage, fetchData, itemsPerPage]);
 
-  const fetchData = () => {
-    getAllRoomApprovingOfAdmin(currentPage, itemsPerPage, false)
-      .then((response) => {
-        setTableData(response.content);
-        setTotalItems(response.totalElements);
-      })
-      .catch((error) => {
-        toast.error(
-          (error && error.message) ||
-            "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
-        );
-      });
+  useAutoReload({ enabled: authenticated, onReload: fetchData });
+
+  const notifyDataUpdated = () => {
+    localStorage.setItem("app-data-updated-at", String(Date.now()));
+    window.dispatchEvent(new Event("app-data-updated"));
   };
 
   const handleSetRoomId = (id) => {
@@ -74,6 +83,7 @@ const DashboardAdmin = (props) => {
     approveRoomOfAdmin(id)
       .then((response) => {
         toast.success(response.message);
+        notifyDataUpdated();
         fetchData();
       })
       .catch((error) => {
@@ -88,6 +98,7 @@ const DashboardAdmin = (props) => {
     removeRoomOfAdmin(id)
       .then((response) => {
         toast.success(response.message);
+        notifyDataUpdated();
         fetchData();
       })
       .catch((error) => {
@@ -620,11 +631,7 @@ const DashboardAdmin = (props) => {
                               </td>
                               <td>{item.address}</td>
                               <td className="admin-price">
-                                {item.price &&
-                                  item.price.toLocaleString("vi-VN", {
-                                    style: "currency",
-                                    currency: "VND",
-                                  })}
+                                {formatVnd(item.price)}
                               </td>
                               <td>
                                 <span

@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Footer from "../../common/Footer";
 import SidebarNav from "./SidebarNav";
 import Header from "../../common/Header";
 import { Navigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { getCheckInOutHistory } from "../../services/fetch/ApiUtils";
+import useAutoReload from "../../hooks/useAutoReload";
 
 const CheckInOutHistory = (props) => {
   const { authenticated, currentUser, onLogout, loadCurrentUser, location } = props;
@@ -13,13 +14,7 @@ const CheckInOutHistory = (props) => {
   const [totalPages, setTotalPages] = useState(0);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
-  useEffect(() => {
-    if (authenticated) {
-      fetchHistory(page);
-    }
-  }, [authenticated, page]);
-
-  const fetchHistory = (pageNumber) => {
+  const fetchHistory = useCallback((pageNumber = page) => {
     setLoadingHistory(true);
     getCheckInOutHistory(pageNumber, 10)
       .then((data) => {
@@ -31,7 +26,15 @@ const CheckInOutHistory = (props) => {
         toast.error("Không thể tải lịch sử điểm danh.");
         setLoadingHistory(false);
       });
-  };
+  }, [page]);
+
+  useEffect(() => {
+    if (authenticated) {
+      fetchHistory(page);
+    }
+  }, [authenticated, page, fetchHistory]);
+
+  useAutoReload({ enabled: authenticated, onReload: fetchHistory });
 
   if (!authenticated) {
     return (

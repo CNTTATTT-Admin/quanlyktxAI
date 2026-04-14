@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import SidebarNav from "./SidebarNav";
 import Nav from "./Nav";
 import Pagination from "./Pagnation";
@@ -11,6 +11,8 @@ import {
   removeRoomOfAdmin,
 } from "../../services/fetch/ApiUtils";
 import ModalRoomDetails from "./modal/ModalRoomDetail";
+import useAutoReload from "../../hooks/useAutoReload";
+import { formatVnd } from "../../utils/currency";
 
 function RoomManagement(props) {
   const { authenticated, role, currentUser, location, onLogout } = props;
@@ -24,12 +26,7 @@ function RoomManagement(props) {
   const [totalItems, setTotalItems] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch data from the API
-  useEffect(() => {
-    fetchData();
-  }, [currentPage, searchQuery]);
-
-  const fetchData = () => {
+  const fetchData = useCallback(() => {
     getAllRoomOfAdmin(currentPage, itemsPerPage, searchQuery)
       .then((response) => {
         setTableData(response.content);
@@ -41,7 +38,18 @@ function RoomManagement(props) {
             "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
         );
       });
-  };
+    }, [currentPage, itemsPerPage, searchQuery]);
+
+    useEffect(() => {
+      fetchData();
+    }, [fetchData]);
+
+    useAutoReload({ enabled: authenticated, onReload: fetchData });
+
+    const notifyDataUpdated = () => {
+      localStorage.setItem("app-data-updated-at", String(Date.now()));
+      window.dispatchEvent(new Event("app-data-updated"));
+    };
 
   const handleSearch = (event) => {
     setSearchQuery(event.target.value);
@@ -60,6 +68,7 @@ function RoomManagement(props) {
     approveRoomOfAdmin(id)
       .then((response) => {
         toast.success(response.message);
+        notifyDataUpdated();
         fetchData();
       })
       .catch((error) => {
@@ -74,6 +83,7 @@ function RoomManagement(props) {
     removeRoomOfAdmin(id)
       .then((response) => {
         toast.success(response.message);
+        notifyDataUpdated();
         fetchData();
       })
       .catch((error) => {
@@ -475,11 +485,7 @@ function RoomManagement(props) {
                               </td>
                               <td>{item.address}</td>
                               <td className="admin-room-price">
-                                {item.price &&
-                                  item.price.toLocaleString("vi-VN", {
-                                    style: "currency",
-                                    currency: "VND",
-                                  })}
+                                {formatVnd(item.price)}
                               </td>
                               <td style={{ textAlign: "center" }}>
                                 {item.status === "AVAILABLE" && (

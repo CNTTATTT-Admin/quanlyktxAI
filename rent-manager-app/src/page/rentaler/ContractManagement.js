@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import SidebarNav from "./SidebarNav";
 import Nav from "./Nav";
 import {
@@ -8,6 +8,8 @@ import {
 import Pagination from "./Pagnation";
 import { toast } from "react-toastify";
 import { Navigate, useNavigate } from "react-router-dom";
+import useAutoReload from "../../hooks/useAutoReload";
+import { formatVnd } from "../../utils/currency";
 
 function ContractManagement(props) {
   const { authenticated, role, currentUser, location, onLogout } = props;
@@ -19,7 +21,7 @@ function ContractManagement(props) {
   const [totalItems, setTotalItems] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const fetchData = () => {
+  const fetchData = useCallback(() => {
     getAllContractOfRentaler(currentPage, itemsPerPage, searchQuery)
       .then((response) => {
         setTableData(response.content || []);
@@ -31,11 +33,13 @@ function ContractManagement(props) {
             "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
         );
       });
-  };
+    }, [currentPage, itemsPerPage, searchQuery]);
 
   useEffect(() => {
-    fetchData();
-  }, [currentPage, searchQuery]);
+      fetchData();
+    }, [fetchData]);
+
+    useAutoReload({ enabled: authenticated, onReload: fetchData });
 
   const handleSearch = (event) => {
     setSearchQuery(event.target.value);
@@ -190,8 +194,7 @@ function ContractManagement(props) {
                       </td>
 
                       <td className="fw-bold text-emerald">
-                        {item.room.price &&
-                          item.room.price.toLocaleString("vi-VN")} đ
+                        {formatVnd(item.room.price)}
                       </td>
 
                       <td className="fw-semibold text-dark">
@@ -200,7 +203,7 @@ function ContractManagement(props) {
                             item.room.waterCost +
                             item.room.publicElectricCost +
                             item.room.internetCost;
-                          return subFee ? subFee.toLocaleString("vi-VN") + " đ" : "0 đ";
+                          return formatVnd(subFee || 0);
                         })()}
                       </td>
 

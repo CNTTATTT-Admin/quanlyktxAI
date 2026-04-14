@@ -10,6 +10,7 @@ import { getRoom } from "../../../services/fetch/ApiUtils";
 import { Navigation } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { API_BASE_URL } from "../../../constants/Connect";
+import { formatVnd } from "../../../utils/currency";
 
 import Rating from "@mui/material/Rating";
 import Stack from "@mui/material/Stack";
@@ -122,10 +123,7 @@ const ModalRoomDetails = ({ roomId }) => {
                       </div>
                       <div class="card-title-c align-self-center">
                         <h5 class="title-c">
-                          {roomData?.price.toLocaleString("vi-VN", {
-                            style: "currency",
-                            currency: "VND",
-                          })}
+                          {formatVnd(roomData?.price)}
                         </h5>
                       </div>
                     </div>

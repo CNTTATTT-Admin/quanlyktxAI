@@ -4,6 +4,8 @@ import '../../assets/css/app.css';
 import BarChart from './chart/BarChart';
 import SubChart from './chart/SubChart';
 import { getByMonth, getNumber } from '../../services/fetch/ApiUtils';
+import useAutoReload from '../../hooks/useAutoReload';
+import { formatVnd } from '../../utils/currency';
 
 const CHART_COLORS = [
     "rgba(75,192,192,1)",
@@ -48,6 +50,38 @@ function DashboardRentaler(props) {
     const [subData, setSubData] = useState(initialChartState);
     const [userData, setUserData] = useState(initialChartState);
 
+    const reloadDashboard = () => {
+        getNumber()
+            .then(response => {
+                setNumber(prev => ({
+                    ...prev,
+                    numberOfRoom: response.numberOfRoom || 0,
+                    numberOfPeople: response.numberOfPeople || 0,
+                    numberOfAllTimePeople: response.numberOfAllTimePeople || 0,
+                    numberOfEmptyRoom: response.numberOfEmptyRoom || 0,
+                }));
+            })
+            .catch(error => console.log(error));
+
+        getByMonth()
+          .then((revenueData) => {
+              const data = revenueData.content || [];
+              setContentRevenue(data);
+
+              let totalAllTime = 0;
+              data.forEach(item => {
+                  totalAllTime += Number(item.revenue || 0)
+                                + Number(item.waterCost || 0)
+                                + Number(item.publicElectricCost || 0)
+                                + Number(item.internetCost || 0)
+                                + Number(item.parkingCost || 0);
+              });
+
+              setNumber(prev => ({ ...prev, revenue: totalAllTime }));
+          })
+          .catch((error) => console.log(error));
+    };
+
     useEffect(() => {
         getNumber()
             .then(response => {
@@ -81,6 +115,8 @@ function DashboardRentaler(props) {
           })
           .catch((error) => console.log(error));
     }, []);
+
+    useAutoReload({ enabled: authenticated, onReload: reloadDashboard });
 
     useEffect(() => {
         if (contentRevenue.length === 0) return;
@@ -209,7 +245,7 @@ function DashboardRentaler(props) {
                                     </div>
                                 </div>
                                 <h3 className="fw-bolder text-dark mb-2" style={{ fontSize: "1.8rem" }}>
-                                    {Number(number.revenue || 0).toLocaleString('vi-VN')} <span className="fs-5 text-muted fw-normal">đ</span>
+                                    {formatVnd(number.revenue || 0)}
                                 </h3>
                                 <div className="mt-3 pt-3 border-top border-light">
                                     <p className="text-emerald small fw-semibold mb-0 d-flex align-items-center">

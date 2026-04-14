@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Header from "../../common/Header";
 import Footer from "../../common/Footer";
 import { Link } from "react-router-dom";
@@ -7,6 +7,8 @@ import { toast } from "react-toastify";
 import Pagination from "./Pagnation";
 import { getAllRoomOfCustomer } from "../../services/fetch/ApiUtils";
 import { API_BASE_URL } from "../../constants/Connect";
+import useAutoReload from "../../hooks/useAutoReload";
+import { formatVnd } from "../../utils/currency";
 
 const RentalHome = (props) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -17,11 +19,7 @@ const RentalHome = (props) => {
   const [price, setPrice] = useState("");
   const [cateId, setCateId] = useState(0);
 
-  useEffect(() => {
-    fetchData();
-  }, [currentPage, searchQuery, price, cateId]);
-
-  const fetchData = () => {
+  const fetchData = useCallback(() => {
     getAllRoomOfCustomer(currentPage, itemsPerPage, searchQuery, price, cateId)
       .then((response) => {
         setRooms(response.content);
@@ -33,7 +31,13 @@ const RentalHome = (props) => {
           "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
         );
       });
-  };
+  }, [cateId, currentPage, itemsPerPage, price, searchQuery]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  useAutoReload({ enabled: true, onReload: fetchData });
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
@@ -213,7 +217,7 @@ const RentalHome = (props) => {
                       </h4>
 
                       <h5 className="fw-bold mb-2" style={{ color: "#10B981" }}>
-                        {room.price.toLocaleString("vi-VN")} VNĐ <span className="text-muted fw-normal small">/ tháng</span>
+                        {formatVnd(room.price)} <span className="text-muted fw-normal small">/ tháng</span>
                       </h5>
 
                       <p className="card-text text-muted small mb-3 text-truncate">

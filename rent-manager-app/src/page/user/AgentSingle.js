@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Header from "../../common/Header";
 import Footer from "../../common/Footer";
 import { toast } from "react-toastify";
@@ -12,6 +12,8 @@ import {
 } from "../../services/fetch/ApiUtils";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../../constants/Connect";
+import useAutoReload from "../../hooks/useAutoReload";
+import { formatVnd } from "../../utils/currency";
 
 const AgentSingle = (props) => {
   const { id } = useParams();
@@ -32,11 +34,7 @@ const AgentSingle = (props) => {
   });
   const [isFollowing, setIsFollowing] = useState(false);
 
-  useEffect(() => {
-    fetchData();
-  }, [id, currentPage, searchQuery]);
-
-  const fetchData = () => {
+  const fetchData = useCallback(() => {
     getAllrRoomByUserId(currentPage, itemsPerPage, id)
       .then((response) => {
         settableData(response.content);
@@ -73,7 +71,13 @@ const AgentSingle = (props) => {
           console.error("Error checking follow status:", error);
         });
     }
-  };
+  }, [currentPage, id, itemsPerPage, props.authenticated]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData, searchQuery]);
+
+  useAutoReload({ enabled: true, onReload: fetchData });
 
   const handleToggleFollow = () => {
     if (!props.authenticated) {
@@ -338,7 +342,7 @@ const AgentSingle = (props) => {
                         </h4>
 
                         <h5 className="fw-bold mb-2" style={{ color: "#10B981" }}>
-                          {room.price.toLocaleString("vi-VN")} VNĐ <span className="text-muted fw-normal small">/ tháng</span>
+                          {formatVnd(room.price)} <span className="text-muted fw-normal small">/ tháng</span>
                         </h5>
 
                         <p className="card-text text-muted small mb-3 text-truncate">

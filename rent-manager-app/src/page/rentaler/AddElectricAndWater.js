@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import { getRentOfHome } from "../../services/fetch/ApiUtils";
 import { ACCESS_TOKEN } from "../../constants/Connect";
+import { formatVnd } from "../../utils/currency";
 
 const AddElectric = (props) => {
   const { authenticated, role, currentUser, location, onLogout } = props;
@@ -54,7 +55,11 @@ const AddElectric = (props) => {
           Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN)}`,
         },
       })
-      .then(toast.success("Thêm mới thành công"));
+      .then(() => {
+        toast.success("Thêm mới thành công");
+        localStorage.setItem("app-data-updated-at", String(Date.now()));
+        window.dispatchEvent(new Event("app-data-updated"));
+      });
   };
 
   useEffect(() => {
@@ -320,7 +325,7 @@ const AddElectric = (props) => {
                       <h2 className={`fw-bolder mb-0 ${isError ? 'text-danger fs-4 mt-2' : 'text-emerald'}`}>
                           {isError 
                               ? "⚠ Sai chỉ số (Mới < Cũ)" 
-                              : calculateTotal().toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
+                          : formatVnd(calculateTotal())}
                       </h2>
                   </div>
 

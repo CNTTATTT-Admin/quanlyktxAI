@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import Pagination from "./Pagnation";
 import { toast } from "react-toastify";
 import { FiCheckCircle, FiXCircle, FiClock, FiCheck, FiX } from "react-icons/fi";
 import { getAllInvoices, updateInvoiceStatus } from "../../services/fetch/ApiUtils";
+import { formatVnd } from "../../utils/currency";
+
+const AUTO_RELOAD_INTERVAL_MS = 15000;
 
 const InvoiceManagement = (props) => {
   const { authenticated, location } = props;
@@ -22,9 +25,9 @@ const InvoiceManagement = (props) => {
     if (authenticated) {
       fetchData();
     }
-  }, [currentPage, searchQuery, authenticated]);
+  }, [authenticated, fetchData]);
 
-  const fetchData = () => {
+  const fetchData = useCallback(() => {
     getAllInvoices(currentPage - 1, itemsPerPage, searchQuery)
       .then((response) => {
         setTableData(response.content || []);
@@ -33,7 +36,36 @@ const InvoiceManagement = (props) => {
       .catch((error) => {
         toast.error((error && error.message) || "Không thể tải danh sách hóa đơn.");
       });
-  };
+  }, [currentPage, itemsPerPage, searchQuery]);
+
+  useEffect(() => {
+    if (!authenticated) return;
+
+    const refreshOnEvent = () => {
+      fetchData();
+    };
+
+    const refreshOnVisibility = () => {
+      if (document.visibilityState === "visible") {
+        fetchData();
+      }
+    };
+
+    window.addEventListener("invoice-updated", refreshOnEvent);
+    window.addEventListener("focus", refreshOnEvent);
+    window.addEventListener("storage", refreshOnEvent);
+    document.addEventListener("visibilitychange", refreshOnVisibility);
+
+    const intervalId = window.setInterval(fetchData, AUTO_RELOAD_INTERVAL_MS);
+
+    return () => {
+      window.removeEventListener("invoice-updated", refreshOnEvent);
+      window.removeEventListener("focus", refreshOnEvent);
+      window.removeEventListener("storage", refreshOnEvent);
+      document.removeEventListener("visibilitychange", refreshOnVisibility);
+      window.clearInterval(intervalId);
+    };
+  }, [authenticated, fetchData]);
 
   const handleSearch = (event) => {
     setSearchQuery(event.target.value);
@@ -50,6 +82,8 @@ const InvoiceManagement = (props) => {
       updateInvoiceStatus(id, "PAID")
         .then(() => {
           toast.success("Đã xác nhận thu tiền thành công!");
+          localStorage.setItem("invoice-updated-at", String(Date.now()));
+          window.dispatchEvent(new Event("invoice-updated"));
           fetchData();
         })
         .catch((error) => toast.error(error.message || "Lỗi khi cập nhật hóa đơn."));
@@ -62,6 +96,8 @@ const InvoiceManagement = (props) => {
       updateInvoiceStatus(id, "CANCELLED")
         .then(() => {
           toast.success("Đã hủy hóa đơn!");
+          localStorage.setItem("invoice-updated-at", String(Date.now()));
+          window.dispatchEvent(new Event("invoice-updated"));
           fetchData();
         })
         .catch((error) => toast.error(error.message || "Lỗi khi hủy hóa đơn."));
@@ -198,7 +234,7 @@ const InvoiceManagement = (props) => {
                       </small>
                     </td>
                     <td className="text-danger fw-bolder fs-5">
-                      {item.amount?.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) || "0 ₫"}
+                      {formatVnd(item.amount)}
                     </td>
                     <td>
                       <div className="text-muted mb-1" style={{ fontSize: "0.85rem" }}>
@@ -276,7 +312,7 @@ const InvoiceManagement = (props) => {
                   <div className="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
                     <span className="text-muted fw-semibold">Tổng tiền thanh toán:</span>
                     <strong className="text-danger fs-4">
-                      {selectedInvoice.amount?.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                      {formatVnd(selectedInvoice.amount)}
                     </strong>
                   </div>
                   <div className="d-flex justify-content-between mb-3">

@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { FiPlus, FiEdit, FiToggleLeft, FiToggleRight } from "react-icons/fi";
 import { getAllParkingPackages, createParkingPackage, updateParkingPackage } from "../../services/fetch/ApiUtils";
 import Pagination from "./Pagnation";
+import { formatVnd } from "../../utils/currency";
+import useAutoReload from "../../hooks/useAutoReload";
 
 const ParkingPackageManagement = (props) => {
     const { authenticated, location } = props;
@@ -26,13 +28,7 @@ const ParkingPackageManagement = (props) => {
         status: "ACTIVE"
     });
 
-    useEffect(() => {
-        if (authenticated) {
-            fetchData();
-        }
-    }, [currentPage, searchQuery, authenticated]);
-
-    const fetchData = () => {
+    const fetchData = useCallback(() => {
         getAllParkingPackages(currentPage - 1, itemsPerPage, searchQuery)
             .then((response) => {
                 setPackages(response.content || []);
@@ -41,6 +37,19 @@ const ParkingPackageManagement = (props) => {
             .catch((error) => {
                 toast.error((error && error.message) || "Lỗi khi tải danh sách gói cước!");
             });
+    }, [currentPage, itemsPerPage, searchQuery]);
+
+    useEffect(() => {
+        if (authenticated) {
+            fetchData();
+        }
+    }, [authenticated, fetchData]);
+
+    useAutoReload({ enabled: authenticated, onReload: fetchData });
+
+    const notifyDataUpdated = () => {
+        localStorage.setItem("app-data-updated-at", String(Date.now()));
+        window.dispatchEvent(new Event("app-data-updated"));
     };
 
     const handleSearch = (e) => {
@@ -82,6 +91,7 @@ const ParkingPackageManagement = (props) => {
             .then(() => {
                 toast.success(isEditMode ? "Cập nhật gói cước thành công!" : "Thêm mới gói cước thành công!");
                 setShowModal(false);
+                notifyDataUpdated();
                 fetchData();
             })
             .catch((error) => {
@@ -94,6 +104,7 @@ const ParkingPackageManagement = (props) => {
         updateParkingPackage(pkg.id, { ...pkg, status: newStatus })
             .then(() => {
                 toast.success(`Đã chuyển trạng thái thành ${newStatus === "ACTIVE" ? "Hoạt động" : "Ngưng hoạt động"}`);
+                notifyDataUpdated();
                 fetchData();
             })
             .catch((err) => toast.error("Lỗi khi cập nhật trạng thái!"));
@@ -243,7 +254,7 @@ const ParkingPackageManagement = (props) => {
                                             <span className="fw-bold fs-6">{pkg.durationMonths}</span> tháng
                                         </td>
                                         <td className="text-danger fw-bolder fs-6">
-                                            {pkg.price?.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                                            {formatVnd(pkg.price)}
                                         </td>
                                         <td className="text-center">
                                             {pkg.status === "ACTIVE"

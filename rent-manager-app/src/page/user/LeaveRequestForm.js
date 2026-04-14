@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Navigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import SidebarNav from "./SidebarNav";
@@ -9,10 +9,13 @@ import {
 import Header from "../../common/Header";
 import Footer from "../../common/Footer";
 import Pagination from "./Pagnation";
+import useAutoReload from "../../hooks/useAutoReload";
 
 function LeaveRequestForm(props) {
 
   const { authenticated, currentUser, location, onLogout } = props;
+
+  const hasRoom = !!currentUser?.allocatedRoomId;
 
   const [leaveData, setLeaveData] = useState({
     reason: "",
@@ -25,13 +28,7 @@ function LeaveRequestForm(props) {
   const [itemsPerPage] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
 
-  useEffect(() => {
-    if (authenticated) {
-      fetchUserRequests();
-    }
-  }, [currentPage, authenticated]);
-
-  const fetchUserRequests = () => {
+  const fetchUserRequests = useCallback(() => {
     getLeaveRequestsByUser(currentPage - 1, itemsPerPage)
       .then((response) => {
         setTableData(response.content);
@@ -42,6 +39,19 @@ function LeaveRequestForm(props) {
           (error && error.message) || "Không thể tải danh sách đơn nghỉ.",
         );
       });
+  }, [currentPage, itemsPerPage]);
+
+  useEffect(() => {
+    if (authenticated) {
+      fetchUserRequests();
+    }
+  }, [authenticated, fetchUserRequests]);
+
+  useAutoReload({ enabled: authenticated, onReload: fetchUserRequests });
+
+  const notifyDataUpdated = () => {
+    localStorage.setItem("app-data-updated-at", String(Date.now()));
+    window.dispatchEvent(new Event("app-data-updated"));
   };
 
   const handleInputChange = (event) => {
@@ -54,6 +64,11 @@ function LeaveRequestForm(props) {
 
   const handleSubmit = (event) => {
     event.preventDefault();
+
+    if (!hasRoom) {
+      toast.warning("Bạn chưa có phòng nên không thể nộp đơn xin nghỉ.");
+      return;
+    }
 
     // Convert date strings to ISO format for Backend
     const formattedData = {
@@ -70,6 +85,7 @@ function LeaveRequestForm(props) {
           startDate: "",
           endDate: "",
         });
+        notifyDataUpdated();
         fetchUserRequests();
       })
       .catch((error) => {
@@ -88,7 +104,6 @@ function LeaveRequestForm(props) {
     return <Navigate to={{ pathname: "/login", state: { from: location } }} />;
   }
 
-  // Nâng cấp hàm render trạng thái sang giao diện Badge thay vì in-line style
   const renderStatusBadge = (status) => {
     switch (status) {
       case "APPROVED":
@@ -157,13 +172,23 @@ function LeaveRequestForm(props) {
           background-color: #ffffff; border-color: #4F46E5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); outline: none;
         }
 
+        /* Thêm CSS cho trạng thái disabled của input */
+        .eco-input-field:disabled, .eco-input-field[readonly] {
+          background-color: #F1F5F9; color: #94A3B8; cursor: not-allowed; border-color: #E2E8F0;
+        }
+
         .eco-btn-submit {
           background: linear-gradient(135deg, #4F46E5 0%, #4338CA 100%); color: #ffffff; font-weight: 600; font-size: 1rem;
           padding: 12px 24px; border-radius: 10px; border: none; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.25);
           transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;
         }
-        .eco-btn-submit:hover {
+        
+        /* Cập nhật CSS disabled cho nút Submit */
+        .eco-btn-submit:hover:not(:disabled) {
           transform: translateY(-2px); box-shadow: 0 8px 20px rgba(79, 70, 229, 0.35); color: #ffffff;
+        }
+        .eco-btn-submit:disabled { 
+          opacity: 0.7; cursor: not-allowed; background: #94A3B8; box-shadow: none; 
         }
 
         .eco-table { margin-bottom: 0; color: #1E293B; }
@@ -229,6 +254,15 @@ function LeaveRequestForm(props) {
                     </div>
                     <div className="card-body p-4">
                       <form onSubmit={handleSubmit}>
+                        
+                        {/* Cảnh báo khi chưa có phòng */}
+                        {!hasRoom && (
+                          <div className="alert alert-warning border-0 bg-warning bg-opacity-10 text-warning-emphasis p-3 rounded-3 mb-4" style={{ fontSize: "0.9rem", fontWeight: "500" }}>
+                            <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                            Bạn chưa có hợp đồng thuê phòng nào để nộp đơn xin nghỉ.
+                          </div>
+                        )}
+
                         <div className="mb-4">
                           <label className="eco-form-label">Ngày bắt đầu <span className="text-danger">*</span></label>
                           <input
@@ -238,6 +272,7 @@ function LeaveRequestForm(props) {
                             value={leaveData.startDate}
                             onChange={handleInputChange}
                             required
+                            disabled={!hasRoom}
                           />
                         </div>
                         <div className="mb-4">
@@ -249,6 +284,7 @@ function LeaveRequestForm(props) {
                             value={leaveData.endDate}
                             onChange={handleInputChange}
                             required
+                            disabled={!hasRoom}
                           />
                         </div>
                         <div className="mb-5">
@@ -262,9 +298,12 @@ function LeaveRequestForm(props) {
                             placeholder="Nhập lý do nghỉ chi tiết..."
                             style={{ resize: "none" }}
                             required
+                            disabled={!hasRoom}
                           ></textarea>
                         </div>
-                        <button type="submit" className="eco-btn-submit">
+                        
+                        {/* Nút Submit bị disabled nếu chưa có phòng */}
+                        <button type="submit" className="eco-btn-submit" disabled={!hasRoom}>
                           <i className="bi bi-send-fill"></i> Gửi đơn xin nghỉ
                         </button>
                       </form>

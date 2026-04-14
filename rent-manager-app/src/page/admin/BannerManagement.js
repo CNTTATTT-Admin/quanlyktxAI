@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Pagination from "./Pagnation";
 import { toast } from "react-toastify";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -8,6 +8,7 @@ import {
   toggleBannerActive,
 } from "../../services/fetch/ApiUtils";
 import { API_BASE_URL } from "../../constants/Connect";
+import useAutoReload from "../../hooks/useAutoReload";
 
 function BannerManagement(props) {
   const { authenticated, role, currentUser, location, onLogout } = props;
@@ -19,11 +20,7 @@ function BannerManagement(props) {
   const [totalItems, setTotalItems] = useState(0);
   const [activeCount, setActiveCount] = useState(0);
 
-  useEffect(() => {
-    fetchData();
-  }, [currentPage]);
-
-  const fetchData = () => {
+  const fetchData = useCallback(() => {
     getAllBanners(currentPage, itemsPerPage)
       .then((response) => {
         setTableData(response.content);
@@ -43,7 +40,13 @@ function BannerManagement(props) {
             "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
         );
       });
-  };
+    }, [currentPage, itemsPerPage]);
+
+    useEffect(() => {
+      fetchData();
+    }, [fetchData]);
+
+    useAutoReload({ enabled: authenticated, onReload: fetchData });
 
   const handleToggleActive = (id) => {
     toggleBannerActive(id)

@@ -2,9 +2,12 @@ package com.cntt.rentalmanagement.services.impl;
 
 import com.cntt.rentalmanagement.domain.models.ElectricAndWater;
 import com.cntt.rentalmanagement.domain.models.Room;
+import com.cntt.rentalmanagement.domain.models.User;
 import com.cntt.rentalmanagement.domain.payload.response.ElectricAndWaterResponse;
+import com.cntt.rentalmanagement.repository.ContractRepository;
 import com.cntt.rentalmanagement.repository.ElectricAndWaterRepository;
 import com.cntt.rentalmanagement.repository.RoomRepository;
+import com.cntt.rentalmanagement.repository.UserRepository;
 import com.cntt.rentalmanagement.services.ElectricAndWaterService;
 import com.cntt.rentalmanagement.services.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +15,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class ElectricAndWaterServiceImpl implements ElectricAndWaterService {
@@ -22,6 +28,10 @@ public class ElectricAndWaterServiceImpl implements ElectricAndWaterService {
     private RoomRepository roomRepository;
     @Autowired
     private RoomService roomService;
+    @Autowired
+    private ContractRepository contractRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     @Transactional
@@ -80,37 +90,36 @@ public class ElectricAndWaterServiceImpl implements ElectricAndWaterService {
 
     @Override
     public List<ElectricAndWaterResponse> getElectricByRoom(Long id) {
-        return electricAndWaterRepository.findByRoomId(id).stream().map(electricAndWater -> {
-            ElectricAndWaterResponse electricAndWaterResponse = new ElectricAndWaterResponse();
-            electricAndWaterResponse.setId(electricAndWater.getId());
-            electricAndWaterResponse.setName(electricAndWater.getName());
-            electricAndWaterResponse.setMonth(electricAndWater.getMonth());
-            electricAndWaterResponse.setLastMonthBlockOfWater(electricAndWater.getLastMonthBlockOfWater());
-            electricAndWaterResponse.setThisMonthBlockOfWater(electricAndWater.getThisMonthBlockOfWater());
-            electricAndWaterResponse.setMoneyEachBlockOfWater(electricAndWater.getMoneyEachBlockOfWater());
-            electricAndWaterResponse.setTotalMoneyOfWater(electricAndWater.getTotalMoneyOfWater());
+        return electricAndWaterRepository.findByRoomId(id)
+            .stream()
+            .map(this::toResponse)
+            .toList();
+    }
 
-            electricAndWaterResponse.setLastMonthNumberOfElectric(electricAndWater.getLastMonthNumberOfElectric());
-            electricAndWaterResponse.setThisMonthNumberOfElectric(electricAndWater.getThisMonthNumberOfElectric());
-            electricAndWaterResponse.setMoneyEachNumberOfElectric(electricAndWater.getMoneyEachNumberOfElectric());
-            electricAndWaterResponse.setTotalMoneyOfElectric(electricAndWater.getTotalMoneyOfElectric());
+    @Override
+    public List<ElectricAndWaterResponse> getElectricHistoryByUser(Long userId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
 
-            electricAndWaterResponse.setRoom(roomService.getRoomById(electricAndWater.getRoom().getId()));
-            electricAndWaterResponse.setPaid(electricAndWater.isPaid());
+        Set<Long> roomIds = new LinkedHashSet<>();
+        if (user.getAllocatedRoom() != null) {
+            roomIds.add(user.getAllocatedRoom().getId());
+        }
 
-            // Calculation for split cost
-            Room room = electricAndWater.getRoom();
-            int occupancy = room.getCurrentOccupancy();
-            if (occupancy > 0) {
-                electricAndWaterResponse.setPerPersonElectric(electricAndWater.getTotalMoneyOfElectric().divide(BigDecimal.valueOf(occupancy), 2, BigDecimal.ROUND_HALF_UP));
-                electricAndWaterResponse.setPerPersonWater(electricAndWater.getTotalMoneyOfWater().divide(BigDecimal.valueOf(occupancy), 2, BigDecimal.ROUND_HALF_UP));
-            } else {
-                electricAndWaterResponse.setPerPersonElectric(electricAndWater.getTotalMoneyOfElectric());
-                electricAndWaterResponse.setPerPersonWater(electricAndWater.getTotalMoneyOfWater());
+        contractRepository.findByStudentId(userId).forEach(contract -> {
+            if (contract.getRoom() != null && contract.getRoom().getId() != null) {
+                roomIds.add(contract.getRoom().getId());
             }
+        });
 
-            return electricAndWaterResponse;
-        }).toList();
+        if (roomIds.isEmpty()) {
+            return List.of();
+        }
+
+        return electricAndWaterRepository.findByRoomIdIn(new ArrayList<>(roomIds))
+            .stream()
+            .map(this::toResponse)
+            .toList();
     }
 
     @Override
@@ -154,5 +163,36 @@ public class ElectricAndWaterServiceImpl implements ElectricAndWaterService {
         electricAndWater.setPaid(true);
         electricAndWaterRepository.save(electricAndWater);
         return com.cntt.rentalmanagement.domain.payload.response.MessageResponse.builder().message("Thanh toán thành công.").build();
+    }
+
+    private ElectricAndWaterResponse toResponse(ElectricAndWater electricAndWater) {
+        ElectricAndWaterResponse electricAndWaterResponse = new ElectricAndWaterResponse();
+        electricAndWaterResponse.setId(electricAndWater.getId());
+        electricAndWaterResponse.setName(electricAndWater.getName());
+        electricAndWaterResponse.setMonth(electricAndWater.getMonth());
+        electricAndWaterResponse.setLastMonthBlockOfWater(electricAndWater.getLastMonthBlockOfWater());
+        electricAndWaterResponse.setThisMonthBlockOfWater(electricAndWater.getThisMonthBlockOfWater());
+        electricAndWaterResponse.setMoneyEachBlockOfWater(electricAndWater.getMoneyEachBlockOfWater());
+        electricAndWaterResponse.setTotalMoneyOfWater(electricAndWater.getTotalMoneyOfWater());
+
+        electricAndWaterResponse.setLastMonthNumberOfElectric(electricAndWater.getLastMonthNumberOfElectric());
+        electricAndWaterResponse.setThisMonthNumberOfElectric(electricAndWater.getThisMonthNumberOfElectric());
+        electricAndWaterResponse.setMoneyEachNumberOfElectric(electricAndWater.getMoneyEachNumberOfElectric());
+        electricAndWaterResponse.setTotalMoneyOfElectric(electricAndWater.getTotalMoneyOfElectric());
+
+        electricAndWaterResponse.setRoom(roomService.getRoomById(electricAndWater.getRoom().getId()));
+        electricAndWaterResponse.setPaid(electricAndWater.isPaid());
+
+        Room room = electricAndWater.getRoom();
+        int occupancy = room.getCurrentOccupancy();
+        if (occupancy > 0) {
+            electricAndWaterResponse.setPerPersonElectric(electricAndWater.getTotalMoneyOfElectric().divide(BigDecimal.valueOf(occupancy), 2, BigDecimal.ROUND_HALF_UP));
+            electricAndWaterResponse.setPerPersonWater(electricAndWater.getTotalMoneyOfWater().divide(BigDecimal.valueOf(occupancy), 2, BigDecimal.ROUND_HALF_UP));
+        } else {
+            electricAndWaterResponse.setPerPersonElectric(electricAndWater.getTotalMoneyOfElectric());
+            electricAndWaterResponse.setPerPersonWater(electricAndWater.getTotalMoneyOfWater());
+        }
+
+        return electricAndWaterResponse;
     }
 }

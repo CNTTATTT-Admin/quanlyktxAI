@@ -10,6 +10,7 @@ import { getRoom } from "../../../services/fetch/ApiUtils";
 import { Navigation } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { API_BASE_URL } from "../../../constants/Connect";
+import { formatVnd } from "../../../utils/currency";
 
 import Rating from "@mui/material/Rating";
 import Stack from "@mui/material/Stack";
@@ -244,7 +245,7 @@ const ModalRoomDetails = ({ roomId }) => {
             <div className="bg-white p-4 rounded-4 shadow-sm border-0 text-center modern-card">
               <p className="text-muted small fw-bold text-uppercase mb-1">Mức giá thuê</p>
               <h2 className="fw-bolder mb-0 text-emerald" style={{ fontSize: "2rem" }}>
-                {roomData?.price ? roomData.price.toLocaleString("vi-VN") : "0"} đ
+                {formatVnd(roomData?.price)}
               </h2>
               <p className="text-muted small mb-4">/ tháng</p>
               

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import SidebarNav from "./SidebarNav";
 import Nav from "./Nav";
 import {
@@ -8,6 +8,7 @@ import {
 import Pagination from "./Pagnation";
 import { toast } from "react-toastify";
 import { Navigate } from "react-router-dom";
+import useAutoReload from "../../hooks/useAutoReload";
 
 function LeaveRequestManagement(props) {
   const { authenticated, currentUser, location, onLogout } = props;
@@ -17,13 +18,7 @@ function LeaveRequestManagement(props) {
   const [itemsPerPage] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
 
-  useEffect(() => {
-    if (authenticated) {
-      fetchData();
-    }
-  }, [currentPage, authenticated]);
-
-  const fetchData = () => {
+  const fetchData = useCallback(() => {
     getLeaveRequestsForRentaler(currentPage - 1, itemsPerPage)
       .then((response) => {
         setTableData(response.content);
@@ -34,6 +29,19 @@ function LeaveRequestManagement(props) {
           (error && error.message) || "Không thể tải danh sách đơn nghỉ.",
         );
       });
+  }, [currentPage, itemsPerPage]);
+
+  useEffect(() => {
+    if (authenticated) {
+      fetchData();
+    }
+  }, [authenticated, fetchData]);
+
+  useAutoReload({ enabled: authenticated, onReload: fetchData });
+
+  const notifyDataUpdated = () => {
+    localStorage.setItem("app-data-updated-at", String(Date.now()));
+    window.dispatchEvent(new Event("app-data-updated"));
   };
 
   const handleUpdateStatus = (id, status) => {
@@ -42,6 +50,7 @@ function LeaveRequestManagement(props) {
         toast.success(
           `Đã ${status === "APPROVED" ? "duyệt" : "từ chối"} đơn nghỉ.`,
         );
+        notifyDataUpdated();
         fetchData();
       })
       .catch((error) => {

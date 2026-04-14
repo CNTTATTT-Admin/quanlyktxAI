@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import SidebarNav from "./SidebarNav";
 import {
     getParkingCardsForUser,
@@ -11,6 +11,8 @@ import { toast } from "react-toastify";
 import { Navigate } from "react-router-dom";
 import Header from "../../common/Header";
 import Footer from "../../common/Footer";
+import useAutoReload from "../../hooks/useAutoReload";
+import { formatVnd } from "../../utils/currency";
 
 function ParkingCardHistory(props) {
     // ==========================================
@@ -26,13 +28,7 @@ function ParkingCardHistory(props) {
     const [showInvoiceModal, setShowInvoiceModal] = useState(false);
     const [selectedInvoice, setSelectedInvoice] = useState(null);
 
-    useEffect(() => {
-        if (authenticated) {
-            fetchData();
-        }
-    }, [currentPage, searchQuery, authenticated]);
-
-    const fetchData = () => {
+    const fetchData = useCallback(() => {
         getParkingCardsForUser(currentPage, itemsPerPage, searchQuery)
             .then((response) => {
                 setTableData(response.content || []);
@@ -41,6 +37,19 @@ function ParkingCardHistory(props) {
             .catch((error) => {
                 toast.error((error && error.message) || "Lỗi khi tải lịch sử thẻ xe!");
             });
+    }, [currentPage, itemsPerPage, searchQuery]);
+
+    useEffect(() => {
+        if (authenticated) {
+            fetchData();
+        }
+    }, [authenticated, fetchData]);
+
+    useAutoReload({ enabled: authenticated, onReload: fetchData });
+
+    const notifyDataUpdated = () => {
+        localStorage.setItem("app-data-updated-at", String(Date.now()));
+        window.dispatchEvent(new Event("app-data-updated"));
     };
 
     const openInvoiceModal = (invoice) => {
@@ -57,6 +66,7 @@ function ParkingCardHistory(props) {
             updateParkingCardStatus(id, { status: "CANCELLED" })
                 .then((res) => {
                     toast.success("Đã hủy thẻ xe thành công!");
+                    notifyDataUpdated();
                     fetchData();
                 })
                 .catch((err) => {
@@ -86,6 +96,7 @@ function ParkingCardHistory(props) {
             createRenewalInvoiceApi(parkingCardId)
                 .then((newInvoice) => {
                     toast.success("Tạo hóa đơn gia hạn thành công! Chuyển hướng thanh toán...");
+                    notifyDataUpdated();
                     handlePayment(newInvoice.id);
                 })
                 .catch((error) => {
@@ -320,7 +331,7 @@ function ParkingCardHistory(props) {
                                                                     <>
                                                                         <div className="fw-bold text-dark">{item.packageInfo.name}</div>
                                                                         <div className="text-success fw-bold" style={{ fontSize: "0.9rem" }}>
-                                                                            {item.packageInfo.price?.toLocaleString('vi-VN')} đ
+                                                                            {formatVnd(item.packageInfo.price)}
                                                                         </div>
                                                                         <div className="text-muted mt-1" style={{ fontSize: "0.8rem" }}>
                                                                             <i className="bi bi-calendar-event me-1"></i>Hạn: {item.expiryDate ? new Date(item.expiryDate).toLocaleDateString("vi-VN") : "Chưa kích hoạt"}
@@ -425,7 +436,7 @@ function ParkingCardHistory(props) {
                                     <div className="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
                                         <span className="text-muted fw-semibold">Số tiền cần thanh toán:</span>
                                         <strong className="text-danger fs-4 mb-0">
-                                            {selectedInvoice.amount?.toLocaleString('vi-VN')} đ
+                                            {formatVnd(selectedInvoice.amount)}
                                         </strong>
                                     </div>
                                     <div className="d-flex justify-content-between mb-3">

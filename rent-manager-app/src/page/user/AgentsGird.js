@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Header from "../../common/Header";
 import Footer from "../../common/Footer";
 import { toast } from "react-toastify";
 import Pagination from "./Pagnation";
 import { getAllAccountRentalerForCustomer } from "../../services/fetch/ApiUtils";
 import { Link } from "react-router-dom";
+import useAutoReload from "../../hooks/useAutoReload";
 
 const AgentsGird = (props) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -13,11 +14,7 @@ const AgentsGird = (props) => {
   const [tableData, settableData] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(() => {
-    fetchData();
-  }, [currentPage, searchQuery]);
-
-  const fetchData = () => {
+  const fetchData = useCallback(() => {
     getAllAccountRentalerForCustomer(currentPage, itemsPerPage, searchQuery)
       .then((response) => {
         settableData(response.content);
@@ -29,7 +26,13 @@ const AgentsGird = (props) => {
           "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
         );
       });
-  };
+  }, [currentPage, itemsPerPage, searchQuery]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  useAutoReload({ enabled: true, onReload: fetchData });
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);

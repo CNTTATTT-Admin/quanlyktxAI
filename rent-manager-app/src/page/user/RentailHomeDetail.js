@@ -19,6 +19,7 @@ import {
 } from "../../services/fetch/ApiUtils";
 import { toast } from "react-toastify";
 import { API_BASE_URL } from "../../constants/Connect";
+import { formatVnd } from "../../utils/currency";
 
 class RentailHomeDetail extends Component {
 
@@ -437,7 +438,7 @@ class RentailHomeDetail extends Component {
                         </li>
                         <li className="d-flex justify-content-between text-muted small">
                           <span><i className="bi bi-wifi me-2 opacity-75"></i>Tiền mạng</span>
-                          <strong className="text-dark">{rooms?.internetCost?.toLocaleString("vi-VN")} đ/tháng</strong>
+                          <strong className="text-dark">{formatVnd(rooms?.internetCost)}/tháng</strong>
                         </li>
                       </ul>
                     </div>
@@ -598,7 +599,7 @@ class RentailHomeDetail extends Component {
                   <div className="bg-white p-4 rounded-4 shadow-sm border-0 text-center">
                     <p className="text-muted small fw-bold text-uppercase mb-1">Giá thuê</p>
                     <h2 className="fw-bolder mb-0" style={{ color: "#2563EB", fontSize: "2rem" }}>
-                      {rooms ? rooms.price?.toLocaleString("vi-VN") : "0"} đ
+                      {formatVnd(rooms?.price)}
                     </h2>
                     <p className="text-muted small mb-4">/ tháng</p>
 

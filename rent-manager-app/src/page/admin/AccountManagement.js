@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import SidebarNav from "./SidebarNav";
 import Nav from "./Nav";
 import Pagination from "./Pagnation";
@@ -11,6 +11,7 @@ import {
   unlockAccount,
   deleteMultipleAccounts,
 } from "../../services/fetch/ApiUtils";
+import useAutoReload from "../../hooks/useAutoReload";
 
 function AccountManagement(props) {
   const { authenticated, role, currentUser, location, onLogout } = props;
@@ -24,11 +25,7 @@ function AccountManagement(props) {
   const [selectedIds, setSelectedIds] = useState([]);
 
   // Fetch data from the API
-  useEffect(() => {
-    fetchData();
-  }, [currentPage, searchQuery]);
-
-  const fetchData = () => {
+  const fetchData = useCallback(() => {
     getAllAccpuntOfAdmin(currentPage, itemsPerPage, searchQuery)
       .then((response) => {
         setTableData(response.content);
@@ -41,7 +38,13 @@ function AccountManagement(props) {
             "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
         );
       });
-  };
+    }, [currentPage, itemsPerPage, searchQuery]);
+
+    useEffect(() => {
+      fetchData();
+    }, [fetchData]);
+
+    useAutoReload({ enabled: authenticated, onReload: fetchData });
 
   const handleSearch = (event) => {
     setSearchQuery(event.target.value);

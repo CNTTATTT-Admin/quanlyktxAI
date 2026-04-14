@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import Pagination from "./Pagnation";
 import { toast } from "react-toastify";
 import { FiCheck, FiX, FiEye } from "react-icons/fi";
 import { getAllParkingCards, updateParkingCardStatus } from "../../services/fetch/ApiUtils";
+import { formatVnd } from "../../utils/currency";
+import useAutoReload from "../../hooks/useAutoReload";
 
 const ParkingCardManagement = (props) => {
     const { authenticated, location } = props;
@@ -24,13 +26,7 @@ const ParkingCardManagement = (props) => {
     const [showInvoiceModal, setShowInvoiceModal] = useState(false);
     const [selectedInvoice, setSelectedInvoice] = useState(null);
 
-    useEffect(() => {
-        if (authenticated) {
-            fetchData();
-        }
-    }, [currentPage, searchQuery, authenticated]);
-
-    const fetchData = () => {
+    const fetchData = useCallback(() => {
         getAllParkingCards(currentPage - 1, itemsPerPage, searchQuery)
             .then((response) => {
                 setTableData(response.content || []);
@@ -39,6 +35,19 @@ const ParkingCardManagement = (props) => {
             .catch((error) => {
                 toast.error((error && error.message) || "Không thể tải danh sách thẻ xe.");
             });
+    }, [currentPage, itemsPerPage, searchQuery]);
+
+    useEffect(() => {
+        if (authenticated) {
+            fetchData();
+        }
+    }, [authenticated, fetchData]);
+
+    useAutoReload({ enabled: authenticated, onReload: fetchData });
+
+    const notifyDataUpdated = () => {
+        localStorage.setItem("app-data-updated-at", String(Date.now()));
+        window.dispatchEvent(new Event("app-data-updated"));
     };
 
     const handleSearch = (event) => {
@@ -57,6 +66,7 @@ const ParkingCardManagement = (props) => {
             updateParkingCardStatus(id, { status, rejectedReason: reason })
                 .then(() => {
                     toast.success("Đã từ chối thẻ xe.");
+                    notifyDataUpdated();
                     fetchData();
                 })
                 .catch((error) => toast.error(error.message || "Lỗi khi từ chối."));
@@ -64,6 +74,7 @@ const ParkingCardManagement = (props) => {
             updateParkingCardStatus(id, { status })
                 .then(() => {
                     toast.success("Đã duyệt! Chờ người thuê thanh toán.");
+                    notifyDataUpdated();
                     fetchData();
                 })
                 .catch((error) => toast.error(error.message || "Lỗi khi duyệt."));
@@ -228,7 +239,7 @@ const ParkingCardManagement = (props) => {
                                         <td>
                                             <div className="fw-bold text-dark">{item.packageInfo?.name || "Gói gửi xe"}</div>
                                             <div className="text-danger fw-bold my-1">
-                                                {item.packageInfo?.price?.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) || "0 ₫"}
+                                                {formatVnd(item.packageInfo?.price)}
                                             </div>
                                             <small className="badge bg-light text-primary border rounded-pill">
                                                 <i className="bi bi-calendar-event me-1"></i>
@@ -336,7 +347,7 @@ const ParkingCardManagement = (props) => {
                                     <div className="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
                                         <span className="text-muted fw-semibold">Tổng tiền thanh toán:</span>
                                         <strong className="text-danger fs-4">
-                                            {selectedInvoice.amount?.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                                            {formatVnd(selectedInvoice.amount)}
                                         </strong>
                                     </div>
                                     <div className="d-flex justify-content-between mb-3">

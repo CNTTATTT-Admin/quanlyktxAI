@@ -11,6 +11,7 @@ import java.util.List;
 @Repository
 public interface ElectricAndWaterRepository extends JpaRepository<ElectricAndWater, Long>{
     List<ElectricAndWater> findByRoomId(Long roomId);
+    List<ElectricAndWater> findByRoomIdIn(List<Long> roomIds);
 
     @Modifying
     @Transactional

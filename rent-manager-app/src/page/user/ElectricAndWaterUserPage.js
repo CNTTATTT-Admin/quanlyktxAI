@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import SidebarNav from "./SidebarNav";
@@ -9,6 +9,8 @@ import {
 import Header from "../../common/Header";
 import Footer from "../../common/Footer";
 import Pagination from "./Pagnation";
+import { formatVnd } from "../../utils/currency";
+import useAutoReload from "../../hooks/useAutoReload";
 
 function ElectricAndWaterUserPage(props) {
 
@@ -19,16 +21,8 @@ function ElectricAndWaterUserPage(props) {
   const [itemsPerPage] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
 
-  useEffect(() => {
-    if (authenticated && currentUser?.allocatedRoomId) {
-      fetchElectricBills();
-    }
-  }, [currentPage, authenticated, currentUser]);
-
-  const fetchElectricBills = () => {
-    if (!currentUser?.allocatedRoomId) return;
-
-    getElectricByRoomUser(currentUser.allocatedRoomId)
+  const fetchElectricBills = useCallback(() => {
+    getElectricByRoomUser()
       .then((response) => {
         // Since backend returns a direct array for this endpoint currently, check if it's an array
         const data = Array.isArray(response)
@@ -58,7 +52,15 @@ function ElectricAndWaterUserPage(props) {
           (error && error.message) || "Không thể tải hóa đơn điện nước.",
         );
       });
-  };
+  }, [currentPage, itemsPerPage]);
+
+  useEffect(() => {
+    if (authenticated) {
+      fetchElectricBills();
+    }
+  }, [authenticated, currentUser, fetchElectricBills]);
+
+  useAutoReload({ enabled: authenticated, onReload: fetchElectricBills });
 
   const handlePay = (id) => {
     if (window.confirm("Bạn có chắc chắn muốn thanh toán hóa đơn này không?")) {
@@ -202,122 +204,119 @@ function ElectricAndWaterUserPage(props) {
                     </div>
                     
                     <div className="card-body p-0 flex-grow-1 d-flex flex-column">
-                      {!currentUser?.allocatedRoomId ? (
-                        <div className="p-4">
-                          <div className="alert alert-warning border-0 bg-warning bg-opacity-10 text-warning-emphasis p-4 rounded-4 text-center" style={{ fontSize: "1.05rem", fontWeight: "500" }}>
-                            <i className="bi bi-house-exclamation fs-1 d-block mb-3 opacity-50"></i>
-                            Bạn chưa được phân phòng nên hiện tại hệ thống chưa có hóa đơn điện nước.
-                          </div>
+                      
+                      {/* Hiển thị thông báo nhỏ nếu chưa có phòng */}
+                      {!currentUser?.allocatedRoomId && (
+                        <div className="mx-4 mt-4 mb-2 alert alert-warning border-0 bg-warning bg-opacity-10 text-warning-emphasis p-3 rounded-3 d-flex align-items-center" style={{ fontSize: "0.95rem", fontWeight: "500" }}>
+                          <i className="bi bi-exclamation-triangle-fill fs-5 me-3"></i>
+                          <div>Bạn hiện chưa được phân phòng. Bảng dưới đây chỉ hiển thị lịch sử hóa đơn cũ (nếu có).</div>
                         </div>
-                      ) : (
-                        <>
-                          <div className="table-responsive">
-                            <table className="table eco-table">
-                              <thead>
-                                <tr>
-                                  <th style={{ paddingLeft: "30px" }}>Tên hóa đơn</th>
-                                  <th>Kỳ thu</th>
-                                  <th className="text-center">Tiêu thụ</th>
-                                  <th className="text-center">Tổng tiền phòng</th>
-                                  <th>Cần đóng cá nhân</th>
-                                  <th className="text-center">Trạng thái</th>
-                                  <th className="text-end" style={{ paddingRight: "30px" }}>Hành động</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {tableData.length === 0 ? (
-                                  <tr>
-                                    <td colSpan="7" className="text-center py-5">
-                                      <i className="bi bi-receipt text-muted fs-1 mb-3 d-block" style={{opacity: 0.2}}></i>
-                                      <span className="text-muted fw-semibold" style={{fontSize: "1.05rem"}}>Chưa có hóa đơn nào.</span>
-                                    </td>
-                                  </tr>
-                                ) : (
-                                  tableData.map((item) => (
-                                    <tr key={item.id}>
-                                      <td style={{ paddingLeft: "30px" }} className="fw-bold text-dark">{item.name}</td>
-                                      <td>
-                                        <span className="text-muted"><i className="bi bi-calendar-event me-1"></i> Tháng {item.month}</span>
-                                      </td>
-                                      
-                                      <td className="text-center">
-                                        <div className="d-flex flex-column align-items-center gap-1" style={{fontSize: "0.85rem"}}>
-                                          {/* ĐÃ FIX LỖI MÀU CHỮ: Dùng text-warning-emphasis thay vì text-warning */}
-                                          <span className="text-warning-emphasis bg-warning bg-opacity-10 px-2 py-1 rounded w-100 text-start fw-semibold">
-                                            <i className="bi bi-lightning-charge-fill me-1"></i>
-                                            {item.thisMonthNumberOfElectric - item.lastMonthNumberOfElectric} kWh
-                                          </span>
-                                          {/* ĐÃ FIX LỖI MÀU CHỮ: Dùng text-info-emphasis thay vì text-info */}
-                                          <span className="text-info-emphasis bg-info bg-opacity-10 px-2 py-1 rounded w-100 text-start fw-semibold">
-                                            <i className="bi bi-droplet-fill me-1"></i>
-                                            {item.thisMonthBlockOfWater - item.lastMonthBlockOfWater} Khối
-                                          </span>
-                                        </div>
-                                      </td>
-                                      
-                                      <td className="text-center">
-                                        <div className="d-flex flex-column gap-1 text-muted" style={{fontSize: "0.85rem"}}>
-                                          <span>
-                                            {item.totalMoneyOfElectric?.toLocaleString("vi-VN", { style: "currency", currency: "VND" })} (Điện)
-                                          </span>
-                                          <span>
-                                            {item.totalMoneyOfWater?.toLocaleString("vi-VN", { style: "currency", currency: "VND" })} (Nước)
-                                          </span>
-                                        </div>
-                                      </td>
-                                      
-                                      <td>
-                                        <strong className="text-danger fs-5">
-                                          {((item.perPersonElectric || 0) + (item.perPersonWater || 0)).toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
-                                        </strong>
-                                        <br />
-                                        <small className="text-muted" style={{fontSize: "0.75rem"}}>
-                                          Chia rẽ: Điện {item.perPersonElectric?.toLocaleString("vi-VN")} đ / Nước {item.perPersonWater?.toLocaleString("vi-VN")} đ
-                                        </small>
-                                      </td>
-                                      
-                                      <td className="text-center">
-                                        {item.paid ? (
-                                          <span className="eco-badge eco-badge-success">
-                                            <i className="bi bi-check-circle-fill"></i> Đã thanh toán
-                                          </span>
-                                        ) : (
-                                          <span className="eco-badge eco-badge-warning">
-                                            <i className="bi bi-exclamation-circle-fill"></i> Chưa thanh toán
-                                          </span>
-                                        )}
-                                      </td>
-                                      
-                                      <td className="text-end" style={{ paddingRight: "30px" }}>
-                                        {!item.paid ? (
-                                          <button
-                                            className="eco-btn-pay"
-                                            onClick={() => handlePay(item.id)}
-                                          >
-                                            <i className="bi bi-credit-card-fill me-1"></i> Thanh toán
-                                          </button>
-                                        ) : (
-                                          <span className="text-muted" style={{opacity: 0.3}}>-</span>
-                                        )}
-                                      </td>
-                                    </tr>
-                                  ))
-                                )}
-                              </tbody>
-                            </table>
-                          </div>
-                          
-                          {/* Phân trang tự động đẩy xuống dưới */}
-                          <div className="mt-auto pt-4 pb-4 d-flex justify-content-center border-top" style={{ borderColor: "#EEF2FF" }}>
-                            <Pagination
-                              itemsPerPage={itemsPerPage}
-                              totalItems={totalItems}
-                              paginate={paginate}
-                              currentPage={currentPage}
-                            />
-                          </div>
-                        </>
                       )}
+
+                      {/* Bảng dữ liệu luôn hiển thị */}
+                      <div className="table-responsive">
+                        <table className="table eco-table">
+                          <thead>
+                            <tr>
+                              <th style={{ paddingLeft: "30px" }}>Tên hóa đơn</th>
+                              <th>Kỳ thu</th>
+                              <th className="text-center">Tiêu thụ</th>
+                              <th className="text-center">Tổng tiền phòng</th>
+                              <th>Cần đóng cá nhân</th>
+                              <th className="text-center">Trạng thái</th>
+                              <th className="text-end" style={{ paddingRight: "30px" }}>Hành động</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {tableData.length === 0 ? (
+                              <tr>
+                                <td colSpan="7" className="text-center py-5">
+                                  <i className="bi bi-receipt text-muted fs-1 mb-3 d-block" style={{opacity: 0.2}}></i>
+                                  <span className="text-muted fw-semibold" style={{fontSize: "1.05rem"}}>Chưa có hóa đơn nào.</span>
+                                </td>
+                              </tr>
+                            ) : (
+                              tableData.map((item) => (
+                                <tr key={item.id}>
+                                  <td style={{ paddingLeft: "30px" }} className="fw-bold text-dark">{item.name}</td>
+                                  <td>
+                                    <span className="text-muted"><i className="bi bi-calendar-event me-1"></i> Tháng {item.month}</span>
+                                  </td>
+                                  
+                                  <td className="text-center">
+                                    <div className="d-flex flex-column align-items-center gap-1" style={{fontSize: "0.85rem"}}>
+                                      <span className="text-warning-emphasis bg-warning bg-opacity-10 px-2 py-1 rounded w-100 text-start fw-semibold">
+                                        <i className="bi bi-lightning-charge-fill me-1"></i>
+                                        {item.thisMonthNumberOfElectric - item.lastMonthNumberOfElectric} kWh
+                                      </span>
+                                      <span className="text-info-emphasis bg-info bg-opacity-10 px-2 py-1 rounded w-100 text-start fw-semibold">
+                                        <i className="bi bi-droplet-fill me-1"></i>
+                                        {item.thisMonthBlockOfWater - item.lastMonthBlockOfWater} Khối
+                                      </span>
+                                    </div>
+                                  </td>
+                                  
+                                  <td className="text-center">
+                                    <div className="d-flex flex-column gap-1 text-muted" style={{fontSize: "0.85rem"}}>
+                                      <span>
+                                        {formatVnd(item.totalMoneyOfElectric)} (Điện)
+                                      </span>
+                                      <span>
+                                        {formatVnd(item.totalMoneyOfWater)} (Nước)
+                                      </span>
+                                    </div>
+                                  </td>
+                                  
+                                  <td>
+                                    <strong className="text-danger fs-5">
+                                      {formatVnd((item.perPersonElectric || 0) + (item.perPersonWater || 0))}
+                                    </strong>
+                                    <br />
+                                    <small className="text-muted" style={{fontSize: "0.75rem"}}>
+                                      Chia rẽ: Điện {formatVnd(item.perPersonElectric)} / Nước {formatVnd(item.perPersonWater)}
+                                    </small>
+                                  </td>
+                                  
+                                  <td className="text-center">
+                                    {item.paid ? (
+                                      <span className="eco-badge eco-badge-success">
+                                        <i className="bi bi-check-circle-fill"></i> Đã thanh toán
+                                      </span>
+                                    ) : (
+                                      <span className="eco-badge eco-badge-warning">
+                                        <i className="bi bi-exclamation-circle-fill"></i> Chưa thanh toán
+                                      </span>
+                                    )}
+                                  </td>
+                                  
+                                  <td className="text-end" style={{ paddingRight: "30px" }}>
+                                    {!item.paid ? (
+                                      <button
+                                        className="eco-btn-pay"
+                                        onClick={() => handlePay(item.id)}
+                                      >
+                                        <i className="bi bi-credit-card-fill me-1"></i> Thanh toán
+                                      </button>
+                                    ) : (
+                                      <span className="text-muted" style={{opacity: 0.3}}>-</span>
+                                    )}
+                                  </td>
+                                </tr>
+                              ))
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                      
+                      {/* Phân trang tự động đẩy xuống dưới */}
+                      <div className="mt-auto pt-4 pb-4 d-flex justify-content-center border-top" style={{ borderColor: "#EEF2FF" }}>
+                        <Pagination
+                          itemsPerPage={itemsPerPage}
+                          totalItems={totalItems}
+                          paginate={paginate}
+                          currentPage={currentPage}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>

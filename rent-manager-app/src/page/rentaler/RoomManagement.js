@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import SidebarNav from "./SidebarNav";
 import Nav from "./Nav";
 import {
@@ -9,6 +9,8 @@ import Pagination from "./Pagnation";
 import { toast } from "react-toastify";
 import { Navigate, useNavigate } from "react-router-dom";
 import ModalRoomDetails from "./modal/ModalRoomDetail";
+import useAutoReload from "../../hooks/useAutoReload";
+import { formatVnd } from "../../utils/currency";
 
 function RoomManagement(props) {
   const { authenticated, role, currentUser, location, onLogout } = props;
@@ -23,11 +25,7 @@ function RoomManagement(props) {
   const [roomId, setRoomId] = useState(4);
   const [showModal, setShowModal] = useState(false);
 
-  useEffect(() => {
-    fetchData();
-  }, [currentPage, searchQuery]);
-
-  const fetchData = () => {
+  const fetchData = useCallback(() => {
     getAllRoomOfRentaler(currentPage, itemsPerPage, searchQuery)
       .then((response) => {
         setTableData(response.content);
@@ -39,7 +37,18 @@ function RoomManagement(props) {
             "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
         );
       });
-  };
+    }, [currentPage, itemsPerPage, searchQuery]);
+
+    useEffect(() => {
+      fetchData();
+    }, [fetchData]);
+
+    useAutoReload({ enabled: authenticated, onReload: fetchData });
+
+    const notifyDataUpdated = () => {
+      localStorage.setItem("app-data-updated-at", String(Date.now()));
+      window.dispatchEvent(new Event("app-data-updated"));
+    };
 
   const handleSearch = (event) => {
     setSearchQuery(event.target.value);
@@ -62,6 +71,7 @@ function RoomManagement(props) {
     disableRoom(roomId)
       .then((response) => {
         toast.success(response.message);
+        notifyDataUpdated();
         fetchData();
       })
       .catch((error) => {
@@ -179,7 +189,7 @@ function RoomManagement(props) {
                       
                       <div className="d-flex flex-column gap-1" style={{ maxWidth: "55%" }}>
                         <h5 className="fw-bolder text-emerald mb-0" style={{ fontSize: "1.3rem" }}>
-                          {item.price ? item.price.toLocaleString("vi-VN") : 0} <span className="text-muted fw-normal small" style={{ fontSize: "0.9rem" }}>VNĐ/tháng</span>
+                          {formatVnd(item.price)} <span className="text-muted fw-normal small" style={{ fontSize: "0.9rem" }}>/tháng</span>
                         </h5>
                         <div className="text-muted small text-truncate mt-1" title={item.location?.cityName}>
                           <i className="bi bi-geo-alt-fill text-emerald me-1"></i> {item.location?.cityName}

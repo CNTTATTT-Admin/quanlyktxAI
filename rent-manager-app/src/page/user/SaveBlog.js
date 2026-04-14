@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import SidebarNav from "./SidebarNav";
 import { getAllBlogStore, getAllFollow } from "../../services/fetch/ApiUtils";
 import Pagination from "./Pagnation";
@@ -7,6 +7,8 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import Header from "../../common/Header";
 import Footer from "../../common/Footer";
 import { API_BASE_URL } from "../../constants/Connect";
+import useAutoReload from "../../hooks/useAutoReload";
+import { formatVnd } from "../../utils/currency";
 
 function SaveBlog(props) {
 
@@ -19,11 +21,7 @@ function SaveBlog(props) {
   const [totalItems, setTotalItems] = useState(0);
 
   // Fetch data from the API
-  useEffect(() => {
-    fetchData();
-  }, [currentPage]);
-
-  const fetchData = () => {
+  const fetchData = useCallback(() => {
     getAllBlogStore(currentPage, itemsPerPage)
       .then((response) => {
         setTableData(response.content);
@@ -35,7 +33,13 @@ function SaveBlog(props) {
             "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
         );
       });
-  };
+    }, [currentPage, itemsPerPage]);
+
+    useEffect(() => {
+      fetchData();
+    }, [fetchData]);
+
+    useAutoReload({ enabled: authenticated, onReload: fetchData });
 
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -232,7 +236,7 @@ function SaveBlog(props) {
                               </Link>
                               
                               <div className="eco-room-price">
-                                {item?.room.price?.toLocaleString("vi-VN")} đ
+                                {formatVnd(item?.room.price)}
                               </div>
 
                               <p className="eco-room-desc">

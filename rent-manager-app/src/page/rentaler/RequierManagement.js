@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import SidebarNav from "./SidebarNav";
 import Nav from "./Nav";
 import {
@@ -11,6 +11,7 @@ import {
 import Pagination from "./Pagnation";
 import { toast } from "react-toastify";
 import { Navigate, useNavigate } from "react-router-dom";
+import useAutoReload from "../../hooks/useAutoReload";
 
 function RequierManagement(props) {
   const { authenticated, role, currentUser, location, onLogout } = props;
@@ -26,11 +27,7 @@ function RequierManagement(props) {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch data from the API
-  useEffect(() => {
-    fetchData();
-  }, [currentPage, searchQuery]);
-
-  const fetchData = () => {
+  const fetchData = useCallback(() => {
     getAllRequireOfRentaler(currentPage, itemsPerPage, searchQuery)
       .then((response) => {
         setTableData(response.content);
@@ -42,7 +39,18 @@ function RequierManagement(props) {
             "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
         );
       });
-  };
+    }, [currentPage, itemsPerPage, searchQuery]);
+
+    useEffect(() => {
+      fetchData();
+    }, [fetchData]);
+
+    useAutoReload({ enabled: authenticated, onReload: fetchData });
+
+    const notifyDataUpdated = () => {
+      localStorage.setItem("app-data-updated-at", String(Date.now()));
+      window.dispatchEvent(new Event("app-data-updated"));
+    };
 
   const handleSearch = (event) => {
     setSearchQuery(event.target.value);
@@ -61,6 +69,7 @@ function RequierManagement(props) {
       .then((response) => {
         console.log(response.message);
         toast.success("Yêu cầu đã được xử lý");
+        notifyDataUpdated();
         fetchData();
       })
       .catch((error) => {
@@ -75,6 +84,7 @@ function RequierManagement(props) {
     approveRequest(id)
       .then((response) => {
         toast.success(response.message);
+        notifyDataUpdated();
         fetchData();
       })
       .catch((error) => {

@@ -693,13 +693,13 @@ export function getRentOfHome() {
   });
 }
 
-export function getElectricByRoomUser(roomId) {
+export function getElectricByRoomUser() {
   if (!localStorage.getItem(ACCESS_TOKEN)) {
     return Promise.reject("No access token set.");
   }
 
   return request({
-    url: API_BASE_URL + "/electric-water/room/" + roomId,
+    url: API_BASE_URL + "/electric-water/user/history",
     method: "GET",
   });
 }

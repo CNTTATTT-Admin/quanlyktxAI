@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import Nav from './Nav';
 import axios from 'axios';
 import { getElectricAndWater, getRentOfHome } from '../../services/fetch/ApiUtils';
+import { formatVnd } from '../../utils/currency';
 
 const EditElectric = (props) => {
     const { authenticated, role, currentUser, location, onLogout } = props;
@@ -49,7 +50,9 @@ const EditElectric = (props) => {
         })
             .then(response => {
                 toast.success(response.message);
-                toast.success("Cập nhật hợp đồng thành công!!")
+                toast.success("Cập nhật hợp đồng thành công!!");
+                localStorage.setItem("app-data-updated-at", String(Date.now()));
+                window.dispatchEvent(new Event("app-data-updated"));
             })
             .catch(error => {
                 toast.error((error && error.message) || 'Oops! Có điều gì đó xảy ra. Vui lòng thử lại!');
@@ -342,7 +345,7 @@ const EditElectric = (props) => {
                                         <h2 className={`fw-bolder mb-0 ${isError ? 'text-danger fs-4 mt-2' : 'text-emerald'}`}>
                                             {isError 
                                                 ? "⚠ Sai chỉ số (Mới < Cũ)" 
-                                                : calculateTotal().toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
+                                                : formatVnd(calculateTotal())}
                                         </h2>
                                     </div>
 

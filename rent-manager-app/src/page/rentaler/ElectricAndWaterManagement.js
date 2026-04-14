@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import SidebarNav from "./SidebarNav";
 import Nav from "./Nav";
 import Pagination from "./Pagnation"; // Sửa lỗi tên import từ Pagnation thành Pagination
 import { toast } from "react-toastify";
 import { getAllElectricAndWaterOfRentaler } from "../../services/fetch/ApiUtils";
+import { formatVnd } from "../../utils/currency";
+import useAutoReload from "../../hooks/useAutoReload";
 
 const ElectricAndWaterManagement = (props) => {
   const { authenticated, role, currentUser, location, onLogout } = props;
@@ -33,7 +35,7 @@ const ElectricAndWaterManagement = (props) => {
 
   // Tất cả các hooks phải được gọi ở đây
 
-  const fetchData = () => {
+  const fetchData = useCallback(() => {
     getAllElectricAndWaterOfRentaler(currentPage - 1, itemsPerPage, searchQuery)
       .then((response) => {
         console.log("dataTable", response);
@@ -54,11 +56,15 @@ const ElectricAndWaterManagement = (props) => {
         setTableData([]);
         setTotalItems(0);
       });
-  };
+  }, [currentPage, itemsPerPage, searchQuery]);
   
   useEffect(() => {
-    fetchData();
-  }, [currentPage, searchQuery]);
+    if (authenticated) {
+      fetchData();
+    }
+  }, [authenticated, fetchData]);
+
+  useAutoReload({ enabled: authenticated, onReload: fetchData });
   
   console.log("tableData", tableData);
   
@@ -195,22 +201,22 @@ const ElectricAndWaterManagement = (props) => {
                     {/* Tổng tiền điện */}
                     <td>
                       <span className="fw-bold text-dark fs-6">
-                        {item.totalMoneyOfElectric?.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
+                        {formatVnd(item.totalMoneyOfElectric)}
                       </span>
                       <br />
                       <small className="text-muted">
-                        Mỗi người: <span className="fw-medium text-emerald">{item.perPersonElectric?.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}</span>
+                        Mỗi người: <span className="fw-medium text-emerald">{formatVnd(item.perPersonElectric)}</span>
                       </small>
                     </td>
 
                     {/* Tổng tiền nước */}
                     <td>
                       <span className="fw-bold text-dark fs-6">
-                        {item.totalMoneyOfWater?.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
+                        {formatVnd(item.totalMoneyOfWater)}
                       </span>
                       <br />
                       <small className="text-muted">
-                        Mỗi người: <span className="fw-medium text-info">{item.perPersonWater?.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}</span>
+                        Mỗi người: <span className="fw-medium text-info">{formatVnd(item.perPersonWater)}</span>
                       </small>
                     </td>
 

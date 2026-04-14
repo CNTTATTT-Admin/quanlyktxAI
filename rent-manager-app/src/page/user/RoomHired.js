@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import SidebarNav from "./SidebarNav";
 import {
   getAllRoomHired,
@@ -9,6 +9,8 @@ import { toast } from "react-toastify";
 import { Navigate, useNavigate } from "react-router-dom";
 import Header from "../../common/Header";
 import Footer from "../../common/Footer";
+import useAutoReload from "../../hooks/useAutoReload";
+import { formatVnd } from "../../utils/currency";
 
 function RoomHired(props) {
 
@@ -24,13 +26,7 @@ function RoomHired(props) {
   const [selectedRoomId, setSelectedRoomId] = useState(null);
   const [reason, setReason] = useState("");
 
-  useEffect(() => {
-    if (authenticated) {
-      fetchData();
-    }
-  }, [currentPage, authenticated, currentUser]);
-
-  const fetchData = () => {
+  const fetchData = useCallback(() => {
     const phone = currentUser?.phone || "";
     getAllRoomHired(currentPage, itemsPerPage, phone)
       .then((response) => {
@@ -43,7 +39,20 @@ function RoomHired(props) {
             "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
         );
       });
-  };
+    }, [currentPage, currentUser?.phone, itemsPerPage]);
+
+    useEffect(() => {
+      if (authenticated) {
+        fetchData();
+      }
+    }, [authenticated, fetchData]);
+
+    useAutoReload({ enabled: authenticated, onReload: fetchData });
+
+    const notifyDataUpdated = () => {
+      localStorage.setItem("app-data-updated-at", String(Date.now()));
+      window.dispatchEvent(new Event("app-data-updated"));
+    };
 
   const handleSendRequest = (id) => {
     navigate("/send-request/" + id);
@@ -75,6 +84,7 @@ function RoomHired(props) {
           res?.message || "Đã gửi yêu cầu rời phòng, vui lòng chờ duyệt.",
         );
         handleCloseModal();
+        notifyDataUpdated();
         fetchData(); // reload
       })
       .catch((err) => {
@@ -297,7 +307,7 @@ function RoomHired(props) {
                                 <td><span className="fw-semibold text-dark">{item.nameOfRent}</span></td>
                                 <td className="text-muted">{item.phone}</td>
                                 <td className="fw-bold text-danger">
-                                  {item.room?.price && item.room.price.toLocaleString("vi-VN")} đ
+                                  {formatVnd(item.room?.price)}
                                 </td>
                                 <td className="text-muted">{formatDate(item.createdAt)}</td>
                                 <td className="text-muted">{formatDate(item.deadlineContract)}</td>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import SidebarNav from './SidebarNav';
 import { getAllFollow} from '../../services/fetch/ApiUtils';
 import Pagination from './Pagnation';
@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import Header from '../../common/Header';
 import Footer from '../../common/Footer';
+import useAutoReload from '../../hooks/useAutoReload';
 
 function Follow(props) {
 
@@ -18,11 +19,7 @@ function Follow(props) {
     const [totalItems, setTotalItems] = useState(0);
 
     // Fetch data from the API
-    useEffect(() => {
-        fetchData();
-    }, [currentPage]);
-
-    const fetchData = () => {
+    const fetchData = useCallback(() => {
         getAllFollow(currentPage, itemsPerPage).then(response => {
             setTableData(response.content);
             setTotalItems(response.totalElements);
@@ -31,7 +28,13 @@ function Follow(props) {
                 toast.error((error && error.message) || 'Oops! Có điều gì đó xảy ra. Vui lòng thử lại!');
             }
         )
-    }
+    }, [currentPage, itemsPerPage]);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    useAutoReload({ enabled: authenticated, onReload: fetchData });
 
     const paginate = (pageNumber) => {
         setCurrentPage(pageNumber);

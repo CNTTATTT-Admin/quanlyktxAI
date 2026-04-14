@@ -209,10 +209,11 @@ function exportToExcel(contractData) {
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
   
     function formatCurrency(value) {
-        return value.toLocaleString('vi-VN', {
-            style: 'currency',
-            currency: 'VND',
-        });
+        const numericValue = Number(value);
+        if (!Number.isFinite(numericValue)) {
+            return '0 VNĐ';
+        }
+        return `${numericValue.toLocaleString('vi-VN')} VNĐ`;
       }
     
     // Generate the Excel file data

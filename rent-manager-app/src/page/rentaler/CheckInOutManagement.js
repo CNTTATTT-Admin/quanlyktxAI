@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { toast } from "react-toastify";
 import Nav from "./Nav";
 import SidebarNav from "./SidebarNav";
 import { getCheckInOutHistoryByRentaler, getAllRoomOfRentaler } from "../../services/fetch/ApiUtils";
 import Pagination from "./Pagnation";
+import useAutoReload from "../../hooks/useAutoReload";
 
 const CheckInOutManagement = (props) => {
   // ==========================================
@@ -17,15 +18,7 @@ const CheckInOutManagement = (props) => {
   const [totalItems, setTotalItems] = useState(0);
   const { currentUser, onLogout } = props;
 
-  useEffect(() => {
-    fetchRooms();
-  }, []);
-
-  useEffect(() => {
-    fetchLogs();
-  }, [currentPage, selectedRoomId]);
-
-  const fetchRooms = () => {
+  const fetchRooms = useCallback(() => {
     getAllRoomOfRentaler(0, 100, "")
       .then((response) => {
         setRooms(response.content);
@@ -33,9 +26,9 @@ const CheckInOutManagement = (props) => {
       .catch((error) => {
         console.error("Error fetching rooms:", error);
       });
-  };
+  }, []);
 
-  const fetchLogs = () => {
+  const fetchLogs = useCallback(() => {
     getCheckInOutHistoryByRentaler(currentPage, pageSize, selectedRoomId)
       .then((response) => {
         setLogs(response.content);
@@ -44,7 +37,17 @@ const CheckInOutManagement = (props) => {
       .catch((error) => {
         toast.error("Lỗi khi tải lịch sử điểm danh.");
       });
-  };
+  }, [currentPage, pageSize, selectedRoomId]);
+
+  useEffect(() => {
+    fetchRooms();
+  }, [fetchRooms]);
+
+  useEffect(() => {
+    fetchLogs();
+  }, [fetchLogs]);
+
+  useAutoReload({ enabled: true, onReload: fetchLogs });
 
   const handleRoomChange = (e) => {
     setSelectedRoomId(e.target.value);

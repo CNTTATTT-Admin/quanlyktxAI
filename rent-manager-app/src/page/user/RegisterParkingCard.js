@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 import { Navigate, useNavigate } from "react-router-dom";
 import Header from "../../common/Header";
 import Footer from "../../common/Footer";
+import { formatVnd } from "../../utils/currency";
 
 function RegisterParkingCard(props) {
   const { authenticated, currentUser, location, onLogout } = props;
@@ -302,7 +303,7 @@ function RegisterParkingCard(props) {
                           <option value="">{selectedRentaler ? "-- Chọn Gói Cước --" : "Vui lòng chọn Chủ trọ trước"}</option>
                           {packages.map((pkg) => (
                             <option key={pkg.id} value={pkg.id}>
-                              {pkg.name} - {pkg.price?.toLocaleString('vi-VN')} đ / {pkg.durationMonths} tháng
+                              {pkg.name} - {formatVnd(pkg.price)} / {pkg.durationMonths} tháng
                             </option>
                           ))}
                         </select>

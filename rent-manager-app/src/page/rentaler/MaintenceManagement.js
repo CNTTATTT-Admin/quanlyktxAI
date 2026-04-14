@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import SidebarNav from "./SidebarNav";
 import Nav from "./Nav";
 import {
@@ -16,6 +16,8 @@ import {
   FiTrash2,
   FiExternalLink,
 } from "react-icons/fi";
+import useAutoReload from "../../hooks/useAutoReload";
+import { formatVnd } from "../../utils/currency";
 
 function MaintenceManagement(props) {
   const { authenticated, role, currentUser, location, onLogout } = props;
@@ -35,11 +37,7 @@ function MaintenceManagement(props) {
     files: [],
   });
 
-  useEffect(() => {
-    fetchData();
-  }, [currentPage, searchQuery]);
-
-  const fetchData = () => {
+  const fetchData = useCallback(() => {
     getAllMaintenceOfRentaler(currentPage, itemsPerPage, searchQuery)
       .then((response) => {
         setTableData(response.content);
@@ -51,7 +49,18 @@ function MaintenceManagement(props) {
             "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
         );
       });
-  };
+    }, [currentPage, itemsPerPage, searchQuery]);
+
+    useEffect(() => {
+      fetchData();
+    }, [fetchData]);
+
+    useAutoReload({ enabled: authenticated, onReload: fetchData });
+
+    const notifyDataUpdated = () => {
+      localStorage.setItem("app-data-updated-at", String(Date.now()));
+      window.dispatchEvent(new Event("app-data-updated"));
+    };
 
   const handleSearch = (event) => {
     setSearchQuery(event.target.value);
@@ -73,6 +82,7 @@ function MaintenceManagement(props) {
     deleteMaintenance(id)
       .then((response) => {
         toast.success("Xóa phiếu bảo trì thành công");
+        notifyDataUpdated();
         fetchData();
       })
       .catch((error) => {
@@ -87,6 +97,7 @@ function MaintenceManagement(props) {
     updateMaintenanceStatus(id, { status, ...extraData })
       .then((response) => {
         toast.success(response.message);
+        notifyDataUpdated();
         fetchData();
         setShowResolveModal(false);
       })
@@ -241,7 +252,7 @@ function MaintenceManagement(props) {
 
                       <td className="fw-semibold text-dark">
                         {item.price
-                          ? item.price.toLocaleString("vi-VN") + " đ"
+                         ? formatVnd(item.price)
                           : "-"}
                       </td>
 
