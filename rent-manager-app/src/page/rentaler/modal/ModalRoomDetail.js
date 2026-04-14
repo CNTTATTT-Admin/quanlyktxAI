@@ -322,7 +322,7 @@ const ModalRoomDetails = ({ roomId }) => {
               </div>
             </div>
 
-            <div className="bg-white p-4 rounded-4 shadow-sm border-0 modern-card">
+            {/* <div className="bg-white p-4 rounded-4 shadow-sm border-0 modern-card">
               <h5 className="fw-bold text-dark text-start mb-3">Gửi tin nhắn</h5>
               <form className="text-start">
                 <div className="mb-3">
@@ -353,7 +353,7 @@ const ModalRoomDetails = ({ roomId }) => {
                   <i className="bi bi-send-fill me-2"></i> Gửi yêu cầu
                 </button>
               </form>
-            </div>
+            </div> */}
 
           </div>
         </div>
