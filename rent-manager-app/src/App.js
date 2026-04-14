@@ -4,6 +4,7 @@ import {
   Routes,
   Navigate,
 } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
 import Main from "./page/user/Main";
 import DashboardAdmin from "./page/admin/DashboardAdmin";
 import RentalHome from "./page/user/RentalHome";
@@ -11,7 +12,6 @@ import RentailHomeDetail from "./page/user/RentailHomeDetail";
 import About from "./page/user/About";
 import Contact from "./page/user/Contact";
 import Login from "./page/login/Login";
-import { useState } from "react";
 import {
   getCurrentAdmin,
   getCurrentRentaler,
@@ -20,7 +20,6 @@ import {
 } from "./services/fetch/ApiUtils";
 import { ACCESS_TOKEN } from "./constants/Connect";
 import LoadingIndicator from "./common/LoadingIndicator";
-import { useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Signup from "./page/signup/Signup";
@@ -107,7 +106,7 @@ function App() {
   const [role, setRole] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const loadCurrentUser = () => {
+  const loadCurrentUser = useCallback(() => {
     getCurrentUserUnified()
       .then((response) => {
         setCurrentUser(response);
@@ -127,7 +126,7 @@ function App() {
       .catch((error) => {
         setLoading(false);
       });
-  };
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem(ACCESS_TOKEN);
@@ -150,7 +149,7 @@ function App() {
     } else {
       setLoading(false);
     }
-  }, []);
+  }, [loadCurrentUser]);
 
   if (loading) {
     return <LoadingIndicator />;
@@ -249,6 +248,7 @@ function App() {
               <UserLayout
                 authenticated={authenticated}
                 currentUser={currentUser}
+                loadCurrentUser={loadCurrentUser}
                 onLogout={handleLogout}
               />
             }

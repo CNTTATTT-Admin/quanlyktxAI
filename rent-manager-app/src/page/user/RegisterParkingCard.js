@@ -2,18 +2,18 @@ import React, { useState, useEffect } from "react";
 import SidebarNav from "./SidebarNav";
 import { 
   registerParkingCard, 
-  getAllAccountRentalerForCustomer, 
-  getParkingPackagesByRentaler
+  getParkingPackagesByRentaler,
+  getRoom,
 } from "../../services/fetch/ApiUtils";
 import { toast } from "react-toastify";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import Header from "../../common/Header";
 import Footer from "../../common/Footer";
 import { formatVnd } from "../../utils/currency";
 
 function RegisterParkingCard(props) {
   const { authenticated, currentUser, location, onLogout } = props;
-  const navigate = useNavigate();
+  const hasRoom = !!currentUser?.allocatedRoomId;
 
   const [rentalers, setRentalers] = useState([]);
   const [packages, setPackages] = useState([]);
@@ -31,16 +31,34 @@ function RegisterParkingCard(props) {
   const [vehicleImages, setVehicleImages] = useState([]); // Khôi phục State lưu nhiều ảnh xe
   const [isLoading, setIsLoading] = useState(false);
 
-  // 1. Lấy danh sách Chủ trọ
+  // 1. Lấy Chủ trọ từ phòng user đang ở
   useEffect(() => {
-    if (authenticated) {
-      getAllAccountRentalerForCustomer(0, 100, "")
-        .then((response) => {
-          setRentalers(response.content || []);
-        })
-        .catch((error) => console.log("Lỗi tải chủ trọ:", error));
+    if (!authenticated || !hasRoom) {
+      setRentalers([]);
+      setSelectedRentaler("");
+      setPackages([]);
+      setFormData((prev) => ({ ...prev, packageId: "", vehicleType: "" }));
+      return;
     }
-  }, [authenticated]);
+
+    getRoom(currentUser.allocatedRoomId)
+      .then((room) => {
+        const rentaler = room?.user;
+        if (!rentaler?.id) {
+          setRentalers([]);
+          setSelectedRentaler("");
+          return;
+        }
+
+        setRentalers([rentaler]);
+        setSelectedRentaler(String(rentaler.id));
+      })
+      .catch((error) => {
+        console.log("Lỗi tải chủ trọ theo phòng:", error);
+        setRentalers([]);
+        setSelectedRentaler("");
+      });
+  }, [authenticated, hasRoom, currentUser?.allocatedRoomId]);
 
   // 2. Lấy Gói cước khi đổi Chủ trọ
   useEffect(() => {
@@ -87,10 +105,6 @@ function RegisterParkingCard(props) {
     }
   };
 
-  const handleRentalerChange = (e) => {
-    setSelectedRentaler(e.target.value);
-  };
-
   // Khôi phục 2 hàm xử lý file riêng biệt
   const handleRegImageChange = (e) => {
     setRegistrationImage(e.target.files[0]);
@@ -103,8 +117,13 @@ function RegisterParkingCard(props) {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    if (!hasRoom) {
+      toast.warning("Bạn chưa có phòng nên không thể đăng ký thẻ xe.");
+      return;
+    }
+
     if (!selectedRentaler || !formData.packageId) {
-      toast.warning("Vui lòng chọn Chủ trọ và Gói gửi xe!");
+      toast.warning("Không xác định được chủ trọ hoặc gói gửi xe phù hợp với phòng hiện tại.");
       return;
     }
 
@@ -152,6 +171,8 @@ function RegisterParkingCard(props) {
   if (!authenticated) {
     return <Navigate to={{ pathname: "/login", state: { from: location } }} />;
   }
+
+  const currentRentaler = rentalers.length > 0 ? rentalers[0] : null;
 
   return (
     <>
@@ -285,22 +306,37 @@ function RegisterParkingCard(props) {
                   <form onSubmit={handleSubmit}>
                     
                     {/* HÀNG 1: CHỦ TRỌ & GÓI CƯỚC */}
+                    {!hasRoom && (
+                      <div className="alert alert-warning border-0 bg-warning bg-opacity-10 text-warning-emphasis p-3 rounded-3 mb-4" style={{ fontSize: "0.9rem", fontWeight: "500" }}>
+                        <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                        Bạn chưa có phòng nên không thể đăng ký gửi xe.
+                      </div>
+                    )}
+
                     <div className="row g-4 mb-4">
                       <div className="col-md-6">
                         <label className="eco-form-label text-indigo">Người cho thuê (Chủ trọ) <span className="text-danger">*</span></label>
-                        <select className="eco-input-field form-select" value={selectedRentaler} onChange={handleRentalerChange} required>
-                          <option value="">-- Chọn Chủ Trọ --</option>
-                          {rentalers.map((rentaler) => (
-                            <option key={rentaler.id} value={rentaler.id}>
-                              {rentaler.name} ({rentaler.phone})
-                            </option>
-                          ))}
-                        </select>
+                        <input
+                          type="text"
+                          className="eco-input-field"
+                          value={
+                            hasRoom
+                              ? (currentRentaler
+                                  ? `${currentRentaler.name} (${currentRentaler.phone || "Không có SĐT"})`
+                                  : "Đang tải chủ trọ theo phòng hiện tại...")
+                              : "Bạn chưa có phòng"
+                          }
+                          readOnly
+                          disabled
+                        />
+                        <small className="text-muted d-block mt-2" style={{ fontSize: "0.85rem" }}>
+                          Chủ trọ được tự động lấy theo phòng bạn đang ở.
+                        </small>
                       </div>
                       <div className="col-md-6">
                         <label className="eco-form-label text-indigo">Gói gửi xe <span className="text-danger">*</span></label>
-                        <select className="eco-input-field form-select" name="packageId" value={formData.packageId} onChange={handleInputChange} disabled={!selectedRentaler} required>
-                          <option value="">{selectedRentaler ? "-- Chọn Gói Cước --" : "Vui lòng chọn Chủ trọ trước"}</option>
+                        <select className="eco-input-field form-select" name="packageId" value={formData.packageId} onChange={handleInputChange} disabled={!selectedRentaler || !hasRoom} required>
+                          <option value="">{hasRoom ? (selectedRentaler ? "-- Chọn Gói Cước --" : "-- Đang tải Chủ trọ --") : "Bạn chưa có phòng"}</option>
                           {packages.map((pkg) => (
                             <option key={pkg.id} value={pkg.id}>
                               {pkg.name} - {formatVnd(pkg.price)} / {pkg.durationMonths} tháng
@@ -323,15 +359,15 @@ function RegisterParkingCard(props) {
                       </div>
                       <div className="col-md-3">
                         <label className="eco-form-label">Biển số <span className="text-danger">*</span></label>
-                        <input type="text" className="eco-input-field" name="licensePlate" placeholder="VD: 29A-123.45" value={formData.licensePlate} onChange={handleInputChange} required />
+                        <input type="text" className="eco-input-field" name="licensePlate" placeholder="VD: 29A-123.45" value={formData.licensePlate} onChange={handleInputChange} required disabled={!hasRoom} />
                       </div>
                       <div className="col-md-3">
                         <label className="eco-form-label">Dòng xe <span className="text-danger">*</span></label>
-                        <input type="text" className="eco-input-field" name="brandModel" placeholder="VD: Honda Vision" value={formData.brandModel} onChange={handleInputChange} required />
+                        <input type="text" className="eco-input-field" name="brandModel" placeholder="VD: Honda Vision" value={formData.brandModel} onChange={handleInputChange} required disabled={!hasRoom} />
                       </div>
                       <div className="col-md-3">
                         <label className="eco-form-label">Màu sắc <span className="text-danger">*</span></label>
-                        <input type="text" className="eco-input-field" name="color" placeholder="VD: Đỏ đen" value={formData.color} onChange={handleInputChange} required />
+                        <input type="text" className="eco-input-field" name="color" placeholder="VD: Đỏ đen" value={formData.color} onChange={handleInputChange} required disabled={!hasRoom} />
                       </div>
                     </div>
 
@@ -343,7 +379,7 @@ function RegisterParkingCard(props) {
                         <label className="eco-form-label">
                           <i className="bi bi-file-earmark-image me-1"></i> Ảnh giấy đăng ký xe (Cà vẹt) <span className="text-danger">*</span>
                         </label>
-                        <input id="regImageInput" type="file" className="eco-input-field eco-file-upload p-2" accept="image/*" onChange={handleRegImageChange} required />
+                        <input id="regImageInput" type="file" className="eco-input-field eco-file-upload p-2" accept="image/*" onChange={handleRegImageChange} required disabled={!hasRoom} />
                         <small className="text-muted d-block mt-2" style={{fontSize: "0.85rem"}}>
                           Bắt buộc. Dùng để đối chiếu và chứng minh quyền sở hữu phương tiện.
                         </small>
@@ -352,7 +388,7 @@ function RegisterParkingCard(props) {
                         <label className="eco-form-label">
                           <i className="bi bi-camera me-1"></i> Ảnh chụp phương tiện (Tùy chọn)
                         </label>
-                        <input id="vehImagesInput" type="file" className="eco-input-field eco-file-upload p-2" accept="image/*" multiple onChange={handleVehImagesChange} />
+                        <input id="vehImagesInput" type="file" className="eco-input-field eco-file-upload p-2" accept="image/*" multiple onChange={handleVehImagesChange} disabled={!hasRoom} />
                         <small className="text-muted d-block mt-2" style={{fontSize: "0.85rem"}}>
                           Nhấn giữ <code>Ctrl</code> (hoặc <code>Cmd</code>) để tải lên nhiều ảnh (Đầu xe, đuôi xe...).
                         </small>
@@ -360,7 +396,7 @@ function RegisterParkingCard(props) {
                     </div>
 
                     <div className="d-flex justify-content-end">
-                      <button type="submit" className="eco-btn-submit" disabled={isLoading}>
+                      <button type="submit" className="eco-btn-submit" disabled={isLoading || !hasRoom}>
                         {isLoading ? (
                           <>
                             <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>

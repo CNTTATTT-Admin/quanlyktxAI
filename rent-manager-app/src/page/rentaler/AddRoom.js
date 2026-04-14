@@ -12,19 +12,19 @@ function AddRoom(props) {
   const [roomData, setRoomData] = useState({
     title: "",
     description: "",
-    price: 0,
+    price: "",
     latitude: 0.0,
     longitude: 0.0,
     address: "",
-    locationId: 0,
-    categoryId: 0,
+    locationId: "",
+    categoryId: "",
     assets: [{ name: "", number: "" }],
     files: [],
-    waterCost: 0,
-    publicElectricCost: 0,
-    internetCost: 0,
-    maxOccupancy: 1,
-    floor: 1,
+    waterCost: "",
+    publicElectricCost: "",
+    internetCost: "",
+    maxOccupancy: "",
+    floor: "",
   });
 
   const handleInputChange = (event) => {
@@ -84,24 +84,73 @@ function AddRoom(props) {
     }));
   };
 
+  const validateForm = () => {
+    if (!roomData.title.trim()) {
+      toast.warning("Vui lòng nhập tiêu đề phòng.");
+      return false;
+    }
+
+    if (!roomData.locationId) {
+      toast.warning("Vui lòng chọn khu vực.");
+      return false;
+    }
+
+    if (!roomData.categoryId) {
+      toast.warning("Vui lòng chọn danh mục.");
+      return false;
+    }
+
+    if (!roomData.address.trim()) {
+      toast.warning("Vui lòng chọn địa chỉ trên bản đồ.");
+      return false;
+    }
+
+    if (Number(roomData.price) <= 0) {
+      toast.warning("Giá thuê phải lớn hơn 0.");
+      return false;
+    }
+
+    if (Number(roomData.maxOccupancy) <= 0) {
+      toast.warning("Sức chứa phải lớn hơn 0.");
+      return false;
+    }
+
+    if (Number(roomData.floor) <= 0) {
+      toast.warning("Tầng phải lớn hơn 0.");
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
+    const toNumberOrZero = (value) =>
+      value === "" || value === null || value === undefined ? 0 : value;
 
     const formData = new FormData();
     formData.append("title", roomData.title);
     formData.append("description", roomData.description);
-    formData.append("price", roomData.price);
+    formData.append("price", toNumberOrZero(roomData.price));
     formData.append("latitude", roomData.latitude);
     formData.append("longitude", roomData.longitude);
     formData.append("address", roomData.address);
-    formData.append("locationId", roomData.locationId);
-    formData.append("categoryId", roomData.categoryId);
+    formData.append("locationId", toNumberOrZero(roomData.locationId));
+    formData.append("categoryId", toNumberOrZero(roomData.categoryId));
     formData.append("asset", roomData.assets.length);
-    formData.append("waterCost", roomData.waterCost);
-    formData.append("publicElectricCost", roomData.publicElectricCost);
-    formData.append("internetCost", roomData.internetCost);
-    formData.append("maxOccupancy", roomData.maxOccupancy);
-    formData.append("floor", roomData.floor);
+    formData.append("waterCost", toNumberOrZero(roomData.waterCost));
+    formData.append(
+      "publicElectricCost",
+      toNumberOrZero(roomData.publicElectricCost),
+    );
+    formData.append("internetCost", toNumberOrZero(roomData.internetCost));
+    formData.append("maxOccupancy", toNumberOrZero(roomData.maxOccupancy));
+    formData.append("floor", toNumberOrZero(roomData.floor));
     roomData.assets.forEach((asset, index) => {
       formData.append(`assets[${index}][name]`, asset.name);
       formData.append(`assets[${index}][number]`, asset.number);
@@ -120,14 +169,19 @@ function AddRoom(props) {
         setRoomData({
           title: "",
           description: "",
-          price: 0,
+          price: "",
           latitude: 0.0,
           longitude: 0.0,
           address: "",
-          locationId: 0,
-          categoryId: 0,
+          locationId: "",
+          categoryId: "",
           assets: [{ name: "", number: "" }],
           files: [],
+          waterCost: "",
+          publicElectricCost: "",
+          internetCost: "",
+          maxOccupancy: "",
+          floor: "",
         });
       })
       .catch((error) => {
@@ -196,30 +250,35 @@ function AddRoom(props) {
                 <div className="row g-3">
                   <div className="col-md-6">
                     <label className="modern-label" htmlFor="price">Giá thuê (VNĐ)</label>
-                    <input type="number" className="modern-input w-100" id="price" name="price" value={roomData.price} onChange={handleInputChange} />
+                    <input type="number" min="1" required className="modern-input w-100" id="price" name="price" value={roomData.price} onChange={handleInputChange} placeholder="Ví dụ: 2500000" />
                   </div>
                   <div className="col-md-6">
                     <label className="modern-label" htmlFor="maxOccupancy">Sức chứa (Người)</label>
-                    <input type="number" className="modern-input w-100" id="maxOccupancy" name="maxOccupancy" value={roomData.maxOccupancy} onChange={handleInputChange} />
+                    <input type="number" min="1" required className="modern-input w-100" id="maxOccupancy" name="maxOccupancy" value={roomData.maxOccupancy} onChange={handleInputChange} placeholder="Ví dụ: 4" />
                   </div>
 
                   <div className="col-md-6">
                     <label className="modern-label" htmlFor="floor">Tầng</label>
-                    <input type="number" className="modern-input w-100" id="floor" name="floor" value={roomData.floor} onChange={handleInputChange} />
+                    <input type="number" min="1" required className="modern-input w-100" id="floor" name="floor" value={roomData.floor} onChange={handleInputChange} placeholder="Ví dụ: 2" />
                   </div>
                   <div className="col-md-6">
                     <label className="modern-label" htmlFor="internetCost">Tiền mạng</label>
-                    <input type="number" className="modern-input w-100" id="internetCost" name="internetCost" value={roomData.internetCost} onChange={handleInputChange} />
+                    <input type="number" className="modern-input w-100" id="internetCost" name="internetCost" value={roomData.internetCost} onChange={handleInputChange} placeholder="Ví dụ: 100000" />
                   </div>
 
-                  <div className="col-12">
-                    <label className="modern-label" htmlFor="waterCost">Tiền nước (nếu là giá cố định)</label>
-                    <input type="number" className="modern-input w-100" id="waterCost" name="waterCost" value={roomData.waterCost} onChange={handleInputChange} />
+                  <div className="col-md-6">
+                    <label className="modern-label" htmlFor="waterCost">Tiền nước (nếu giá cố định)</label>
+                    <input type="number" className="modern-input w-100" id="waterCost" name="waterCost" value={roomData.waterCost} onChange={handleInputChange} placeholder="Ví dụ: 50000" />
+                  </div>
+
+                  <div className="col-md-6">
+                    <label className="modern-label" htmlFor="publicElectricCost">Tiền điện (nếu giá cố định)</label>
+                    <input type="number" className="modern-input w-100" id="publicElectricCost" name="publicElectricCost" value={roomData.publicElectricCost} onChange={handleInputChange} placeholder="Ví dụ: 70000" />
                   </div>
 
                   <div className="col-12">
                     <label className="modern-label" htmlFor="title">Tiêu đề phòng KTX</label>
-                    <input type="text" className="modern-input w-100" id="title" name="title" value={roomData.title} onChange={handleInputChange} />
+                    <input type="text" required className="modern-input w-100" id="title" name="title" value={roomData.title} onChange={handleInputChange} placeholder="Ví dụ: Phòng mới full nội thất gần trung tâm" />
                   </div>
                   <div className="col-12">
                     <label className="modern-label" htmlFor="address">Địa Chỉ (Tìm kiếm vị trí)</label>
@@ -230,8 +289,8 @@ function AddRoom(props) {
 
                   <div className="col-md-6">
                     <label className="modern-label" htmlFor="locationId">Khu vực</label>
-                    <select className="modern-input w-100" id="locationId" name="locationId" value={roomData.locationId} onChange={handleInputChange}>
-                      <option value={0}>Chọn...</option>
+                    <select required className="modern-input w-100" id="locationId" name="locationId" value={roomData.locationId} onChange={handleInputChange}>
+                      <option value="">Chọn...</option>
                       <option value={1}>Hà Nội</option>
                       <option value={2}>Tp.Hồ Chí Minh</option>
                       <option value={3}>Đà Nẵng</option>
@@ -241,8 +300,8 @@ function AddRoom(props) {
                   </div>
                   <div className="col-md-6">
                     <label className="modern-label" htmlFor="categoryId">Danh mục</label>
-                    <select className="modern-input w-100" id="categoryId" name="categoryId" value={roomData.categoryId} onChange={handleInputChange}>
-                      <option value={0}>Chọn...</option>
+                    <select required className="modern-input w-100" id="categoryId" name="categoryId" value={roomData.categoryId} onChange={handleInputChange}>
+                      <option value="">Chọn...</option>
                       <option value={1}>Kí túc xá nam</option>
                       <option value={2}>Kí túc xá nữ</option>
                       <option value={3}>Kí túc xá dịch vụ</option>
@@ -251,7 +310,7 @@ function AddRoom(props) {
 
                   <div className="col-12">
                     <label className="modern-label" htmlFor="description">Mô tả thêm</label>
-                    <textarea className="modern-input w-100" id="description" name="description" value={roomData.description} onChange={handleInputChange} rows="3"></textarea>
+                    <textarea className="modern-input w-100" id="description" name="description" value={roomData.description} onChange={handleInputChange} rows="3" placeholder="Mô tả tiện ích, nội quy, giờ giấc..." ></textarea>
                   </div>
                 </div>
 

@@ -291,14 +291,14 @@ const ParkingCardManagement = (props) => {
                                         <td className="text-center">
                                             <div className="d-flex flex-column gap-2 align-items-center">
                                                 <button
-                                                    className="btn btn-outline-info bg-white shadow-sm rounded-pill btn-action-table w-100 fw-semibold"
+                                                    className="btn btn-outline-info shadow-sm rounded-pill btn-action-table w-100 fw-semibold"
                                                     onClick={() => openImagesModal(item.registrationImageUrl, "Giấy Tờ Đăng Ký Xe")}
                                                 >
                                                     <FiEye className="me-1"/> Giấy tờ xe
                                                 </button>
                                                 {item.vehicleImages && item.vehicleImages.length > 0 && (
                                                     <button
-                                                        className="btn btn-outline-secondary bg-white shadow-sm rounded-pill btn-action-table w-100 fw-semibold"
+                                                        className="btn btn-outline-secondary shadow-sm rounded-pill btn-action-table w-100 fw-semibold"
                                                         onClick={() => openImagesModal(item.vehicleImages, "Ảnh Thực Tế Của Xe")}
                                                     >
                                                         <FiEye className="me-1"/> Ảnh xe ({item.vehicleImages.length})
@@ -316,7 +316,7 @@ const ParkingCardManagement = (props) => {
                                                         <FiCheck className="me-1 fs-6"/> Duyệt
                                                     </button>
                                                     <button
-                                                        className="btn btn-outline-danger bg-white shadow-sm rounded-pill btn-action-table w-100 fw-semibold"
+                                                        className="btn btn-outline-danger shadow-sm rounded-pill btn-action-table w-100 fw-semibold"
                                                         onClick={() => handleUpdateStatus(item.id, "REJECTED")}
                                                     >
                                                         <FiX className="me-1 fs-6"/> Từ chối
