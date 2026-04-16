@@ -98,7 +98,10 @@ public class ElectricAndWaterController {
     }
 
     @PutMapping("/{id}/pay")
-    public ResponseEntity<?> payElectricAndWater(@PathVariable Long id) {
-        return ResponseEntity.ok(electricAndWaterService.payElectric(id));
+    public ResponseEntity<?> payElectricAndWater(@PathVariable Long id,
+                                                 @RequestHeader("Authorization") String token) {
+        token = token.substring(7);
+        Long userId = tokenProvider.getUserIdFromToken(token);
+        return ResponseEntity.ok(electricAndWaterService.payElectric(id, userId));
     }
 }

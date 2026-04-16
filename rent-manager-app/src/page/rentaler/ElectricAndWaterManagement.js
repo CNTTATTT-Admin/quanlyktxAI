@@ -11,7 +11,7 @@ import useAutoReload from "../../hooks/useAutoReload";
 const ElectricAndWaterManagement = (props) => {
   const { authenticated, role, currentUser, location, onLogout } = props;
   const history = useNavigate();
-  
+
   const [tableData, setTableData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
@@ -58,13 +58,13 @@ const ElectricAndWaterManagement = (props) => {
       .catch((error) => {
         toast.error(
           (error && error.message) ||
-            "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
+          "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
         );
         setTableData([]);
         setTotalItems(0);
       });
   }, [currentPage, itemsPerPage, searchQuery]);
-  
+
   useEffect(() => {
     if (authenticated) {
       fetchData();
@@ -72,9 +72,9 @@ const ElectricAndWaterManagement = (props) => {
   }, [authenticated, fetchData]);
 
   useAutoReload({ enabled: authenticated, onReload: fetchData });
-  
+
   console.log("tableData", tableData);
-  
+
   const handleSearch = (event) => {
     setSearchQuery(event.target.value);
   };
@@ -110,7 +110,7 @@ const ElectricAndWaterManagement = (props) => {
         
         /* Table Styles */
         .modern-table-wrapper { background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; overflow-x: auto; }
-        .eco-table { margin-bottom: 0; width: 100%; min-width: 900px; }
+        .eco-table { margin-bottom: 0; width: 100%; min-width: 1100px; }
         .eco-table thead { background-color: #F8FAFC; border-bottom: 2px solid #E2E8F0; }
         .eco-table th { color: #1E293B; font-weight: 800; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 0.5px; padding: 12px 10px; border: none; white-space: nowrap; vertical-align: middle; }
         .eco-table td { padding: 18px 20px; vertical-align: middle; border-bottom: 1px solid #F1F5F9; color: #475569; font-size: 0.9rem; white-space: nowrap; }
@@ -123,7 +123,7 @@ const ElectricAndWaterManagement = (props) => {
       `}</style>
 
       <div className="container-fluid p-4 eco-bg">
-        
+
         {/* TIÊU ĐỀ & MÔ TẢ */}
         <div className="row mb-4 align-items-center">
           <div className="col-md-8">
@@ -148,7 +148,7 @@ const ElectricAndWaterManagement = (props) => {
                 value={searchQuery}
                 onChange={handleSearch}
               />
-              <i className="bi bi-search position-absolute top-50 end-0 translate-middle-y me-4 text-muted" style={{fontSize: "1.1rem"}}></i>
+              <i className="bi bi-search position-absolute top-50 end-0 translate-middle-y me-4 text-muted" style={{ fontSize: "1.1rem" }}></i>
             </div>
           </div>
         </div>
@@ -161,10 +161,11 @@ const ElectricAndWaterManagement = (props) => {
                 <th className="ps-4">Tên hóa đơn</th>
                 <th>Phòng</th>
                 <th>Kỳ sử dụng</th>
-                <th className="text-center">Chỉ số Điện <br/><small className="text-muted text-lowercase fw-normal">(Cũ ➔ Mới)</small></th>
-                <th className="text-center">Chỉ số Nước <br/><small className="text-muted text-lowercase fw-normal">(Cũ ➔ Mới)</small></th>
-                <th>Tổng tiền điện</th>
-                <th>Tổng tiền nước</th>
+                <th className="text-center">Chỉ số Điện <br /><small className="text-muted text-lowercase fw-normal">(Cũ ➔ Mới)</small></th>
+                <th className="text-center">Chỉ số Nước <br /><small className="text-muted text-lowercase fw-normal">(Cũ ➔ Mới)</small></th>
+                <th className="text-center" style={{ minWidth: "150px" }}>Tổng tiền điện</th>
+                <th className="text-center" style={{ minWidth: "150px" }}>Tổng tiền nước</th>
+                <th className="text-center" style={{ minWidth: "150px" }}>Tiền Internet</th>
                 <th>Trạng Thái</th>
                 <th className="text-center pe-4">Hành động</th>
               </tr>
@@ -172,10 +173,10 @@ const ElectricAndWaterManagement = (props) => {
             <tbody>
               {tableData.length === 0 ? (
                 <tr>
-                  <td colSpan="9" className="text-center py-5">
+                  <td colSpan="10" className="text-center py-5">
                     <div className="text-muted">
-                      <i className="bi bi-receipt fs-1 d-block mb-3 opacity-50" style={{fontSize: "3rem"}}></i>
-                      <span style={{fontSize: "1.1rem"}}>Không có dữ liệu điện nước.</span>
+                      <i className="bi bi-receipt fs-1 d-block mb-3 opacity-50" style={{ fontSize: "3rem" }}></i>
+                      <span style={{ fontSize: "1.1rem" }}>Không có dữ liệu điện nước.</span>
                     </div>
                   </td>
                 </tr>
@@ -190,14 +191,14 @@ const ElectricAndWaterManagement = (props) => {
                       </span>
                     </td>
                     <td className="fw-medium">Tháng {item.month}</td>
-                    
+
                     {/* Gộp Cột Điện */}
                     <td className="text-center fw-medium font-monospace">
                       <span className="text-muted">{item.lastMonthNumberOfElectric}</span>
                       <i className="bi bi-arrow-right mx-2 text-emerald"></i>
                       <span className="text-dark">{item.thisMonthNumberOfElectric}</span>
                     </td>
-                    
+
                     {/* Gộp Cột Nước */}
                     <td className="text-center fw-medium font-monospace">
                       <span className="text-muted">{item.lastMonthBlockOfWater}</span>
@@ -206,40 +207,57 @@ const ElectricAndWaterManagement = (props) => {
                     </td>
 
                     {/* Tổng tiền điện */}
-                    <td>
-                      <span className="fw-bold text-dark fs-6">
-                        {formatVnd(item.totalMoneyOfElectric)}
-                      </span>
-                      <br />
-                      <small className="text-muted">
-                        Mỗi người: <span className="fw-medium text-emerald">{formatVnd(item.perPersonElectric)}</span>
-                      </small>
+                    <td className="text-center">
+                      <div className="bg-light border rounded-3 p-2 w-100 text-start shadow-sm transition-all hover-card">
+                        <div className="fw-bold text-danger mb-1" style={{ fontSize: "0.95rem" }}>
+                          <i className="bi bi-lightning-charge-fill text-warning me-1 fs-6"></i>
+                          {formatVnd(item.totalMoneyOfElectric)}
+                        </div>
+                        <div className="text-muted" style={{ fontSize: "0.8rem" }}>
+                          Mỗi người: <span className="fw-semibold text-dark">{formatVnd(item.perPersonElectric)}</span>
+                        </div>
+                      </div>
                     </td>
 
                     {/* Tổng tiền nước */}
-                    <td>
-                      <span className="fw-bold text-dark fs-6">
-                        {formatVnd(item.totalMoneyOfWater)}
-                      </span>
-                      <br />
-                      <small className="text-muted">
-                        Mỗi người: <span className="fw-medium text-info">{formatVnd(item.perPersonWater)}</span>
-                      </small>
+                    <td className="text-center">
+                      <div className="bg-light border rounded-3 p-2 w-100 text-start shadow-sm transition-all hover-card">
+                        <div className="fw-bold text-primary mb-1" style={{ fontSize: "0.95rem" }}>
+                          <i className="bi bi-droplet-fill text-info me-1 fs-6"></i>
+                          {formatVnd(item.totalMoneyOfWater)}
+                        </div>
+                        <div className="text-muted" style={{ fontSize: "0.8rem" }}>
+                          Mỗi người: <span className="fw-semibold text-dark">{formatVnd(item.perPersonWater)}</span>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Tổng tiền internet */}
+                    <td className="text-center">
+                      <div className="bg-light border rounded-3 p-2 w-100 text-start shadow-sm transition-all hover-card">
+                        <div className="fw-bold text-success mb-1" style={{ fontSize: "0.95rem" }}>
+                          <i className="bi bi-wifi text-success me-1 fs-6"></i>
+                          {formatVnd(item.internetCost || 0)}
+                        </div>
+                        <div className="text-muted" style={{ fontSize: "0.8rem" }}>
+                          Mỗi người: <span className="fw-semibold text-dark">{formatVnd(item.perPersonInternet || 0)}</span>
+                        </div>
+                      </div>
                     </td>
 
                     {/* Trạng thái */}
                     <td>
                       {item.paid ? (
-                        <span className="badge bg-success text-white rounded-pill px-3 py-2 shadow-sm" style={{fontSize: "0.85rem"}}>
+                        <span className="badge bg-success text-white rounded-pill px-3 py-2 shadow-sm" style={{ fontSize: "0.85rem" }}>
                           <i className="bi bi-check-circle me-1"></i> Đã thanh toán
                         </span>
                       ) : (
-                        <span className="badge bg-warning text-dark rounded-pill px-3 py-2 shadow-sm" style={{fontSize: "0.85rem"}}>
+                        <span className="badge bg-warning text-dark rounded-pill px-3 py-2 shadow-sm" style={{ fontSize: "0.85rem" }}>
                           <i className="bi bi-hourglass-split me-1"></i> Chưa thanh toán
                         </span>
                       )}
                     </td>
-                    
+
                     {/* Nút hành động */}
                     <td className="text-center pe-4">
                       <button

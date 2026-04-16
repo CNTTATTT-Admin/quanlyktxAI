@@ -6,6 +6,7 @@ import com.cntt.rentalmanagement.domain.models.Invoice;
 import com.cntt.rentalmanagement.exception.BadRequestException;
 import com.cntt.rentalmanagement.repository.ElectricAndWaterRepository;
 import com.cntt.rentalmanagement.repository.InvoiceRepository;
+import com.cntt.rentalmanagement.secruity.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,7 @@ public class PaymentController {
 
     private final InvoiceRepository invoiceRepository;
     private final ElectricAndWaterRepository electricAndWaterRepository;
+    private final TokenProvider tokenProvider;
 
     @Value("${vnpay.tmnCode}")
     private String tmnCode;
@@ -106,24 +108,41 @@ public class PaymentController {
     }
 
     @GetMapping("/create-vnpay-url-electric-water")
-    public ResponseEntity<?> createElectricWaterPaymentUrl(HttpServletRequest request, @RequestParam Long electricWaterId) throws Exception {
+    public ResponseEntity<?> createElectricWaterPaymentUrl(HttpServletRequest request,
+                                                           @RequestParam Long electricWaterId,
+                                                           @RequestHeader("Authorization") String token) throws Exception {
         ElectricAndWater bill = electricAndWaterRepository.findById(electricWaterId)
                 .orElseThrow(() -> new BadRequestException("Hóa đơn điện nước không tồn tại"));
+
+        token = token.substring(7);
+        Long userId = tokenProvider.getUserIdFromToken(token);
 
         if (bill.isPaid()) {
             throw new BadRequestException("Hóa đơn điện nước này đã được thanh toán");
         }
 
+        String paidUserIds = bill.getPaidUserIds() != null ? bill.getPaidUserIds() : "";
+        for (String paidUserId : paidUserIds.split(",")) {
+            if (!paidUserId.trim().isEmpty() && Long.valueOf(paidUserId.trim()).equals(userId)) {
+                throw new BadRequestException("Bạn đã thanh toán phần hóa đơn này rồi");
+            }
+        }
+
         BigDecimal totalElectric = bill.getTotalMoneyOfElectric() != null ? bill.getTotalMoneyOfElectric() : BigDecimal.ZERO;
         BigDecimal totalWater = bill.getTotalMoneyOfWater() != null ? bill.getTotalMoneyOfWater() : BigDecimal.ZERO;
+        BigDecimal totalInternet = bill.getInternetCost() != null ? bill.getInternetCost() : BigDecimal.ZERO;
 
-        int occupancy = bill.getRoom() != null ? bill.getRoom().getCurrentOccupancy() : 0;
+        int occupancy = bill.getTotalUsersToPay() != null ? bill.getTotalUsersToPay() : 0;
+        if (occupancy <= 0) {
+            occupancy = bill.getRoom() != null ? bill.getRoom().getCurrentOccupancy() : 0;
+        }
         BigDecimal amountPerPerson;
         if (occupancy > 0) {
             amountPerPerson = totalElectric.divide(BigDecimal.valueOf(occupancy), 2, BigDecimal.ROUND_HALF_UP)
-                    .add(totalWater.divide(BigDecimal.valueOf(occupancy), 2, BigDecimal.ROUND_HALF_UP));
+                    .add(totalWater.divide(BigDecimal.valueOf(occupancy), 2, BigDecimal.ROUND_HALF_UP))
+                    .add(totalInternet.divide(BigDecimal.valueOf(occupancy), 2, BigDecimal.ROUND_HALF_UP));
         } else {
-            amountPerPerson = totalElectric.add(totalWater);
+            amountPerPerson = totalElectric.add(totalWater).add(totalInternet);
         }
 
         long amount = amountPerPerson.longValue() * 100;
@@ -138,7 +157,7 @@ public class PaymentController {
         vnp_Params.put("vnp_CurrCode", "VND");
         vnp_Params.put("vnp_BankCode", "NCB");
         vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
-        vnp_Params.put("vnp_OrderInfo", "Thanh toan hoa don dien nuoc #" + electricWaterId);
+        vnp_Params.put("vnp_OrderInfo", "Thanh toan hoa don dien nuoc internet #" + electricWaterId);
         vnp_Params.put("vnp_OrderType", "other");
         vnp_Params.put("vnp_Locale", "vn");
         vnp_Params.put("vnp_IpAddr", VNPayConfig.getIpAddress(request));

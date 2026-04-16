@@ -51,7 +51,7 @@ public class StatisticalServiceImpl extends BaseService implements StatisticalSe
     @Override
     public TotalNumberRequest getNumberOfRentalerForStatistical() {
         User user = userRepository.findById(getUserId()).orElseThrow(() -> new BadRequestException("Tài khoản không tồn tại"));
-        int totalRevenue = 0;
+        BigDecimal totalRevenue = BigDecimal.ZERO;
         
         //lọc người thuê duy nhất, tránh đếm trùng
         Set<Long> allTimeTenantIds = new HashSet<>();
@@ -67,11 +67,31 @@ public class StatisticalServiceImpl extends BaseService implements StatisticalSe
             long months = duration.toMinutes() / (60 * 24 * 30);
             BigDecimal monthlyTotal = room.getPrice()
                 .add(room.getSplitWaterCost())
-                .add(room.getSplitElectricCost())
-                .add(room.getSplitInternetCost());
+                .add(room.getSplitElectricCost());
                 
-            totalRevenue += months * monthlyTotal.intValue();
+            totalRevenue = totalRevenue.add(monthlyTotal.multiply(BigDecimal.valueOf(months)));
         }
+
+        // Internet revenue now follows paid electric/water bills, not fixed room internet price.
+        String internetSql = "SELECT COALESCE(SUM(e.internet_cost), 0) " +
+                "FROM electric_and_water e " +
+                "JOIN room r ON e.room_id = r.id " +
+                "WHERE r.user_id = :rentalerId AND e.paid = 1";
+
+        Object internetResult = entityManager.createNativeQuery(internetSql)
+                .setParameter("rentalerId", getUserId())
+                .getSingleResult();
+
+        BigDecimal internetRevenue;
+        if (internetResult instanceof BigDecimal value) {
+            internetRevenue = value;
+        } else if (internetResult instanceof Number number) {
+            internetRevenue = BigDecimal.valueOf(number.longValue());
+        } else {
+            internetRevenue = BigDecimal.ZERO;
+        }
+
+        totalRevenue = totalRevenue.add(internetRevenue);
 
         //đếm số người hiện tại
         List<Room> myRooms = roomRepository.findByUser(user);
@@ -84,7 +104,7 @@ public class StatisticalServiceImpl extends BaseService implements StatisticalSe
         totalNumberRequest.setNumberOfEmptyRoom((int) roomRepository.countAllByStatusAndUser(RoomStatus.AVAILABLE,user));
         totalNumberRequest.setNumberOfPeople(currentTenants); 
         totalNumberRequest.setNumberOfAllTimePeople(allTimeTenantIds.size());
-        totalNumberRequest.setRevenue(BigDecimal.valueOf(totalRevenue));
+        totalNumberRequest.setRevenue(totalRevenue);
         return totalNumberRequest;
     }
 
@@ -172,7 +192,7 @@ public class StatisticalServiceImpl extends BaseService implements StatisticalSe
         YearMonth realNowMonth = YearMonth.now(); 
         int currentYear = LocalDate.now().getYear();
 
-        //tiền phòng + net
+        //tiền phòng (internet được lấy từ hóa đơn đã thu phía dưới)
         for (Contract contract : contractRepository.getAllContract(getUserId())) {
             YearMonth currentMonth = YearMonth.from(contract.getCreatedAt());
             YearMonth endMonth = realNowMonth;
@@ -188,15 +208,14 @@ public class StatisticalServiceImpl extends BaseService implements StatisticalSe
                 RevenueDetails details = monthTotalMap.getOrDefault(currentMonth, new RevenueDetails());
             
                 details.revenue += (contract.getRoom().getPrice() != null) ? contract.getRoom().getPrice().longValue() : 0L;
-                details.internetCost += (contract.getRoom().getInternetCost() != null) ? contract.getRoom().getInternetCost().longValue() : 0L;
             
                 monthTotalMap.put(currentMonth, details);
                 currentMonth = currentMonth.plusMonths(1);
             }
         }
 
-        //Tiền điện + nước
-        String sql = "SELECT e.month, SUM(e.total_money_of_electric), SUM(e.total_money_of_water) " +
+        //Tiền điện + nước + internet từ hóa đơn đã thu
+        String sql = "SELECT e.month, SUM(e.total_money_of_electric), SUM(e.total_money_of_water), SUM(e.internet_cost) " +
                      "FROM electric_and_water e " +
                      "JOIN room r ON e.room_id = r.id " +
                      "WHERE r.user_id = :rentalerId AND e.paid = 1 " + // CHỈ LẤY HÓA ĐƠN ĐÃ THU TIỀN
@@ -214,6 +233,7 @@ public class StatisticalServiceImpl extends BaseService implements StatisticalSe
                 if (month >= 1 && month <= 12 && month <= realNowMonth.getMonthValue()) {
                     long electric = row[1] != null ? ((Number) row[1]).longValue() : 0L;
                     long water = row[2] != null ? ((Number) row[2]).longValue() : 0L;
+                    long internet = row[3] != null ? ((Number) row[3]).longValue() : 0L;
 
                     YearMonth ym = YearMonth.of(currentYear, month);
                     RevenueDetails details = monthTotalMap.getOrDefault(ym, new RevenueDetails());
@@ -221,6 +241,7 @@ public class StatisticalServiceImpl extends BaseService implements StatisticalSe
                     // CỘNG DOANH THU ĐIỆN NƯỚC THỰC TẾ VÀO BIỂU ĐỒ
                     details.publicElectricCost += electric;
                     details.waterCost += water;
+                    details.internetCost += internet;
                     monthTotalMap.put(ym, details);
                 }
             }

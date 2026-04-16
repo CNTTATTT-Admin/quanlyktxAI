@@ -37,8 +37,8 @@ function ElectricAndWaterUserPage(props) {
 
         // Ưu tiên chưa thanh toán trước, sau đó mới nhất đến cũ nhất
         data.sort((a, b) => {
-          if (a.paid !== b.paid) {
-            return Number(a.paid) - Number(b.paid);
+          if (a.userPaid !== b.userPaid) {
+            return Number(a.userPaid) - Number(b.userPaid);
           }
           return (b.id || 0) - (a.id || 0);
         });
@@ -269,16 +269,19 @@ function ElectricAndWaterUserPage(props) {
                                       <span>
                                         {formatVnd(item.totalMoneyOfWater)} (Nước)
                                       </span>
+                                      <span>
+                                        {formatVnd(item.internetCost)} (Internet)
+                                      </span>
                                     </div>
                                   </td>
                                   
                                   <td>
                                     <strong className="text-danger fs-5">
-                                      {formatVnd((item.perPersonElectric || 0) + (item.perPersonWater || 0))}
+                                      {formatVnd((item.perPersonElectric || 0) + (item.perPersonWater || 0) + (item.perPersonInternet || 0))}
                                     </strong>
                                     <br />
                                     <small className="text-muted" style={{fontSize: "0.75rem"}}>
-                                      Chia rẽ: Điện {formatVnd(item.perPersonElectric)} / Nước {formatVnd(item.perPersonWater)}
+                                      Chia rẽ: Điện {formatVnd(item.perPersonElectric)} / Nước {formatVnd(item.perPersonWater)} / Internet {formatVnd(item.perPersonInternet)}
                                     </small>
                                   </td>
                                   
@@ -286,6 +289,10 @@ function ElectricAndWaterUserPage(props) {
                                     {item.paid ? (
                                       <span className="eco-badge eco-badge-success">
                                         <i className="bi bi-check-circle-fill"></i> Đã thanh toán
+                                      </span>
+                                    ) : item.userPaid ? (
+                                      <span className="eco-badge eco-badge-success">
+                                        <i className="bi bi-check-circle-fill"></i> Bạn đã thanh toán phần của mình
                                       </span>
                                     ) : (
                                       <span className="eco-badge eco-badge-warning">
@@ -295,7 +302,7 @@ function ElectricAndWaterUserPage(props) {
                                   </td>
                                   
                                   <td className="text-end" style={{ paddingRight: "30px" }}>
-                                    {!item.paid ? (
+                                    {!item.paid && !item.userPaid ? (
                                       <button
                                         className="eco-btn-pay"
                                         onClick={() => handlePay(item.id)}

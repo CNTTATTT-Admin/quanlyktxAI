@@ -23,9 +23,14 @@ public class ElectricAndWater {
     private int thisMonthBlockOfWater;
     private BigDecimal moneyEachNumberOfElectric;
     private BigDecimal moneyEachBlockOfWater;
+    private BigDecimal internetCost;
     private BigDecimal totalMoneyOfElectric;
     private BigDecimal totalMoneyOfWater;
     private boolean paid;
+    private Integer totalUsersToPay;
+    private Integer paidUsersCount;
+    @Column(columnDefinition = "TEXT")
+    private String paidUserIds;
 
     @ManyToOne
     @JoinColumn(name = "room_id")

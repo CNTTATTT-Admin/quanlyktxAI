@@ -23,6 +23,7 @@ const EditElectric = (props) => {
         lastMonthBlockOfWater: "",
         thisMonthBlockOfWater: "",
         moneyEachBlockOfWater: "",
+        internetCost: "",
         paid: '',
         roomId: '',
         room: ''
@@ -109,11 +110,12 @@ const EditElectric = (props) => {
         const oldWater = Number(electricData.lastMonthBlockOfWater) || 0;
         const newWater = Number(electricData.thisMonthBlockOfWater) || 0;
         const priceWater = Number(electricData.moneyEachBlockOfWater) || 0;
+        const internetCost = Number(electricData.internetCost) || 0;
 
         const elecUsed = newElec - oldElec;
         const waterUsed = newWater - oldWater;
 
-        return (elecUsed * priceElec) + (waterUsed * priceWater);
+        return (elecUsed * priceElec) + (waterUsed * priceWater) + internetCost;
     };
 
     const isError = hasInvalidReadings();
@@ -139,8 +141,9 @@ const EditElectric = (props) => {
                 .btn-modern:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
                 
                 .section-title { font-size: 1.1rem; font-weight: 700; color: #0F172A; margin-bottom: 15px; }
-                .electric-box { background-color: #FEF9C3; border: 1px solid #FDE047; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
-                .water-box { background-color: #E0F2FE; border: 1px solid #BAE6FD; border-radius: 12px; padding: 20px; }
+                .electric-box { background-color: #FEF9C3; border: 1px solid #FDE047; border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+                .water-box { background-color: #E0F2FE; border: 1px solid #BAE6FD; border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+                .internet-box { background-color: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 12px; padding: 24px; margin-bottom: 32px; }
 
                 .total-box { background-color: #F0FDF4; border: 2px dashed #10B981; transition: all 0.3s ease; }
                 .total-box:hover { background-color: #D1FAE5; }
@@ -329,6 +332,27 @@ const EditElectric = (props) => {
                                                 name="moneyEachBlockOfWater"
                                                 value={electricData.moneyEachBlockOfWater}
                                                 onChange={handleInputChange}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="modern-card p-4 mb-3" style={{ backgroundColor: "#ECFDF5", border: "1px solid #A7F3D0" }}>
+                                    <div className="section-title text-success mb-3">
+                                        <i className="bi bi-wifi me-2"></i> Chi Phí Internet
+                                    </div>
+                                    <div className="row g-3">
+                                        <div className="col-md-6">
+                                            <label className="modern-label" htmlFor="internetCost">Tiền internet tháng này</label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                className="form-control modern-input bg-white"
+                                                id="internetCost"
+                                                name="internetCost"
+                                                value={electricData.internetCost}
+                                                onChange={handleInputChange}
+                                                placeholder="VD: 150000"
                                             />
                                         </div>
                                     </div>

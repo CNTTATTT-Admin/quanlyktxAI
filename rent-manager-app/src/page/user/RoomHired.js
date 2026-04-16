@@ -118,6 +118,12 @@ function RoomHired(props) {
     });
   };
 
+  const isContractEnded = (contract) => {
+    if (contract?.isExpired) return true;
+    if (!contract?.deadlineContract) return false;
+    return new Date(contract.deadlineContract) <= new Date();
+  };
+
   if (!authenticated) {
     return (
       <Navigate
@@ -290,6 +296,7 @@ function RoomHired(props) {
                         ) : (
                           tableData.map((item, index) => {
                             const isLatestContract = currentPage === 1 && index === 0;
+                            const ended = isContractEnded(item);
 
                             return (
                               <tr key={item.id}>
@@ -336,7 +343,9 @@ function RoomHired(props) {
                                   )}
                                 </td>
                                 <td className="text-center">
-                                  {item.room?.status === "FULL" || item.room?.status === "PARTIALLY_FILLED" || item.room?.status === "ROOM_RENT" ? (
+                                  {ended ? (
+                                    <span className="eco-badge eco-badge-inactive">Đã rời</span>
+                                  ) : item.room?.status === "FULL" || item.room?.status === "PARTIALLY_FILLED" || item.room?.status === "ROOM_RENT" ? (
                                     <span className="eco-badge eco-badge-active">Đang ở</span>
                                   ) : (
                                     <span className="eco-badge eco-badge-inactive">
@@ -345,7 +354,7 @@ function RoomHired(props) {
                                   )}
                                 </td>
                                 <td className="text-center" style={{ paddingRight: "30px" }}>
-                                  {isLatestContract && (item.room?.status === "FULL" || item.room?.status === "PARTIALLY_FILLED" || item.room?.status === "ROOM_RENT") ? (
+                                  {isLatestContract && !ended && (item.room?.status === "FULL" || item.room?.status === "PARTIALLY_FILLED" || item.room?.status === "ROOM_RENT") ? (
                                     <button
                                       className="btn eco-btn-action eco-btn-outline-danger"
                                       onClick={() => handleOpenModal(item.room?.id)}
