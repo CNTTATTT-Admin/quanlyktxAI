@@ -290,6 +290,18 @@ const ModalRoomDetails = ({ roomId }) => {
                     <span><i className="bi bi-layers-fill me-2 opacity-75"></i>Tầng</span>
                     <strong className="text-dark">Tầng {roomData?.floor}</strong>
                   </li>
+                  <li className="d-flex justify-content-between text-muted small">
+                    <span><i className="bi bi-wifi me-2 opacity-75"></i>Tiền mạng</span>
+                    <strong className="text-dark">{formatVnd(roomData?.internetCost)}/tháng</strong>
+                  </li>
+                  <li className="d-flex justify-content-between text-muted small">
+                    <span><i className="bi bi-droplet-fill me-2 opacity-75"></i>Tiền nước</span>
+                    <strong className="text-dark">{formatVnd(roomData?.waterCost)}/tháng</strong>
+                  </li>
+                  <li className="d-flex justify-content-between text-muted small">
+                    <span><i className="bi bi-lightning-charge-fill me-2 opacity-75"></i>Tiền điện</span>
+                    <strong className="text-dark">{formatVnd(roomData?.publicElectricCost)}/tháng</strong>
+                  </li>
                 </ul>
               </div>
             </div>

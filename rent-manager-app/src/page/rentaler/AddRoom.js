@@ -4,7 +4,8 @@ import SidebarNav from "./SidebarNav";
 import { useState } from "react";
 import RoomService from "../../services/axios/RoomService";
 import { toast } from "react-toastify";
-import PlacesWithStandaloneSearchBox from "./map/StandaloneSearchBox";
+
+const FIXED_ADDRESS = "KTX Trường Đại học Tây Đô";
 
 function AddRoom(props) {
   const { authenticated, role, currentUser, location, onLogout } = props;
@@ -15,7 +16,7 @@ function AddRoom(props) {
     price: "",
     latitude: 0.0,
     longitude: 0.0,
-    address: "",
+    address: FIXED_ADDRESS,
     locationId: "",
     categoryId: "",
     assets: [{ name: "", number: "" }],
@@ -75,15 +76,6 @@ function AddRoom(props) {
     }));
   };
 
-  const setLatLong = (lat, long, address) => {
-    setRoomData((prevRoomData) => ({
-      ...prevRoomData,
-      latitude: lat,
-      longitude: long,
-      address: address,
-    }));
-  };
-
   const validateForm = () => {
     if (!roomData.title.trim()) {
       toast.warning("Vui lòng nhập tiêu đề phòng.");
@@ -101,7 +93,7 @@ function AddRoom(props) {
     }
 
     if (!roomData.address.trim()) {
-      toast.warning("Vui lòng chọn địa chỉ trên bản đồ.");
+      toast.warning("Vui lòng nhập địa chỉ.");
       return false;
     }
 
@@ -172,7 +164,7 @@ function AddRoom(props) {
           price: "",
           latitude: 0.0,
           longitude: 0.0,
-          address: "",
+          address: FIXED_ADDRESS,
           locationId: "",
           categoryId: "",
           assets: [{ name: "", number: "" }],
@@ -281,10 +273,15 @@ function AddRoom(props) {
                     <input type="text" required className="modern-input w-100" id="title" name="title" value={roomData.title} onChange={handleInputChange} placeholder="Ví dụ: Phòng mới full nội thất gần trung tâm" />
                   </div>
                   <div className="col-12">
-                    <label className="modern-label" htmlFor="address">Địa Chỉ (Tìm kiếm vị trí)</label>
-                    <div className="w-100">
-                        <PlacesWithStandaloneSearchBox latLong={setLatLong} />
-                    </div>
+                    <label className="modern-label" htmlFor="address">Địa chỉ</label>
+                    <input
+                      type="text"
+                      className="modern-input w-100"
+                      id="address"
+                      name="address"
+                      value={roomData.address}
+                      readOnly
+                    />
                   </div>
 
                   <div className="col-md-6">

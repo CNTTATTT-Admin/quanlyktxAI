@@ -440,6 +440,14 @@ class RentailHomeDetail extends Component {
                           <span><i className="bi bi-wifi me-2 opacity-75"></i>Tiền mạng</span>
                           <strong className="text-dark">{formatVnd(rooms?.internetCost)}/tháng</strong>
                         </li>
+                        <li className="d-flex justify-content-between text-muted small">
+                          <span><i className="bi bi-droplet-fill me-2 opacity-75"></i>Tiền nước</span>
+                          <strong className="text-dark">{formatVnd(rooms?.waterCost)}/tháng</strong>
+                        </li>
+                        <li className="d-flex justify-content-between text-muted small">
+                          <span><i className="bi bi-lightning-charge-fill me-2 opacity-75"></i>Tiền điện</span>
+                          <strong className="text-dark">{formatVnd(rooms?.publicElectricCost)}/tháng</strong>
+                        </li>
                       </ul>
                     </div>
                   </div>
