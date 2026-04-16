@@ -110,7 +110,7 @@ const ElectricAndWaterManagement = (props) => {
         
         /* Table Styles */
         .modern-table-wrapper { background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; overflow-x: auto; }
-        .eco-table { margin-bottom: 0; width: 100%; min-width: 1100px; }
+        .eco-table { margin-bottom: 0; width: 100%; min-width: 1300px; }
         .eco-table thead { background-color: #F8FAFC; border-bottom: 2px solid #E2E8F0; }
         .eco-table th { color: #1E293B; font-weight: 800; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 0.5px; padding: 12px 10px; border: none; white-space: nowrap; vertical-align: middle; }
         .eco-table td { padding: 18px 20px; vertical-align: middle; border-bottom: 1px solid #F1F5F9; color: #475569; font-size: 0.9rem; white-space: nowrap; }
@@ -166,6 +166,7 @@ const ElectricAndWaterManagement = (props) => {
                 <th className="text-center" style={{ minWidth: "150px" }}>Tổng tiền điện</th>
                 <th className="text-center" style={{ minWidth: "150px" }}>Tổng tiền nước</th>
                 <th className="text-center" style={{ minWidth: "150px" }}>Tiền Internet</th>
+                <th className="text-center" style={{ minWidth: "240px" }}>Người đã/ chưa đóng</th>
                 <th>Trạng Thái</th>
                 <th className="text-center pe-4">Hành động</th>
               </tr>
@@ -173,7 +174,7 @@ const ElectricAndWaterManagement = (props) => {
             <tbody>
               {tableData.length === 0 ? (
                 <tr>
-                  <td colSpan="10" className="text-center py-5">
+                  <td colSpan="11" className="text-center py-5">
                     <div className="text-muted">
                       <i className="bi bi-receipt fs-1 d-block mb-3 opacity-50" style={{ fontSize: "3rem" }}></i>
                       <span style={{ fontSize: "1.1rem" }}>Không có dữ liệu điện nước.</span>
@@ -241,6 +242,41 @@ const ElectricAndWaterManagement = (props) => {
                         </div>
                         <div className="text-muted" style={{ fontSize: "0.8rem" }}>
                           Mỗi người: <span className="fw-semibold text-dark">{formatVnd(item.perPersonInternet || 0)}</span>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td>
+                      <div className="bg-light border rounded-3 p-2 shadow-sm" style={{ minWidth: "220px" }}>
+                        <div className="mb-2">
+                          <small className="text-success fw-bold d-block mb-1">
+                            <i className="bi bi-check-circle-fill me-1"></i>
+                            Đã đóng ({item.paidUsersCount || 0}/{item.totalUsersToPay || 0})
+                          </small>
+                          {item.paidUserNames && item.paidUserNames.length > 0 ? (
+                            <div className="d-flex flex-wrap gap-1">
+                              {item.paidUserNames.map((name, idx) => (
+                                <span key={`paid-${item.id}-${idx}`} className="badge bg-success-subtle text-success border">{name}</span>
+                              ))}
+                            </div>
+                          ) : (
+                            <small className="text-muted fst-italic">Chưa có ai đóng</small>
+                          )}
+                        </div>
+                        <div>
+                          <small className="text-warning fw-bold d-block mb-1">
+                            <i className="bi bi-hourglass-split me-1"></i>
+                            Chưa đóng
+                          </small>
+                          {item.unpaidUserNames && item.unpaidUserNames.length > 0 ? (
+                            <div className="d-flex flex-wrap gap-1">
+                              {item.unpaidUserNames.map((name, idx) => (
+                                <span key={`unpaid-${item.id}-${idx}`} className="badge bg-warning-subtle text-warning-emphasis border">{name}</span>
+                              ))}
+                            </div>
+                          ) : (
+                            <small className="text-muted fst-italic">Không còn ai chưa đóng</small>
+                          )}
                         </div>
                       </div>
                     </td>

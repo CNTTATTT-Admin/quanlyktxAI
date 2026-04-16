@@ -15,11 +15,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
-import java.util.LinkedHashSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -54,9 +55,17 @@ public class ElectricAndWaterServiceImpl implements ElectricAndWaterService {
         Room room = roomRepository.findById(electricAndWater.getRoom().getId())
             .orElseThrow(() -> new RuntimeException("Room not found"));
 
-        int totalUsersToPay = room.getCurrentOccupancy() > 0 ? room.getCurrentOccupancy() : 1;
+        Set<Long> participants = room.getResidents() != null
+            ? room.getResidents().stream()
+                .map(User::getId)
+                .filter(idValue -> idValue != null)
+                .collect(Collectors.toCollection(LinkedHashSet::new))
+            : new LinkedHashSet<>();
+
+        int totalUsersToPay = !participants.isEmpty() ? participants.size() : 1;
         electricAndWater.setTotalUsersToPay(totalUsersToPay);
         electricAndWater.setPaidUsersCount(0);
+        electricAndWater.setParticipantUserIds(joinPaidUserIds(participants));
         electricAndWater.setPaidUserIds("");
 
         electricAndWater.setRoom(room);
@@ -94,12 +103,33 @@ public class ElectricAndWaterServiceImpl implements ElectricAndWaterService {
                 electricAndWater1.setMoneyEachNumberOfElectric(electricAndWater.getMoneyEachNumberOfElectric());
                 electricAndWater1.setTotalMoneyOfElectric(totalMoneyOfElectric);
                 electricAndWater1.setInternetCost(internetCost);
-                // Mỗi lần sửa hóa đơn, reset trạng thái thanh toán để đảm bảo không lệch tiền đã chia.
-                int totalUsersToPay = room.getCurrentOccupancy() > 0 ? room.getCurrentOccupancy() : 1;
+
+                Set<Long> participants = parsePaidUserIds(electricAndWater1.getParticipantUserIds());
+                if (participants.isEmpty()) {
+                    participants = room.getResidents() != null
+                        ? room.getResidents().stream()
+                            .map(User::getId)
+                            .filter(idValue -> idValue != null)
+                            .collect(Collectors.toCollection(LinkedHashSet::new))
+                        : new LinkedHashSet<>();
+                    electricAndWater1.setParticipantUserIds(joinPaidUserIds(participants));
+                }
+
+                int totalUsersToPay = !participants.isEmpty() ? participants.size() : 1;
                 electricAndWater1.setTotalUsersToPay(totalUsersToPay);
-                electricAndWater1.setPaidUsersCount(0);
-                electricAndWater1.setPaidUserIds("");
-                electricAndWater1.setPaid(false);
+
+                // Rentaler có thể chủ động chốt "Đã thanh toán" từ màn hình chỉnh sửa.
+                if (electricAndWater.isPaid()) {
+                    Set<Long> paidUsers = new LinkedHashSet<>(participants);
+
+                    electricAndWater1.setPaid(true);
+                    electricAndWater1.setPaidUsersCount(totalUsersToPay);
+                    electricAndWater1.setPaidUserIds(joinPaidUserIds(paidUsers));
+                } else {
+                    electricAndWater1.setPaidUsersCount(0);
+                    electricAndWater1.setPaidUserIds("");
+                    electricAndWater1.setPaid(false);
+                }
 
                 room.setPublicElectricCost(totalMoneyOfElectric);
                 room.setWaterCost(totalMoneyOfWater);
@@ -126,16 +156,18 @@ public class ElectricAndWaterServiceImpl implements ElectricAndWaterService {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Set<Long> roomIds = new LinkedHashSet<>();
-        if (user.getAllocatedRoom() != null) {
+        List<com.cntt.rentalmanagement.domain.models.Contract> contracts = contractRepository.findByStudentId(userId)
+            .stream()
+            .filter(contract -> contract.getRoom() != null && contract.getRoom().getId() != null)
+            .toList();
+
+        Set<Long> roomIds = contracts.stream()
+            .map(contract -> contract.getRoom().getId())
+            .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        if (user.getAllocatedRoom() != null && user.getAllocatedRoom().getId() != null) {
             roomIds.add(user.getAllocatedRoom().getId());
         }
-
-        contractRepository.findByStudentId(userId).forEach(contract -> {
-            if (contract.getRoom() != null && contract.getRoom().getId() != null) {
-                roomIds.add(contract.getRoom().getId());
-            }
-        });
 
         if (roomIds.isEmpty()) {
             return List.of();
@@ -143,6 +175,7 @@ public class ElectricAndWaterServiceImpl implements ElectricAndWaterService {
 
         return electricAndWaterRepository.findByRoomIdIn(new ArrayList<>(roomIds))
             .stream()
+            .filter(bill -> isBillVisibleForUser(bill, contracts, userId))
             .sorted(Comparator
                 .comparing(ElectricAndWater::isPaid)
                 .thenComparing(ElectricAndWater::getId, Comparator.reverseOrder()))
@@ -174,6 +207,8 @@ public class ElectricAndWaterServiceImpl implements ElectricAndWaterService {
                 electricAndWaterResponse.setTotalUsersToPay(normalizeTotalUsersToPay(electricAndWater));
                 electricAndWaterResponse.setPaidUsersCount(normalizePaidUsersCount(electricAndWater));
                 electricAndWaterResponse.setUserPaid(false);
+                Set<Long> paidUsers = parsePaidUserIds(electricAndWater.getPaidUserIds());
+                populatePaymentUserNames(electricAndWaterResponse, electricAndWater, paidUsers);
                 
                 Room room = electricAndWater.getRoom();
                 int occupancy = normalizeTotalUsersToPay(electricAndWater);
@@ -247,6 +282,7 @@ public class ElectricAndWaterServiceImpl implements ElectricAndWaterService {
 
         Set<Long> paidUsers = parsePaidUserIds(electricAndWater.getPaidUserIds());
         electricAndWaterResponse.setUserPaid(currentUserId != null && paidUsers.contains(currentUserId));
+        populatePaymentUserNames(electricAndWaterResponse, electricAndWater, paidUsers);
 
         int occupancy = normalizeTotalUsersToPay(electricAndWater);
         if (occupancy > 0) {
@@ -268,6 +304,12 @@ public class ElectricAndWaterServiceImpl implements ElectricAndWaterService {
         if (totalUsers != null && totalUsers > 0) {
             return totalUsers;
         }
+
+        Set<Long> participants = parsePaidUserIds(electricAndWater.getParticipantUserIds());
+        if (!participants.isEmpty()) {
+            return participants.size();
+        }
+
         Room room = electricAndWater.getRoom();
         int currentOccupancy = room != null ? room.getCurrentOccupancy() : 0;
         return currentOccupancy > 0 ? currentOccupancy : 1;
@@ -296,5 +338,89 @@ public class ElectricAndWaterServiceImpl implements ElectricAndWaterService {
         return paidUserIds.stream()
             .map(String::valueOf)
             .collect(Collectors.joining(","));
+    }
+
+    private void populatePaymentUserNames(ElectricAndWaterResponse response,
+                                          ElectricAndWater electricAndWater,
+                                          Set<Long> paidUserIds) {
+        Set<Long> participants = parsePaidUserIds(electricAndWater.getParticipantUserIds());
+        if (participants.isEmpty() && electricAndWater.getRoom() != null && electricAndWater.getRoom().getResidents() != null) {
+            participants = electricAndWater.getRoom().getResidents().stream()
+                .map(User::getId)
+                .filter(idValue -> idValue != null)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+        }
+
+        List<String> paidNames = new ArrayList<>();
+        if (!paidUserIds.isEmpty()) {
+            paidNames = userRepository.findAllById(paidUserIds)
+                .stream()
+                .map(User::getName)
+                .collect(Collectors.toList());
+        }
+
+        Set<Long> unpaidIds = new LinkedHashSet<>(participants);
+        unpaidIds.removeAll(paidUserIds);
+        List<String> unpaidNames = unpaidIds.isEmpty()
+            ? Collections.emptyList()
+            : userRepository.findAllById(unpaidIds)
+                .stream()
+                .map(User::getName)
+                .collect(Collectors.toList());
+
+        response.setPaidUserNames(paidNames);
+        response.setUnpaidUserNames(unpaidNames);
+    }
+
+    private boolean isBillVisibleForUser(ElectricAndWater bill,
+                                         List<com.cntt.rentalmanagement.domain.models.Contract> contracts,
+                                         Long userId) {
+        Set<Long> participants = parsePaidUserIds(bill.getParticipantUserIds());
+        if (!participants.isEmpty()) {
+            return participants.contains(userId);
+        }
+
+        Set<Long> paidUsers = parsePaidUserIds(bill.getPaidUserIds());
+        if (paidUsers.contains(userId)) {
+            return true;
+        }
+
+        Long roomId = bill.getRoom() != null ? bill.getRoom().getId() : null;
+        if (roomId == null) {
+            return false;
+        }
+
+        LocalDateTime billCreatedAt = bill.getCreatedAt();
+
+        // Legacy fallback: if bill has no createdAt, show by room-contract relationship.
+        if (billCreatedAt == null) {
+            return contracts.stream().anyMatch(contract ->
+                contract.getRoom() != null
+                    && contract.getRoom().getId() != null
+                    && contract.getRoom().getId().equals(roomId));
+        }
+
+        for (com.cntt.rentalmanagement.domain.models.Contract contract : contracts) {
+            if (contract.getRoom() == null || contract.getRoom().getId() == null) {
+                continue;
+            }
+            if (!roomId.equals(contract.getRoom().getId())) {
+                continue;
+            }
+
+            LocalDateTime start = contract.getCreatedAt();
+            LocalDateTime end = contract.getDeadlineContract() != null ? contract.getDeadlineContract() : LocalDateTime.now();
+
+            if (start == null) {
+                continue;
+            }
+
+            if ((billCreatedAt.isEqual(start) || billCreatedAt.isAfter(start))
+                && (billCreatedAt.isEqual(end) || billCreatedAt.isBefore(end))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -72,11 +72,17 @@ public class StatisticalServiceImpl extends BaseService implements StatisticalSe
             totalRevenue = totalRevenue.add(monthlyTotal.multiply(BigDecimal.valueOf(months)));
         }
 
-        // Internet revenue now follows paid electric/water bills, not fixed room internet price.
-        String internetSql = "SELECT COALESCE(SUM(e.internet_cost), 0) " +
+        // Internet revenue follows actual collected amount (partial payment by headcount is counted).
+        String internetSql = "SELECT COALESCE(SUM(" +
+            "CASE " +
+            "WHEN COALESCE(e.total_users_to_pay, 0) > 0 THEN " +
+            "COALESCE(e.internet_cost, 0) * LEAST(COALESCE(e.paid_users_count, 0), e.total_users_to_pay) / e.total_users_to_pay " +
+            "WHEN e.paid = 1 THEN COALESCE(e.internet_cost, 0) " +
+            "ELSE 0 END" +
+            "), 0) " +
                 "FROM electric_and_water e " +
                 "JOIN room r ON e.room_id = r.id " +
-                "WHERE r.user_id = :rentalerId AND e.paid = 1";
+            "WHERE r.user_id = :rentalerId";
 
         Object internetResult = entityManager.createNativeQuery(internetSql)
                 .setParameter("rentalerId", getUserId())
@@ -214,11 +220,26 @@ public class StatisticalServiceImpl extends BaseService implements StatisticalSe
             }
         }
 
-        //Tiền điện + nước + internet từ hóa đơn đã thu
-        String sql = "SELECT e.month, SUM(e.total_money_of_electric), SUM(e.total_money_of_water), SUM(e.internet_cost) " +
+        //Tiền điện + nước + internet ghi nhận theo số người đã thanh toán (không đợi hóa đơn full paid)
+        String sql = "SELECT e.month, " +
+                 "SUM(CASE " +
+                 "WHEN COALESCE(e.total_users_to_pay, 0) > 0 THEN " +
+                 "COALESCE(e.total_money_of_electric, 0) * LEAST(COALESCE(e.paid_users_count, 0), e.total_users_to_pay) / e.total_users_to_pay " +
+                 "WHEN e.paid = 1 THEN COALESCE(e.total_money_of_electric, 0) " +
+                 "ELSE 0 END), " +
+                 "SUM(CASE " +
+                 "WHEN COALESCE(e.total_users_to_pay, 0) > 0 THEN " +
+                 "COALESCE(e.total_money_of_water, 0) * LEAST(COALESCE(e.paid_users_count, 0), e.total_users_to_pay) / e.total_users_to_pay " +
+                 "WHEN e.paid = 1 THEN COALESCE(e.total_money_of_water, 0) " +
+                 "ELSE 0 END), " +
+                 "SUM(CASE " +
+                 "WHEN COALESCE(e.total_users_to_pay, 0) > 0 THEN " +
+                 "COALESCE(e.internet_cost, 0) * LEAST(COALESCE(e.paid_users_count, 0), e.total_users_to_pay) / e.total_users_to_pay " +
+                 "WHEN e.paid = 1 THEN COALESCE(e.internet_cost, 0) " +
+                 "ELSE 0 END) " +
                      "FROM electric_and_water e " +
                      "JOIN room r ON e.room_id = r.id " +
-                     "WHERE r.user_id = :rentalerId AND e.paid = 1 " + // CHỈ LẤY HÓA ĐƠN ĐÃ THU TIỀN
+                 "WHERE r.user_id = :rentalerId " +
                      "GROUP BY e.month";
 
         List<Object[]> ewResults = entityManager.createNativeQuery(sql)

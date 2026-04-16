@@ -35,7 +35,7 @@ const EditElectric = (props) => {
         const { name, value } = event.target;
         setElectricData(prevState => ({
             ...prevState,
-            [name]: value
+            [name]: name === 'paid' ? value === 'true' : value
         }));
     };
 
