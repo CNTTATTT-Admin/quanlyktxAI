@@ -1,5 +1,6 @@
 package com.cntt.rentalmanagement.services.impl;
 
+import com.cntt.rentalmanagement.domain.models.Contract;
 import com.cntt.rentalmanagement.domain.models.ElectricAndWater;
 import com.cntt.rentalmanagement.domain.models.Room;
 import com.cntt.rentalmanagement.domain.models.User;
@@ -305,7 +306,7 @@ public class ElectricAndWaterServiceImpl implements ElectricAndWaterService {
             return totalUsers;
         }
 
-        Set<Long> participants = parsePaidUserIds(electricAndWater.getParticipantUserIds());
+        Set<Long> participants = resolveParticipantUserIds(electricAndWater);
         if (!participants.isEmpty()) {
             return participants.size();
         }
@@ -339,17 +340,11 @@ public class ElectricAndWaterServiceImpl implements ElectricAndWaterService {
             .map(String::valueOf)
             .collect(Collectors.joining(","));
     }
-
+    //dùng participants đã resolve theo mốc hợp đồng thay vì residents hiện tại của phòng -> không mất lịch sử bill
     private void populatePaymentUserNames(ElectricAndWaterResponse response,
                                           ElectricAndWater electricAndWater,
                                           Set<Long> paidUserIds) {
-        Set<Long> participants = parsePaidUserIds(electricAndWater.getParticipantUserIds());
-        if (participants.isEmpty() && electricAndWater.getRoom() != null && electricAndWater.getRoom().getResidents() != null) {
-            participants = electricAndWater.getRoom().getResidents().stream()
-                .map(User::getId)
-                .filter(idValue -> idValue != null)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-        }
+        Set<Long> participants = resolveParticipantUserIds(electricAndWater);
 
         List<String> paidNames = new ArrayList<>();
         if (!paidUserIds.isEmpty()) {
@@ -375,7 +370,7 @@ public class ElectricAndWaterServiceImpl implements ElectricAndWaterService {
     private boolean isBillVisibleForUser(ElectricAndWater bill,
                                          List<com.cntt.rentalmanagement.domain.models.Contract> contracts,
                                          Long userId) {
-        Set<Long> participants = parsePaidUserIds(bill.getParticipantUserIds());
+        Set<Long> participants = resolveParticipantUserIds(bill);
         if (!participants.isEmpty()) {
             return participants.contains(userId);
         }
@@ -392,12 +387,9 @@ public class ElectricAndWaterServiceImpl implements ElectricAndWaterService {
 
         LocalDateTime billCreatedAt = bill.getCreatedAt();
 
-        // Legacy fallback: if bill has no createdAt, show by room-contract relationship.
+        // Legacy fallback for very old data: only show if user already paid this bill.
         if (billCreatedAt == null) {
-            return contracts.stream().anyMatch(contract ->
-                contract.getRoom() != null
-                    && contract.getRoom().getId() != null
-                    && contract.getRoom().getId().equals(roomId));
+            return false;
         }
 
         for (com.cntt.rentalmanagement.domain.models.Contract contract : contracts) {
@@ -422,5 +414,38 @@ public class ElectricAndWaterServiceImpl implements ElectricAndWaterService {
         }
 
         return false;
+    }
+
+    private Set<Long> resolveParticipantUserIds(ElectricAndWater bill) {
+        Set<Long> participants = parsePaidUserIds(bill.getParticipantUserIds());
+        if (!participants.isEmpty()) {
+            return participants;
+        }
+
+        LocalDateTime billCreatedAt = bill.getCreatedAt();
+        Long roomId = bill.getRoom() != null ? bill.getRoom().getId() : null;
+        if (roomId == null || billCreatedAt == null) {
+            return new LinkedHashSet<>();
+        }
+
+        List<Contract> roomContracts = contractRepository.findByRoomId(roomId);
+        return roomContracts.stream()
+            .filter(contract -> contract.getStudent() != null && contract.getStudent().getId() != null)
+            .filter(contract -> isContractActiveAt(contract, billCreatedAt))
+            .map(contract -> contract.getStudent().getId())
+            .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    private boolean isContractActiveAt(Contract contract, LocalDateTime timestamp) {
+        LocalDateTime start = contract.getStartDate() != null ? contract.getStartDate() : contract.getCreatedAt();
+        LocalDateTime end = contract.getDeadlineContract();
+
+        if (start == null) {
+            return false;
+        }
+
+        boolean afterStart = timestamp.isEqual(start) || timestamp.isAfter(start);
+        boolean beforeEnd = end == null || timestamp.isEqual(end) || timestamp.isBefore(end);
+        return afterStart && beforeEnd;
     }
 }

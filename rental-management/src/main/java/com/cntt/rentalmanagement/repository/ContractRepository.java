@@ -28,6 +28,8 @@ public interface ContractRepository extends JpaRepository<Contract, Long>, Contr
 
     List<Contract> findByRoomAndDeadlineContractAfter(Room room, LocalDateTime time);
 
+    List<Contract> findByRoomId(Long roomId);
+
     @Modifying
     @Transactional
     @Query("UPDATE Contract c SET c.isExpired = true WHERE c.isExpired = false AND c.deadlineContract <= :time")
