@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 public class TotalNumberRequest {
     private Integer numberOfRoom;
     private Integer numberOfPeople;
+    private Integer numberOfAllTimePeople;
     private Integer numberOfEmptyRoom;
     private BigDecimal revenue;
 }

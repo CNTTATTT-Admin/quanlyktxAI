@@ -8,7 +8,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.cntt.rentalmanagement.domain.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
+
 
 import java.util.Optional;
 
@@ -25,5 +27,9 @@ public interface UserRepository extends JpaRepository<User, Long> , UserReposito
     List<User> findAllByFaceVectorIsNotNull();
 
     long count();
+
+    @Modifying
+    @Query(value = "UPDATE users SET allocated_room_id = NULL WHERE allocated_room_id = :roomId", nativeQuery = true)
+    void clearAllocatedRoomByRoomId(Long roomId);
 
 }

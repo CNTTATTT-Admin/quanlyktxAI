@@ -16,7 +16,7 @@ public class MultipartUploadException {
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public String handlerFileUpload(MaxUploadSizeExceededException exception, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse){
-        return "Dung lượng của file quá 1MB. Mong người dùng kiểm tra lại";
+        return "Dung lượng của file quá 10MB. Mong người dùng kiểm tra lại";
     }
 
     @ExceptionHandler({ IllegalArgumentException.class })

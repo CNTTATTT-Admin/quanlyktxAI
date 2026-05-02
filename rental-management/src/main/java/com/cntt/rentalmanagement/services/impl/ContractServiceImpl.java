@@ -21,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -38,13 +39,21 @@ public class ContractServiceImpl extends BaseService implements ContractService 
 
     @Override
     public MessageResponse addContract(String name, Long roomId, String nameRentHome, Long numOfPeople, String phone, String deadline, List<MultipartFile> files) {
+        contractRepository.markExpiredContracts(LocalDateTime.now());
         Room room = roomRepository.findById(roomId).orElseThrow(() -> new BadRequestException("Phòng đã không tồn tại"));
         if (room.getIsLocked().equals(LockedStatus.DISABLE)) {
             throw new BadRequestException("Phòng đã bị khóa");
         }
 
-        if (room.isFull()) {
+        User student = userRepository.findByPhone(phone).orElseThrow(() -> new BadRequestException("Người dùng với số điện thoại này không tồn tại trong hệ thống"));
+        boolean isAlreadyResident = student.getAllocatedRoom() != null && student.getAllocatedRoom().getId().equals(roomId);
+
+        if (!isAlreadyResident && room.isFull()) {
             throw new BadRequestException("Phòng đã hết chỗ (Sức chứa tối đa: " + room.getMaxOccupancy() + ")");
+        }
+        //kiểm tra lỗi nhầm phòng
+        if (student.getAllocatedRoom() != null && !student.getAllocatedRoom().getId().equals(roomId)) {
+            throw new BadRequestException("Người dùng này đang được xếp ở một phòng khác (" + student.getAllocatedRoom().getTitle() + ").");
         }
 
         String file = null;
@@ -52,24 +61,27 @@ public class ContractServiceImpl extends BaseService implements ContractService 
             file = "http://localhost:8080/document/" + fileStorageService.storeFile(files.get(0)).replace("photographer/files/", "");
         }
 
-        // Link student by phone/ID if exists (Preferably by a provided identifier from frontend)
-        User student = userRepository.findByPhone(phone).orElseThrow(() -> new BadRequestException("Người dùng với số điện thoại này không tồn tại trong hệ thống"));
-        
         // Validation: Check if student already has an active contract or is in a room
-        if (contractRepository.existsByStudent(student) || student.getAllocatedRoom() != null) {
-            throw new BadRequestException("Người dùng này đã có một hợp đồng đang hoạt động hoặc đã được xếp phòng.");
+        if (contractRepository.existsByStudentAndIsExpiredFalseAndDeadlineContractAfter(student, LocalDateTime.now())) {
+            throw new BadRequestException("Người dùng này đã có một hợp đồng đang hoạt động.");
         }
 
         Contract contract = new Contract(name, file, nameRentHome, deadline, getUsername(), getUsername(), room);
+        LocalDateTime contractDeadline = LocalDateTime.parse(deadline);
         contract.setPhone(phone);
         contract.setNumOfPeople(1L); // Default to 1 for per-tenant model
         contract.setStudent(student);
+        contract.setIsExpired(!contractDeadline.isAfter(LocalDateTime.now()));
         
         // Track residency in User entity
         student.setAllocatedRoom(room);
         userRepository.save(student);
 
         contractRepository.save(contract);
+
+        if (room.getResidents() != null && !room.getResidents().contains(student)) {
+            room.getResidents().add(student);
+        }
 
         // Update room status:
         int currentOccupancy = room.getResidents() != null ? room.getResidents().size() : 0;
@@ -85,6 +97,7 @@ public class ContractServiceImpl extends BaseService implements ContractService 
 
     @Override
     public Page<ContractResponse> getAllContractOfRentaler(String name,String phone, Integer pageNo, Integer pageSize) {
+        contractRepository.markExpiredContracts(LocalDateTime.now());
         int page = pageNo == 0 ? pageNo : pageNo - 1;
         Pageable pageable = PageRequest.of(page, pageSize);
         return mapperUtils.convertToResponsePage(contractRepository.searchingContact(name,phone,getUserId(),pageable),ContractResponse.class, pageable);
@@ -92,6 +105,7 @@ public class ContractServiceImpl extends BaseService implements ContractService 
 
     @Override
     public ContractResponse getContractById(Long id) {
+        contractRepository.markExpiredContracts(LocalDateTime.now());
         return mapperUtils.convertToResponse(contractRepository.findById(id).orElseThrow(() -> new BadRequestException("Hợp đồng không tồn tại!")), ContractResponse.class);
     }
 
@@ -119,6 +133,7 @@ public class ContractServiceImpl extends BaseService implements ContractService 
         }
 
         contract.setDeadlineContract(LocalDateTime.parse(deadlineContract));
+        contract.setIsExpired(!contract.getDeadlineContract().isAfter(LocalDateTime.now()));
         contract.setName(name);
         contract.setPhone(phone);
         contract.setNumOfPeople(1L); // Fixed for per-tenant model
@@ -156,8 +171,9 @@ public class ContractServiceImpl extends BaseService implements ContractService 
 
     @Override
     public Page<ContractResponse> getAllContractOfCustomer(String phone, Integer pageNo, Integer pageSize) {
+        contractRepository.markExpiredContracts(LocalDateTime.now());
         int page = pageNo == 0 ? pageNo : pageNo - 1;
-        Pageable pageable = PageRequest.of(page, pageSize);
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "id"));
         return mapperUtils.convertToResponsePage(contractRepository.searchingContact(phone,pageable),ContractResponse.class, pageable);
     }
 

@@ -1,5 +1,7 @@
 package com.cntt.rentalmanagement.repository;
 
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.transaction.annotation.Transactional;
 import com.cntt.rentalmanagement.domain.models.CheckInOutLog;
 import com.cntt.rentalmanagement.domain.models.User;
 import org.springframework.data.domain.Page;
@@ -23,4 +25,8 @@ public interface CheckInOutLogRepository extends JpaRepository<CheckInOutLog, Lo
                                                 Pageable pageable);
 
     List<CheckInOutLog> findByUserAndCheckTimeBetween(User user, java.time.LocalDateTime start, java.time.LocalDateTime end);
+
+    @Modifying
+    @Transactional
+    void deleteByUserId(Long userId);
 }

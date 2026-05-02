@@ -14,4 +14,5 @@ public class RevenueResponse {
     private BigDecimal waterCost;
     private BigDecimal publicElectricCost;
     private BigDecimal internetCost;
+    private BigDecimal parkingCost;
 }

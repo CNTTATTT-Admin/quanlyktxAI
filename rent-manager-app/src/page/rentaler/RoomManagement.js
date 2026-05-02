@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import SidebarNav from "./SidebarNav";
 import Nav from "./Nav";
 import {
@@ -9,6 +9,8 @@ import Pagination from "./Pagnation";
 import { toast } from "react-toastify";
 import { Navigate, useNavigate } from "react-router-dom";
 import ModalRoomDetails from "./modal/ModalRoomDetail";
+import useAutoReload from "../../hooks/useAutoReload";
+import { formatVnd } from "../../utils/currency";
 
 function RoomManagement(props) {
   const { authenticated, role, currentUser, location, onLogout } = props;
@@ -23,12 +25,7 @@ function RoomManagement(props) {
   const [roomId, setRoomId] = useState(4);
   const [showModal, setShowModal] = useState(false);
 
-  // Fetch data from the API
-  useEffect(() => {
-    fetchData();
-  }, [currentPage, searchQuery]);
-
-  const fetchData = () => {
+  const fetchData = useCallback(() => {
     getAllRoomOfRentaler(currentPage, itemsPerPage, searchQuery)
       .then((response) => {
         setTableData(response.content);
@@ -40,7 +37,18 @@ function RoomManagement(props) {
             "Oops! Có điều gì đó xảy ra. Vui lòng thử lại!",
         );
       });
-  };
+    }, [currentPage, itemsPerPage, searchQuery]);
+
+    useEffect(() => {
+      fetchData();
+    }, [fetchData]);
+
+    useAutoReload({ enabled: authenticated, onReload: fetchData });
+
+    const notifyDataUpdated = () => {
+      localStorage.setItem("app-data-updated-at", String(Date.now()));
+      window.dispatchEvent(new Event("app-data-updated"));
+    };
 
   const handleSearch = (event) => {
     setSearchQuery(event.target.value);
@@ -63,6 +71,7 @@ function RoomManagement(props) {
     disableRoom(roomId)
       .then((response) => {
         toast.success(response.message);
+        notifyDataUpdated();
         fetchData();
       })
       .catch((error) => {
@@ -92,322 +101,205 @@ function RoomManagement(props) {
 
   return (
     <>
-      <div className="container-fluid p-0">
+      <style>{`
+        .eco-bg { background-color: #F8FAFC; min-height: 100vh; }
+        .text-emerald { color: #10B981 !important; }
+        .bg-emerald { background-color: #10B981 !important; color: white !important; }
+        
+        .modern-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .modern-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(16, 185, 129, 0.15) !important; }
+        .img-hover-zoom { overflow: hidden; border-radius: 16px; }
+        .img-hover-zoom img { transition: transform 0.6s ease; }
+        .modern-card:hover .img-hover-zoom img { transform: scale(1.05); }
+        
+        .btn-modern { transition: all 0.3s ease; border-radius: 50px; font-weight: 600; }
+        .btn-modern:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1) !important; }
+        
+        .search-modern { border-radius: 50px; padding: 12px 20px; border: 1px solid #e2e8f0; transition: all 0.3s; }
+        .search-modern:focus { outline: none; border-color: #10B981; box-shadow: 0 0 0 4px rgba(16,185,129,0.1); background: #fff; }
+      `}</style>
 
-          <br />
-          <div className="container-fluid p-0"></div>
-          <div className="card">
-            <div className="card-header">
-              <h5 className="card-title">Quản lý phòng KTX</h5>
-              <h6 className="card-subtitle text-muted">
-                {" "}
-                Quản lý thật tốt các chức năng của phòng KTX.
-              </h6>
+      <div className="container-fluid p-4 eco-bg">
+        <div className="row mb-4 align-items-center">
+          <div className="col-md-8">
+            <h2 className="fw-bolder text-dark mb-1">Quản lý phòng KTX</h2>
+            <p className="text-muted mb-0">Quản lý thật tốt các chức năng của phòng KTX.</p>
+          </div>
+          <div className="col-md-4 text-md-end mt-3 mt-md-0">
+            <button className="btn bg-emerald text-white btn-modern px-4 py-2 shadow-sm" onClick={handleRedirectAddRoom}>
+              <i className="bi bi-plus-circle me-2"></i> Thêm Phòng
+            </button>
+          </div>
+        </div>
+
+        <div className="row mb-5">
+          <div className="col-md-6 col-lg-4">
+            <div className="position-relative shadow-sm rounded-pill">
+              <input
+                type="text"
+                className="form-control search-modern w-100 pe-5"
+                placeholder="Tìm kiếm tên phòng..."
+                value={searchQuery}
+                onChange={handleSearch}
+              />
+              <i className="bi bi-search position-absolute top-50 end-0 translate-middle-y me-4 text-muted"></i>
             </div>
-            <div className="card-body">
-              <div
-                id="datatables-buttons_wrapper"
-                className="dataTables_wrapper dt-bootstrap5 no-footer"
-              >
-                <div className="row">
-                  <div className="col-sm-12 col-md-6">
-                    <div className="dt-buttons btn-group flex-wrap">
-                      <button
-                        className="btn btn-secondary buttons-copy buttons-html5"
-                        tabindex="0"
-                        aria-controls="datatables-buttons"
-                        type="button"
-                      >
-                        <a onClick={handleRedirectAddRoom}>Thêm Phòng</a>
-                      </button>
-                    </div>
-                  </div>
-                  <div className="col-sm-12 col-md-6">
-                    <div
-                      id="datatables-buttons_filter"
-                      className="dataTables_filter"
-                    >
-                      <label>
-                        Search:
-                        <input
-                          type="search"
-                          className="form-control form-control-sm"
-                          placeholder=""
-                          aria-controls="datatables-buttons"
-                          value={searchQuery}
-                          onChange={handleSearch}
-                        />
-                      </label>
-                    </div>
-                  </div>
-                </div>
-                <div className="row dt-row">
-                  <div className="col-sm-12">
-                    <table
-                      id="datatables-buttons"
-                      className="table table-striped dataTable no-footer dtr-inline"
-                      style={{ width: "100%" }}
-                      aria-describedby="datatables-buttons_info"
-                    >
-                      <thead>
-                        <tr>
-                          <th
-                            className="sorting sorting_asc"
-                            tabindex="0"
-                            aria-controls="datatables-buttons"
-                            rowspan="1"
-                            colspan="1"
-                            style={{ width: "224px" }}
-                          >
-                            Tên Phòng
-                          </th>
-                          <th
-                            className="sorting"
-                            tabindex="0"
-                            aria-controls="datatables-buttons"
-                            rowspan="1"
-                            colspan="1"
-                            style={{ width: "266px" }}
-                          >
-                            Địa Chỉ
-                          </th>
-                          <th
-                            className="sorting"
-                            tabindex="0"
-                            aria-controls="datatables-buttons"
-                            rowspan="1"
-                            colspan="1"
-                            style={{ width: "75px" }}
-                          >
-                            Giá
-                          </th>
-                          <th
-                            className="sorting"
-                            tabindex="0"
-                            aria-controls="datatables-buttons"
-                            rowspan="1"
-                            colspan="1"
-                            style={{ width: "75px" }}
-                          >
-                            Số người tối đa
-                          </th>
-                          <th
-                            className="sorting"
-                            tabindex="0"
-                            aria-controls="datatables-buttons"
-                            rowspan="1"
-                            colspan="1"
-                            style={{ width: "50px" }}
-                          >
-                            Tầng
-                          </th>
-                          <th
-                            className="sorting"
-                            tabindex="0"
-                            aria-controls="datatables-buttons"
-                            rowspan="1"
-                            colspan="1"
-                            style={{ width: "142px" }}
-                          >
-                            Trạng Thái
-                          </th>
-                          <th
-                            className="sorting"
-                            tabindex="0"
-                            aria-controls="datatables-buttons"
-                            rowspan="1"
-                            colspan="1"
-                            style={{ width: "90px" }}
-                          >
-                            Ẩn\Hiện
-                          </th>
-                          <th
-                            className="sorting"
-                            tabindex="0"
-                            aria-controls="datatables-buttons"
-                            rowspan="1"
-                            colspan="1"
-                            style={{ width: "90px" }}
-                          >
-                            Duyệt
-                          </th>
-                          <th
-                            className="sorting"
-                            tabindex="0"
-                            aria-controls="datatables-buttons"
-                            rowspan="1"
-                            colspan="1"
-                            style={{ width: "134px" }}
-                          >
-                            Chế độ
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {tableData.map((item) => (
-                          <tr className="odd">
-                            <td className="dtr-control sorting_1" tabindex="0">
-                              {item.title}
-                            </td>
-                            <td>{item.address}</td>
-                            <td>
-                              {item.price &&
-                                item.price.toLocaleString("vi-VN", {
-                                  style: "currency",
-                                  currency: "VND",
-                                })}
-                            </td>
-                            <td>{item.maxOccupancy}</td>
-                            <td>{item.floor}</td>
-                            <td>
-                              {item.status === "AVAILABLE" && <span style={{ color: "green" }}>Trống</span>}
-                              {item.status === "PARTIALLY_FILLED" && <span style={{ color: "orange" }}>Còn chỗ</span>}
-                              {item.status === "FULL" && <span style={{ color: "red" }}>Hết chỗ</span>}
-                              {item.status === "MAINTENANCE" && <span style={{ color: "gray" }}>Bảo trì</span>}
-                              {/* Fallback cho dữ liệu cũ nếu có */}
-                              {item.status === "ROOM_RENT" && <span style={{ color: "green" }}>Còn chỗ</span>}
-                              {item.status === "HIRED" && <span style={{ color: "red" }}>Hết chỗ</span>}
-                              {item.status === "CHECKED_OUT" && <span style={{ color: "gray" }}>Bảo trì</span>}
-                            </td>
-                            <td style={{ color: "green" }}>
-                              {item.isLocked === "ENABLE" ? "Hiển" : "Ẩn"}
-                            </td>
-                            <td style={{ color: "green" }}>
-                              {item.isApprove === false
-                                ? "Chưa duyệt"
-                                : "Đã duyệt"}
-                            </td>
+          </div>
+        </div>
 
-                            <td>
-                              {item.isRemove === true ? (
-                                <>
-                                  <span
-                                    style={{ color: "red" }}
-                                    data-toggle="tooltip"
-                                    data-placement="bottom"
-                                    title="Chi tiết thông tin gỡ ở email của bạn."
-                                  >
-                                    Admin gỡ tin
-                                  </span>
-                                </>
-                              ) : (
-                                <>
-                                  <a
-                                    href="#"
-                                    onClick={() => handleEditRoom(item.id)}
-                                    data-toggle="tooltip"
-                                    data-placement="bottom"
-                                    title="Sửa"
-                                  >
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="24"
-                                      height="24"
-                                      viewBox="0 0 24 24"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      stroke-width="2"
-                                      stroke-linecap="round"
-                                      stroke-linejoin="round"
-                                      class="feather feather-edit-2 align-middle"
-                                    >
-                                      <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
-                                    </svg>
-                                  </a>
-                                  &nbsp;&nbsp; &nbsp;
-                                  <a
-                                    onClick={() => handleSetRoomId(item.id)}
-                                    data-bs-toggle="modal"
-                                    data-bs-target=".bd-example-modal-lg"
-                                    data-toggle="tooltip"
-                                    data-placement="bottom"
-                                    title="Xem chi tiết"
-                                  >
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      height="1em"
-                                      viewBox="0 0 512 512"
-                                    >
-                                      <path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z" />
-                                    </svg>{" "}
-                                  </a>
-                                  &nbsp;&nbsp;
-                                  <a
-                                    href="#"
-                                    onClick={() => handleDisableRoom(item.id)}
-                                    data-toggle="tooltip"
-                                    data-placement="bottom"
-                                    title="Ẩn phòng"
-                                  >
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="24"
-                                      height="24"
-                                      viewBox="0 0 24 24"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      stroke-width="2"
-                                      stroke-linecap="round"
-                                      stroke-linejoin="round"
-                                      class="feather feather-trash align-middle"
-                                    >
-                                      <polyline points="3 6 5 6 21 6"></polyline>
-                                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                    </svg>
-                                  </a>
-                                </>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+        <div className="row g-4 mb-4">
+          {tableData.length > 0 ? (
+            tableData.map((item) => (
+              <div className="col-12 col-xl-6" key={item.id}>
+                <div className="card h-100 border-0 shadow-sm p-3 d-flex flex-column modern-card" style={{ borderRadius: "20px" }}>
+                  
+                  <div className="position-relative img-hover-zoom mb-3">
+                    <span 
+                      className="badge position-absolute top-0 start-0 m-3 px-3 py-2 rounded-3 shadow-sm"
+                      style={{ backgroundColor: "#10B981", fontSize: "0.85rem", zIndex: 2 }}
+                    >
+                      {item.status === "AVAILABLE" && "Trống"}
+                      {item.status === "PARTIALLY_FILLED" && "Còn chỗ"}
+                      {item.status === "FULL" && "Hết chỗ"}
+                      {item.status === "MAINTENANCE" && "Bảo trì"}
+                      {item.status === "ROOM_RENT" && "Còn chỗ"}
+                      {item.status === "HIRED" && "Hết chỗ"}
+                      {item.status === "CHECKED_OUT" && "Bảo trì"}
+                    </span>
+
+                    <span 
+                      className={`badge position-absolute top-0 end-0 m-3 px-3 py-2 rounded-3 shadow-sm ${item.isApprove ? 'bg-primary' : 'bg-warning text-dark'}`}
+                      style={{ zIndex: 2 }}
+                    >
+                      {item.isApprove ? "Đã duyệt" : "Chưa duyệt"}
+                    </span>
+
+                    <img
+                      src={item.roomMedia && item.roomMedia[0] ? `http://localhost:8080/document/${item.roomMedia[0].files}` : "/assets/img/property-1.jpg"}
+                      alt={item.title}
+                      className="card-img-top object-fit-cover w-100"
+                      style={{ height: "240px", borderRadius: "12px" }}
+                    />
+                  </div>
+                  
+                  <div className="card-body p-0 d-flex flex-column flex-grow-1">
+                    <h4 className="fw-bold text-dark text-truncate mb-3">{item.title}</h4>
+                    
+                    <div className="d-flex justify-content-between align-items-start mb-3">
+                      
+                      <div className="d-flex flex-column gap-1" style={{ maxWidth: "55%" }}>
+                        <h5 className="fw-bolder text-emerald mb-0" style={{ fontSize: "1.3rem" }}>
+                          {formatVnd(item.price)} <span className="text-muted fw-normal small" style={{ fontSize: "0.9rem" }}>/tháng</span>
+                        </h5>
+                        <div className="text-muted small text-truncate mt-1" title={item.location?.cityName}>
+                          <i className="bi bi-geo-alt-fill text-emerald me-1"></i> {item.location?.cityName}
+                        </div>
+                      </div>
+
+                      <div className="d-flex flex-column align-items-end gap-1" style={{ maxWidth: "45%" }}>
+                        <div className="text-dark small fw-medium">
+                          <i className="bi bi-people-fill text-emerald me-1"></i> Tối đa {item.maxOccupancy}
+                        </div>
+                        <div className="text-dark small fw-medium">
+                          <i className="bi bi-layers-fill text-emerald me-1"></i> Tầng {item.floor}
+                        </div>
+                        <div className={`mt-1 border rounded-pill px-2 py-1 fw-bold ${item.isLocked === 'ENABLE' ? 'bg-light text-success border-success' : 'bg-light text-danger border-danger'}`} style={{ fontSize: "0.75rem" }}>
+                          {item.isLocked === "ENABLE" ? "Đang hiển thị" : "Đang ẩn"}
+                        </div>
+                      </div>
+
+                    </div>
+
+                    <div className="d-flex justify-content-between align-items-center border-top pt-3 mt-auto">
+                      {item.isRemove === true ? (
+                        <span className="text-danger fw-bold small">
+                          <i className="bi bi-exclamation-triangle-fill me-1"></i> Admin đã gỡ tin
+                        </span>
+                      ) : (
+                        <div className="d-flex gap-2 w-100">
+                          <button 
+                            className="btn btn-light text-primary flex-grow-1 btn-modern border shadow-sm" 
+                            onClick={() => handleEditRoom(item.id)} 
+                            title="Sửa thông tin"
+                          >
+                            <i className="bi bi-pencil-square me-1"></i> Sửa
+                          </button>
+                          
+                          <button 
+                            className="btn btn-light text-info flex-grow-1 btn-modern border shadow-sm" 
+                            onClick={() => handleSetRoomId(item.id)} 
+                            data-bs-toggle="modal" 
+                            data-bs-target=".bd-example-modal-lg" 
+                            title="Xem chi tiết"
+                          >
+                            <i className="bi bi-eye me-1"></i> Xem
+                          </button>
+
+                          <button 
+                            className="btn btn-light text-danger flex-grow-1 btn-modern border shadow-sm" 
+                            onClick={() => handleDisableRoom(item.id)} 
+                            title="Ẩn/Hiện phòng"
+                          >
+                            <i className="bi bi-eye-slash me-1"></i> Ẩn
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <Pagination
-                  itemsPerPage={itemsPerPage}
-                  totalItems={totalItems}
-                  currentPage={currentPage}
-                  paginate={paginate}
-                />
+              </div>
+            ))
+          ) : (
+            <div className="col-12 text-center py-5">
+              <h5 className="text-muted fw-semibold">Không tìm thấy phòng nào.</h5>
+            </div>
+          )}
+        </div>
+
+        <div className="d-flex justify-content-center mt-4">
+          <Pagination
+            itemsPerPage={itemsPerPage}
+            totalItems={totalItems}
+            currentPage={currentPage}
+            paginate={paginate}
+          />
+        </div>
+
+        <div
+          className="modal fade bd-example-modal-lg"
+          tabIndex="-1"
+          role="dialog"
+          aria-labelledby="myLargeModalLabel"
+          aria-hidden="true"
+        >
+          <div className="modal-dialog modal-xl">
+            <div className="modal-content rounded-4 border-0 shadow-lg">
+              <div className="modal-header border-bottom-0 pb-0 pt-4 px-4">
+                <h5 className="modal-title fw-bold text-dark fs-4" id="exampleModalLabel">
+                  Chi tiết bài đăng tin
+                </h5>
+                <button
+                  type="button"
+                  className="btn-close shadow-none"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                ></button>
+              </div>
+              <div className="modal-body overflow-auto p-4">
+                {showModal && <ModalRoomDetails roomId={roomId} />}
+              </div>
+              <div className="modal-footer border-top-0 pt-0 pb-4 px-4">
+                <button
+                  type="button"
+                  className="btn btn-light btn-modern fw-bold px-4"
+                  data-bs-dismiss="modal"
+                >
+                  Đóng
+                </button>
               </div>
             </div>
           </div>
-          <div
-            className="modal fade bd-example-modal-lg"
-            tabIndex="-1"
-            role="dialog"
-            aria-labelledby="myLargeModalLabel"
-            aria-hidden="true"
-          >
-            <div class="modal-dialog modal-xl">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="exampleModalLabel">
-                    Chi tiết bài đăng tin
-                  </h5>
-                  <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="modal"
-                    aria-label="Close"
-                  ></button>
-                </div>
-                <div class="modal-body overflow-auto">
-                  {showModal && <ModalRoomDetails roomId={roomId} />}
-                </div>
-                <div class="modal-footer">
-                  <button
-                    type="button"
-                    class="btn btn-secondary"
-                    data-bs-dismiss="modal"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+        </div>
       </div>
     </>
   );

@@ -15,5 +15,7 @@ public interface RoomRepository extends JpaRepository<Room, Long>, RoomRepositor
 
     List<Room> findByUser(User user);
 
+    List<Room> findByUserId(Long userId);
+
     long countByIsApprove(Boolean isApprove);
 }

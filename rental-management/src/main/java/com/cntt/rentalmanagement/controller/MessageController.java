@@ -74,7 +74,7 @@ public class MessageController {
 	}
 
 	@GetMapping("/user/message")
-	@PreAuthorize("hasRole('USER') or hasRole('RENTALER')")
+//	@PreAuthorize("hasRole('USER') or hasRole('RENTALER')")
     public List<MessageDTO> getMessageUser() {
         return userServiceImpl.getMessageUser();
     }

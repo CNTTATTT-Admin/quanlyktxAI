@@ -4,6 +4,7 @@ import {
   Routes,
   Navigate,
 } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
 import Main from "./page/user/Main";
 import DashboardAdmin from "./page/admin/DashboardAdmin";
 import RentalHome from "./page/user/RentalHome";
@@ -11,7 +12,6 @@ import RentailHomeDetail from "./page/user/RentailHomeDetail";
 import About from "./page/user/About";
 import Contact from "./page/user/Contact";
 import Login from "./page/login/Login";
-import { useState } from "react";
 import {
   getCurrentAdmin,
   getCurrentRentaler,
@@ -20,7 +20,6 @@ import {
 } from "./services/fetch/ApiUtils";
 import { ACCESS_TOKEN } from "./constants/Connect";
 import LoadingIndicator from "./common/LoadingIndicator";
-import { useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Signup from "./page/signup/Signup";
@@ -71,9 +70,15 @@ import CheckInOutHistory from "./page/user/CheckInOutHistory";
 import LeaveRequestForm from "./page/user/LeaveRequestForm";
 import MaintenanceUserPage from "./page/user/MaintenanceUserPage";
 import ElectricAndWaterUserPage from "./page/user/ElectricAndWaterUserPage";
+import RegisterParkingCard from "./page/user/RegisterParkingCard";
+import ParkingCardHistory from "./page/user/ParkingCardHistory";
+import VNPayReturn from "./page/user/VNPayReturn";
 import LeaveRequestManagement from "./page/rentaler/LeaveRequestManagement";
 import CheckoutRequestManagement from "./page/rentaler/CheckoutRequestManagement";
 import CheckInOutManagement from "./page/rentaler/CheckInOutManagement";
+import ParkingCardManagement from "./page/rentaler/ParkingCardManagement";
+import ParkingPackageManagement from "./page/rentaler/ParkingPackageManagement";
+import InvoiceManagement from "./page/rentaler/InvoiceManagement";
 import BannerManagement from "./page/admin/BannerManagement";
 import BannerForm from "./page/admin/BannerForm";
 import PolicyManagement from "./page/admin/PolicyManagement";
@@ -101,7 +106,7 @@ function App() {
   const [role, setRole] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const loadCurrentUser = () => {
+  const loadCurrentUser = useCallback(() => {
     getCurrentUserUnified()
       .then((response) => {
         setCurrentUser(response);
@@ -121,7 +126,7 @@ function App() {
       .catch((error) => {
         setLoading(false);
       });
-  };
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem(ACCESS_TOKEN);
@@ -144,7 +149,7 @@ function App() {
     } else {
       setLoading(false);
     }
-  }, []);
+  }, [loadCurrentUser]);
 
   if (loading) {
     return <LoadingIndicator />;
@@ -243,6 +248,7 @@ function App() {
               <UserLayout
                 authenticated={authenticated}
                 currentUser={currentUser}
+                loadCurrentUser={loadCurrentUser}
                 onLogout={handleLogout}
               />
             }
@@ -424,6 +430,26 @@ function App() {
               element={<CheckInOut currentUser={currentUser} />}
             />
             <Route
+              path="register-parking-card"
+              element={
+                <RegisterParkingCard 
+                  authenticated={authenticated} 
+                  currentUser={currentUser}
+                  onLogout={handleLogout} 
+                />
+              }
+            />
+            <Route
+              path="parking-card-history"
+              element={
+                <ParkingCardHistory
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  onLogout={handleLogout}
+                />
+              }
+            />
+            <Route
               path="face-registration"
               element={<FaceRegistration currentUser={currentUser} />}
             />
@@ -447,6 +473,7 @@ function App() {
                 />
               }
             />
+            <Route path="/vnpay-return" element={<VNPayReturn />} />
           </Route>
 
           {/* ADMIN ROUTES */}
@@ -745,6 +772,39 @@ function App() {
               path="request-management"
               element={
                 <RequierManagement
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              }
+            />
+            <Route
+              path="parking-card-management"
+              element={
+                <ParkingCardManagement
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              }
+            />
+            <Route
+              path="parking-package-management"
+              element={
+                <ParkingPackageManagement
+                  authenticated={authenticated}
+                  currentUser={currentUser}
+                  role={role}
+                  onLogout={handleLogout}
+                />
+              }
+            />
+            <Route
+              path="invoice-management"
+              element={
+                <InvoiceManagement
                   authenticated={authenticated}
                   currentUser={currentUser}
                   role={role}

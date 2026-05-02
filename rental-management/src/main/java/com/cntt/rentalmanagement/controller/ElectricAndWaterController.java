@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @RestController
@@ -46,6 +47,10 @@ public class ElectricAndWaterController {
             List<ElectricAndWaterResponse> electrics = electricAndWaterService.getElectricByRoom(room.getId());
             electricAndWatersList.addAll(electrics);
         }
+
+        electricAndWatersList.sort(Comparator
+            .comparing(ElectricAndWaterResponse::isPaid)
+            .thenComparing(ElectricAndWaterResponse::getId, Comparator.reverseOrder()));
 
         // Sử dụng PageRequest để tạo Pageable
         Pageable pageable = PageRequest.of(pageNo, pageSize);
@@ -84,8 +89,19 @@ public class ElectricAndWaterController {
         return ResponseEntity.ok(electrics);
     }
 
+    @GetMapping("/user/history")
+    public ResponseEntity<?> getElectricHistoryByUser(@RequestHeader("Authorization") String token) {
+        token = token.substring(7);
+        Long userId = tokenProvider.getUserIdFromToken(token);
+        List<ElectricAndWaterResponse> electrics = electricAndWaterService.getElectricHistoryByUser(userId);
+        return ResponseEntity.ok(electrics);
+    }
+
     @PutMapping("/{id}/pay")
-    public ResponseEntity<?> payElectricAndWater(@PathVariable Long id) {
-        return ResponseEntity.ok(electricAndWaterService.payElectric(id));
+    public ResponseEntity<?> payElectricAndWater(@PathVariable Long id,
+                                                 @RequestHeader("Authorization") String token) {
+        token = token.substring(7);
+        Long userId = tokenProvider.getUserIdFromToken(token);
+        return ResponseEntity.ok(electricAndWaterService.payElectric(id, userId));
     }
 }

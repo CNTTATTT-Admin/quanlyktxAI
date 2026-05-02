@@ -46,7 +46,7 @@ public class ContractRepositoryCustomImpl implements ContractRepositoryCustom {
             strQuery.append(" AND r.user_id = :userId");
             params.put("userId", userId);
         }
-        String strSelectQuery = "SELECT c.* " + strQuery;
+        String strSelectQuery = "SELECT c.* " + strQuery + " ORDER BY COALESCE(c.is_expired, 0) ASC, c.id DESC";
 
         String strCountQuery = "SELECT COUNT(DISTINCT c.id)" + strQuery;
         return BaseRepository.getPagedNativeQuery(em,strSelectQuery, strCountQuery, params, pageable, Contract.class);
@@ -84,7 +84,7 @@ public class ContractRepositoryCustomImpl implements ContractRepositoryCustom {
             params.put("phone", phone);
         }
 
-        String strSelectQuery = "SELECT c.* " + strQuery;
+        String strSelectQuery = "SELECT c.* " + strQuery + " ORDER BY COALESCE(c.is_expired, 0) ASC, c.id DESC";
 
         String strCountQuery = "SELECT COUNT(DISTINCT c.id)" + strQuery;
         return BaseRepository.getPagedNativeQuery(em,strSelectQuery, strCountQuery, params, pageable, Contract.class);

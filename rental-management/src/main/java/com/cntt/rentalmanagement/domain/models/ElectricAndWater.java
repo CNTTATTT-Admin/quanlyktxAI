@@ -1,5 +1,7 @@
 package com.cntt.rentalmanagement.domain.models;
 
+import com.cntt.rentalmanagement.domain.models.audit.DateAudit;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,7 +13,7 @@ import java.math.BigDecimal;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ElectricAndWater {
+public class ElectricAndWater extends DateAudit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,9 +25,16 @@ public class ElectricAndWater {
     private int thisMonthBlockOfWater;
     private BigDecimal moneyEachNumberOfElectric;
     private BigDecimal moneyEachBlockOfWater;
+    private BigDecimal internetCost;
     private BigDecimal totalMoneyOfElectric;
     private BigDecimal totalMoneyOfWater;
     private boolean paid;
+    private Integer totalUsersToPay;
+    private Integer paidUsersCount;
+    @Column(columnDefinition = "TEXT")
+    private String participantUserIds;
+    @Column(columnDefinition = "TEXT")
+    private String paidUserIds;
 
     @ManyToOne
     @JoinColumn(name = "room_id")

@@ -8,10 +8,32 @@ const Messages = ({ selectedUser }) => {
   console.log("Real messages: " + realMessages)
   
   return (
-    <div className="overflow-auto messages" style={{height : "450px"}}>
-    
-      <Message message={realMessages} />
-    </div>
+    <>
+      <style>{`
+        .eco-messages-wrapper {
+          background-color: #F8FAFC;
+          scroll-behavior: smooth;
+        }
+
+        .eco-messages-wrapper::-webkit-scrollbar {
+          width: 6px;
+        }
+        .eco-messages-wrapper::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .eco-messages-wrapper::-webkit-scrollbar-thumb {
+          background-color: #CBD5E1;
+          border-radius: 10px;
+        }
+        .eco-messages-wrapper::-webkit-scrollbar-thumb:hover {
+          background-color: #94A3B8;
+        }
+      `}</style>
+
+      <div className="overflow-auto messages eco-messages-wrapper" style={{height : "450px"}}>
+        <Message message={realMessages} />
+      </div>
+    </>
   );
 };
 

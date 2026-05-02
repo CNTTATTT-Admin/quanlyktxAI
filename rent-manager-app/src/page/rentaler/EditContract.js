@@ -1,4 +1,4 @@
-import { Navigate, useParams } from "react-router-dom";
+import { Navigate, useParams, useNavigate } from "react-router-dom";
 import Nav from "./Nav";
 import SidebarNav from "./SidebarNav";
 import { useEffect, useState } from "react";
@@ -13,6 +13,7 @@ import ContractService from "../../services/axios/ContractService";
 function EditContract(props) {
   const { authenticated, role, currentUser, location, onLogout } = props;
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [contractData, setContractData] = useState({
     name: "",
@@ -34,11 +35,15 @@ function EditContract(props) {
     }));
   };
 
+  //Kiểm tra nếu files đang là String (URL cũ) thì mảng hóa an toàn
   const handleFileChange = (event) => {
-    setContractData((prevState) => ({
-      ...prevState,
-      files: [...prevState.files, ...event.target.files],
-    }));
+    setContractData((prevState) => {
+      const currentFiles = Array.isArray(prevState.files) ? prevState.files : [];
+      return {
+        ...prevState,
+        files: [...currentFiles, ...event.target.files],
+      };
+    });
   };
 
   console.log("contractData", contractData);
@@ -53,10 +58,12 @@ function EditContract(props) {
     formData.append("numOfPeople", 1);
     formData.append("phone", contractData.phone);
     formData.append("deadlineContract", contractData.deadlineContract);
-    contractData.files &&
+    //Chỉ gọi forEach khi contractData.files thực sự là một mảng
+    if (Array.isArray(contractData.files)) {
       contractData.files.forEach((file, index) => {
         formData.append(`files`, file);
       });
+    }
     console.log(formData.getAll);
     ContractService.editContractInfo(id, formData)
       .then((response) => {
@@ -102,130 +109,194 @@ function EditContract(props) {
       />
     );
   }
-  return (
-    <div className="container-fluid p-0">
-      <div className="card">
-        <div className="card-header">
-          <h5 className="card-title">Chỉnh sửa hợp đồng</h5>
-        </div>
-        <div className="card-body">
-          <form onSubmit={handleSubmit}>
-            <div className="row">
-              <div className="mb-3 col-md-6">
-                <label className="form-label" htmlFor="title">
-                  Tên hợp đồng
-                </label>
-                <input
-                  type="text"
-                  className="form-control"
-                  id="title"
-                  name="name"
-                  value={contractData.name}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="mb-3 col-md-6">
-                <label className="form-label" htmlFor="description">
-                  Người thuê
-                </label>
-                <input
-                  type="text"
-                  className="form-control"
-                  id="description"
-                  name="nameOfRent"
-                  value={contractData.nameOfRent}
-                  readOnly
-                />
-              </div>
-            </div>
-            <div className="row">
-              <div className="mb-3 col-md-6">
-                <label className="form-label" htmlFor="description">
-                  Số điện thoại
-                </label>
-                <input
-                  type="text"
-                  className="form-control"
-                  id="description"
-                  name="phone"
-                  value={contractData.phone}
-                  readOnly
-                />
-              </div>
-            </div>
-            <div className="mb-3">
-              <label className="form-label" htmlFor="locationId">
-                Chọn phòng
-              </label>
-              <select
-                className="form-select"
-                id="locationId"
-                name="roomId"
-                value={contractData.roomId}
-                onChange={handleInputChange}
-                disabled
-              >
-                <option
-                  key={contractData.room.id}
-                  value={contractData.room.id}
-                >
-                  {contractData.room.title}
-                </option>
-              </select>
-            </div>
 
-            <div className="mb-3">
-              <label className="form-label" htmlFor="price">
-                Thời Hạn Hợp Đồng
-              </label>
-              <input
-                type="datetime-local"
-                className="form-control"
-                id="price"
-                name="deadlineContract"
-                value={contractData.deadlineContract}
-                onChange={handleInputChange}
-              />
+  return (
+    <>
+      <style>{`
+        .eco-bg { background-color: #F8FAFC; min-height: 100vh; font-family: 'Inter', sans-serif; }
+        .text-emerald { color: #10B981 !important; }
+        .bg-emerald { background-color: #10B981 !important; color: white !important; }
+        
+        .modern-card { border-radius: 16px; border: none; box-shadow: 0 4px 20px rgba(0,0,0,0.03); background: #fff; }
+        
+        .modern-input { border-radius: 8px; border: 1px solid #E2E8F0; padding: 10px 15px; font-size: 0.95rem; background-color: #F8FAFC; transition: all 0.3s; }
+        .modern-input:focus { border-color: #10B981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); background-color: #fff; outline: none; }
+        .modern-label { font-weight: 600; color: #475569; font-size: 0.85rem; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .btn-modern { border-radius: 8px; font-weight: 600; padding: 10px 20px; transition: all 0.3s; }
+        .btn-modern:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
+        
+        .upload-box { border: 2px dashed #CBD5E1; border-radius: 12px; transition: all 0.3s; }
+        .upload-box:hover { border-color: #10B981; background-color: #F0FDF4 !important; }
+
+        .modern-input:read-only, .modern-input:disabled { background-color: #E2E8F0; color: #64748B; cursor: not-allowed; border-color: #E2E8F0; }
+      `}</style>
+
+      <div className="container-fluid p-4 eco-bg">
+        
+        {/* Header với nút Quay lại */}
+        <div className="row mb-4">
+          <div className="col-12 d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+              <h2 className="fw-bolder text-dark mb-1">Chỉnh sửa hợp đồng</h2>
+              <p className="text-muted mb-0">Cập nhật thông tin và file hợp đồng của người thuê.</p>
             </div>
-            <div className="row">
-              <div className="mb-3">
-                <label className="form-label">Tải File Hợp Đồng</label>{" "}
-                <br />
-                <h6 className="card-subtitle text-muted">
-                  Tải mẫu hợp đồng để tạo hợp đồng với người thuê và đẩy
-                  lên lưu trữ trên hệ thống. Sau đó chuyển sang file .pdf
-                  để upload.
-                  <a href="https://image.luatvietnam.vn/uploaded/Others/2021/04/08/hop-dong-thue-nha-o_2810144434_2011152916_0804150405.doc">
-                    Tải Mẫu
-                  </a>
-                </h6>
-                <button
-                  type="button"
-                  className="btn btn-outline-success"
-                  style={{ marginBottom: "10px" }}
-                >
-                  <a href={contractData.files} target="_blank">
-                    Xem Hợp Đồng
-                  </a>
-                </button>
-                <input
-                  className="form-control"
-                  id="fileInput"
-                  type="file"
-                  accept=".pdf"
-                  name="files"
-                  multiple
-                  onChange={handleFileChange}
-                />
-              </div>
-            </div>
-            <button type="submit" className="btn btn-primary">
-              Submit
+            <button 
+              type="button"
+              className="btn btn-light bg-white border shadow-sm btn-modern text-secondary rounded-pill" 
+              onClick={() => navigate('/rentaler/contract-management')}
+            >
+              <i className="bi bi-arrow-left me-2"></i> Quay lại danh sách
             </button>
-          </form>
+          </div>
         </div>
+
+        {/* Form nhập liệu (Căn giữa) */}
+        <div className="row justify-content-center">
+          <div className="col-12 col-xl-8 col-lg-10">
+            <div className="modern-card p-4 p-md-5">
+              <h5 className="fw-bold text-emerald mb-4 pb-3 border-bottom d-flex align-items-center">
+                <i className="bi bi-file-earmark-text-fill me-2 fs-4"></i> Thông tin hợp đồng
+              </h5>
+              
+              <form onSubmit={handleSubmit}>
+                <div className="row g-4">
+                  
+                  <div className="col-md-6">
+                    <label className="modern-label" htmlFor="title">
+                      Tên hợp đồng
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control modern-input"
+                      id="title"
+                      name="name"
+                      value={contractData.name}
+                      onChange={handleInputChange}
+                      placeholder="VD: Hợp đồng thuê phòng 101"
+                    />
+                  </div>
+
+                  <div className="col-md-6">
+                    <label className="modern-label" htmlFor="nameOfRent">
+                      Người thuê
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control modern-input"
+                      id="nameOfRent"
+                      name="nameOfRent"
+                      value={contractData.nameOfRent}
+                      readOnly
+                    />
+                  </div>
+
+                  <div className="col-md-6">
+                    <label className="modern-label" htmlFor="phone">
+                      Số điện thoại
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control modern-input"
+                      id="phone"
+                      name="phone"
+                      value={contractData.phone}
+                      readOnly
+                    />
+                  </div>
+
+                  <div className="col-md-6">
+                    <label className="modern-label" htmlFor="locationId">
+                      Phòng đang thuê
+                    </label>
+                    <select
+                      className="form-select modern-input"
+                      id="locationId"
+                      name="roomId"
+                      value={contractData.roomId}
+                      onChange={handleInputChange}
+                      disabled
+                    >
+                      {contractData.room && (
+                        <option value={contractData.room.id}>
+                          {contractData.room.title}
+                        </option>
+                      )}
+                    </select>
+                  </div>
+
+                  <div className="col-12">
+                    <label className="modern-label" htmlFor="deadlineContract">
+                      Thời Hạn Hợp Đồng
+                    </label>
+                    <input
+                      type="datetime-local"
+                      className="form-control modern-input"
+                      id="deadlineContract"
+                      name="deadlineContract"
+                      value={contractData.deadlineContract}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+
+                  {/* Vùng File Upload */}
+                  <div className="col-12 mt-4">
+                    <label className="modern-label d-flex justify-content-between align-items-center">
+                      <span>Cập nhật File Hợp Đồng</span>
+                      <a 
+                        href="https://image.luatvietnam.vn/uploaded/Others/2021/04/08/hop-dong-thue-nha-o_2810144434_2011152916_0804150405.doc"
+                        className="text-decoration-none fw-bold text-emerald small"
+                      >
+                        <i className="bi bi-cloud-arrow-down-fill me-1"></i> Tải Mẫu (.doc)
+                      </a>
+                    </label>
+                    
+                    <div className="upload-box p-4 text-center bg-light position-relative">
+                      {/* Nút xem hợp đồng cũ (nếu có) */}
+                      {contractData.files && typeof contractData.files === 'string' && (
+                        <a 
+                          href={contractData.files} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="btn btn-outline-info bg-white border shadow-sm rounded-pill px-3 py-2 fw-bold mb-3 d-inline-block"
+                        >
+                          <i className="bi bi-file-earmark-pdf-fill text-danger me-2"></i>
+                          Xem Hợp Đồng Hiện Tại
+                        </a>
+                      )}
+
+                      <i className="bi bi-cloud-arrow-up-fill text-emerald mb-2 d-block mt-2" style={{ fontSize: "2.5rem" }}></i>
+                      <h6 className="fw-bold text-dark mb-2">Kéo thả hoặc chọn file (.pdf) để tải lên mới</h6>
+                      <p className="text-muted small mb-4">
+                        Nếu bạn chọn file mới, file hợp đồng cũ sẽ được cập nhật lại.
+                      </p>
+                      <input
+                        className="form-control modern-input w-75 mx-auto"
+                        id="fileInput"
+                        type="file"
+                        accept=".pdf"
+                        name="files"
+                        multiple
+                        onChange={handleFileChange}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Nút Submit */}
+                  <div className="col-12 mt-5 pt-3 border-top">
+                    <button type="submit" className="btn bg-emerald text-white btn-modern w-100 fs-5 py-2 shadow-sm">
+                      <i className="bi bi-save me-2"></i> Lưu thay đổi
+                    </button>
+                  </div>
+
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
       </div>
-    </div>
+    </>
   );
 }
 

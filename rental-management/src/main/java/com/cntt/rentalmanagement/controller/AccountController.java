@@ -62,4 +62,10 @@ public class AccountController {
     private ResponseEntity<?> divideAuthorization(@PathVariable Long id, @RequestBody RoleRequest roleRequest) {
         return ResponseEntity.ok(accountService.divideAuthorization(id, roleRequest));
     }
+
+    @DeleteMapping("/delete-multiple")
+    private ResponseEntity<?> deleteMultipleAccounts(@RequestBody java.util.List<Long> ids) {
+        accountService.deleteMultipleAccounts(ids);
+        return ResponseEntity.ok(MessageResponse.builder().message("Xóa tài khoản thành công.").build());
+    }
 }

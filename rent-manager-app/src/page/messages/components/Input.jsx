@@ -4,6 +4,7 @@ import { useUserContext } from "../context/UserContext";
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import '../style.css'
+import { toast } from "react-toastify";
 
 const Input = () => {
   const [text, setText] = useState("");
@@ -18,6 +19,7 @@ const Input = () => {
   const [stompClient, setStompClient] = useState(null);
   const [currentId, setCurrentId] = useState(null);
 
+  //test
   useEffect(() => {
     if (selectedUser) {
       console.log("Old currentId: ")
@@ -34,24 +36,20 @@ const Input = () => {
   useEffect(() => {
     console.log("New currentId after setCurrentId: ");
     console.log(currentId);
-
-    // Thực hiện các hành động khác liên quan đến currentId ở đây
   }, [currentId]);
 
   useEffect(() => {
-    // Tạo kết nối WebSocket tới server
+    //kết nối websocket
     const socket = new SockJS("http://localhost:8080/ws");
     const stompClient = Stomp.over(socket);
 
-    // Kết nối tới WebSocket server
     stompClient.connect({}, () => {
       console.log("Connected to WebSocket");
       setStompClient(stompClient);
 
-      // Đăng ký để lắng nghe sự kiện từ địa chỉ đích tương ứng
-      const destination = `/topic/messages`; // Thay userId bằng giá trị tương ứng
+      //chọn địa chỉ nghe event
+      const destination = `/topic/messages`;
       stompClient.subscribe(destination, (message) => {
-        // Xử lý message (nếu cần)
         if (selectedUser) {
           const selectedUserId = selectedUser.sender.id;
           const newId = userId == selectedUserId ? selectedUser.receiver.id : selectedUserId;
@@ -76,11 +74,15 @@ const Input = () => {
       });
     });
 
-    // Đóng kết nối khi component bị hủy
+    //tránh bị đóng kết nối trước khi kịp mount lại
     return () => {
-      stompClient.disconnect();
+      if (stompClient && stompClient.connected) {
+        stompClient.disconnect(() => {
+           console.log("Disconnected WebSocket");
+        });
+      }
     };
-  }, [userId, currentId]); // Đảm bảo thay đổi userId thì useEffect sẽ chạy lại
+  }, [userId, currentId]);
 
 
   const fetchMessageData = async (sendId) => {
@@ -104,6 +106,11 @@ const Input = () => {
   };
 
   const handleSend = async () => {
+    if (!currentId) {
+        toast.error("Chưa chọn người nhận tin nhắn!");
+        return; 
+    }
+
     const sendMessageData = {
       id: 1,
       content: text,
@@ -113,37 +120,115 @@ const Input = () => {
     };
 
     const destination = `/app/user/message-chat/${userId}/${currentId}`;
-    // Gửi tin nhắn tới địa chỉ đích
+    //gửi msg tới đích
     stompClient.send(destination, {}, JSON.stringify(sendMessageData));
     setText("")
-    //fetchMessageData();
+    fetchMessageData(currentId);
   };
-
 
   return (
     <>
-     
-        <div className="flex-grow-0 py-3 px-4 border-top">
-          <div className="input-group">
-            <input type="text" className="form-control" placeholder="Nhập tin nhắn của bạn"
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleSend();
-                }
-              }}
-              value={text}
-              style={{width : "300px"}}
-            />
-            <button className="btn btn-primary"  onClick={handleSend}>Send</button>
-          </div>
-        </div>
-     
+      <style>{`
+        .eco-chat-input-wrapper {
+          background-color: #ffffff;
+          border-top: 1px solid #E2E8F0;
+          padding: 15px 20px;
+        }
 
+        .eco-input-group {
+          display: flex;
+          align-items: center;
+          background-color: #F1F5F9;
+          border-radius: 50px;
+          padding: 6px 12px 6px 20px;
+          border: 1px solid transparent;
+          transition: all 0.3s ease;
+        }
+
+        .eco-input-group:focus-within {
+          border-color: #10B981;
+          box-shadow: 0 0 0 3px rgba(16,185,129,0.1);
+          background-color: #fff;
+        }
+
+        .eco-chat-input {
+          flex-grow: 1;
+          border: none;
+          background: transparent;
+          padding: 8px 0;
+          font-size: 0.95rem;
+          color: #1E293B;
+          outline: none;
+          width: 100%;
+        }
+
+        .eco-chat-input::placeholder {
+          color: #94A3B8;
+        }
+
+        .eco-send-btn {
+          background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+          color: white;
+          border: none;
+          border-radius: 50%;
+          width: 40px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+          flex-shrink: 0;
+          margin-left: 10px;
+          box-shadow: 0 2px 6px rgba(16,185,129,0.2);
+        }
+
+        .eco-send-btn:hover {
+          transform: scale(1.05) translateY(-2px);
+          box-shadow: 0 4px 10px rgba(16,185,129,0.3);
+        }
+
+        .eco-send-btn:active {
+          transform: scale(0.95) translateY(0);
+        }
+        
+        /* Hiệu ứng khi chưa nhập text thì làm mờ nút send */
+        .eco-send-btn.disabled {
+          opacity: 0.5;
+          pointer-events: none;
+          background: #CBD5E1;
+          box-shadow: none;
+        }
+      `}</style>
+
+      <div className="eco-chat-input-wrapper">
+        <div className="eco-input-group">
+          {/* Icon đính kèm (có thể dùng sau nếu bạn thêm chức năng gửi ảnh) */}
+          <i className="bi bi-plus-circle-fill text-muted me-3 fs-5" style={{cursor: "pointer", transition: "color 0.2s"}} onMouseOver={(e) => e.target.classList.add('text-emerald')} onMouseOut={(e) => e.target.classList.remove('text-emerald')}></i>
+          
+          <input 
+            type="text" 
+            className="eco-chat-input" 
+            placeholder="Nhập tin nhắn của bạn..."
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && text.trim() !== "") {
+                handleSend();
+              }
+            }}
+            value={text}
+          />
+          
+          <button 
+            className={`eco-send-btn ${text.trim() === "" ? "disabled" : ""}`}  
+            onClick={handleSend}
+            title="Gửi tin nhắn"
+          >
+            <i className="bi bi-send-fill ms-1"></i>
+          </button>
+        </div>
+      </div>
     </>
   );
-
 }
-
 
 export default Input;

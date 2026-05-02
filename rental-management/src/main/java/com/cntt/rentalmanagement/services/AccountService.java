@@ -24,6 +24,8 @@ public interface AccountService {
 
     MessageResponse divideAuthorization(Long id, RoleRequest roleRequest);
 
+    void deleteMultipleAccounts(List<Long> ids);
+
     void sendEmailForRentaler(SendEmailRequest sendEmailRequest);
 
     void sendEmailOfCustomer(SendEmailRequest sendEmailRequest);

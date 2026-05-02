@@ -37,6 +37,10 @@ public class LeaveRequestServiceImpl extends BaseService implements LeaveRequest
 
         User user = userRepository.findById(getUserId()).orElseThrow(() -> new ResourceNotFoundException("User", "id", getUserId()));
         
+        if (user.getAllocatedRoom() == null) {
+            throw new BadRequestException("Bạn hiện không ở trong phòng nào nên không thể tạo phiếu xin nghỉ.");
+        }
+
         LeaveRequest leaveRequest = new LeaveRequest(
                 user,
                 request.getReason(),
@@ -74,6 +78,6 @@ public class LeaveRequestServiceImpl extends BaseService implements LeaveRequest
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by("createdAt").descending());
         // For simplicity in demo, Rentaler sees all requests. 
         // In a real app, we might filter by the rooms the rentaler manages.
-        return leaveRequestRepository.findAll(pageable);
+        return leaveRequestRepository.findRequestsByRentaler(getUserId(), pageable);
     }
 }

@@ -28,4 +28,9 @@ public class FollowController {
     public ResponseEntity<?> checkFollow(@PathVariable Long rentalerId) {
         return ResponseEntity.ok(followService.isFollowing(rentalerId));
     }
+
+    @DeleteMapping("/{rentalerId}")
+    public ResponseEntity<?> unfollowAgents(@PathVariable Long rentalerId) {
+        return ResponseEntity.ok(followService.unfollowAgents(rentalerId));
+    }
 }
