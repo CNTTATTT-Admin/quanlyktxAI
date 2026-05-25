@@ -81,6 +81,6 @@ app:
       - myandroidapp://oauth2/redirect
       - myiosapp://oauth2/redirect
 vnpay:
-  tmnCode: POB7PAZN
-  secretKey: 7NGM9P7AF2H6LA5OMN4F458X52ZMJBSL
+  tmnCode: F59RVPS4
+  secretKey: 2VJ8MR3B4WDV4PK14Y4HUJ390IDOUJLF
   returnUrl: http://localhost:3000/vnpay-return
